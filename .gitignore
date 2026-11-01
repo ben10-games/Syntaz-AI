@@ -15,7 +15,7 @@ __pycache__/
 *.pyc
 
 # Syntaz window runtime files (process id, log, window profile)
-.nova/
+.syntaz/
 
 # Release downloads (scripts/make-release.py)
 dist/

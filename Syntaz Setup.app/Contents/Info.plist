@@ -4,8 +4,8 @@
 <key>CFBundleName</key><string>Syntaz Setup</string>
 <key>CFBundleDisplayName</key><string>Syntaz Setup</string>
 <key>CFBundleIdentifier</key><string>ai.novaryn.setup</string>
-<key>CFBundleExecutable</key><string>nova-setup</string>
-<key>CFBundleIconFile</key><string>nova</string>
+<key>CFBundleExecutable</key><string>syntaz-setup</string>
+<key>CFBundleIconFile</key><string>syntaz</string>
 <key>CFBundlePackageType</key><string>APPL</string>
 <key>CFBundleShortVersionString</key><string>1.6.0</string>
 </dict></plist>

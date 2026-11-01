@@ -2,8 +2,8 @@
 // own JavaScript context). They are part of the extension; the model never supplies code.
 (() => {
   const VERSION = 12;
-  if (window.__nova && window.__nova.v === VERSION) return;
-  const previous = window.__nova; // an older copy (extension updated): keep its element snapshot
+  if (window.__syntaz && window.__syntaz.v === VERSION) return;
+  const previous = window.__syntaz; // an older copy (extension updated): keep its element snapshot
 
   // Fields Syntaz must never read or type into.
   const SENSITIVE_HINT = /(pass(word)?|passwd|pwd|card.?(number|no)?|cc-?(num|number|csc|exp)|cvv|cvc|csc|iban|ssn|social.?security|otp|one.?time|2fa|totp|token|secret|security.?code|\bpin\b)/i;
@@ -234,7 +234,7 @@
 
   /** Fields Syntaz typed into on this page: only their values may be read back. */
   function typedBy(el) {
-    (window.__nova.typed = window.__nova.typed || new WeakSet()).add(el);
+    (window.__syntaz.typed = window.__syntaz.typed || new WeakSet()).add(el);
   }
 
   /** Changes when the page visibly changes (address, title or text), to tell whether a click did something. */
@@ -297,7 +297,7 @@
    * old id can never point at a different element.
    */
   function find(snapshotId, elementId, opts = {}) {
-    const N = window.__nova;
+    const N = window.__syntaz;
     if (!N.snapshots || !N.snapshots.has(snapshotId)) return { error: "stale_snapshot", message: "The page changed or navigated since the elements were listed. List the elements again." };
     const ref = N.elements.get(elementId);
     const el = ref && ref.deref();
@@ -435,7 +435,7 @@
     return { ...base, source: "none", opened_panel: opened, message: "This video has no transcript or captions Syntaz can read (it may be music without words, or the video has none). Syntaz can't hear the sound itself." };
   }
 
-  window.__nova = {
+  window.__syntaz = {
     v: VERSION,
     lib: { visible, isSensitive, labelOf, kind, consequential, submitsForm, redact, captcha, inCaptcha, find, readable, mathEditorOf, mathShown, mathKey, fieldContext, enterText, formatHint, pageSignature, scrollReport, customClickables, videoTranscript, transcriptLines, MATH_EDITOR },
     snapshot: previous ? previous.snapshot : null,

@@ -98,7 +98,7 @@ export default function Composer({ streaming, disabled, onSend, onStop, focusKey
     >
       <div
         className={`glass rounded-[26px] border transition-colors ${
-          dragging ? "border-nova-400 bg-nova-500/5" : "border-ink-700 focus-within:border-ink-600"
+          dragging ? "border-syntaz-400 bg-syntaz-500/5" : "border-ink-700 focus-within:border-ink-600"
         }`}
       >
         {attachments.length > 0 && !actionMode && (
@@ -108,7 +108,7 @@ export default function Composer({ streaming, disabled, onSend, onStop, focusKey
                 key={a.id}
                 className="flex max-w-[220px] items-center gap-2 rounded-xl border border-ink-700 bg-ink-800 py-1.5 pl-2.5 pr-1 text-xs"
               >
-                <FileIcon width={15} height={15} className="shrink-0 text-nova-300" />
+                <FileIcon width={15} height={15} className="shrink-0 text-syntaz-300" />
                 <span className="min-w-0">
                   <span className="block truncate font-medium text-zinc-200">{a.name}</span>
                   <span className="block text-zinc-400">{formatBytes(a.size)}</span>
@@ -213,7 +213,7 @@ export default function Composer({ streaming, disabled, onSend, onStop, focusKey
                 disabled={!canSend}
                 aria-label={actionMode ? "Run task" : "Send message"}
                 title={actionMode ? "Run task (Enter)" : "Send (Enter)"}
-                className="grid h-9 w-9 place-items-center rounded-full bg-nova-600 text-ink-950 transition-colors hover:bg-nova-500 disabled:cursor-not-allowed disabled:bg-ink-700 disabled:text-zinc-500"
+                className="grid h-9 w-9 place-items-center rounded-full bg-syntaz-600 text-ink-950 transition-colors hover:bg-syntaz-500 disabled:cursor-not-allowed disabled:bg-ink-700 disabled:text-zinc-500"
               >
                 <SendIcon />
               </button>

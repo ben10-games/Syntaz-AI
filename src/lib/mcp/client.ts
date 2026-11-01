@@ -39,8 +39,8 @@ type State = {
 };
 
 // Survives Next.js dev hot reloads so we don't leak child processes.
-const g = globalThis as { __novaMcp?: State };
-const state: State = (g.__novaMcp ??= { connections: new Map(), tools: new Map(), failures: new Map() });
+const g = globalThis as { __syntazMcp?: State };
+const state: State = (g.__syntazMcp ??= { connections: new Map(), tools: new Map(), failures: new Map() });
 
 export class McpUnavailableError extends Error {}
 
@@ -48,19 +48,19 @@ export class McpUnavailableError extends Error {}
 function serverEnv(server: TrustedMcpServer): Record<string, string> {
   if (server.id === "blender") {
     const { port, tokenFile } = getBlenderConfig();
-    return { NOVA_BLENDER_PORT: String(port), NOVA_BLENDER_TOKEN_FILE: tokenFile };
+    return { SYNTAZ_BLENDER_PORT: String(port), SYNTAZ_BLENDER_TOKEN_FILE: tokenFile };
   }
   if (server.id === "browser") {
     const b = getBrowserConfig();
-    return { NOVA_BROWSER_PORT: String(b.port), NOVA_BROWSER_TOKEN_FILE: b.tokenFile, NOVA_BROWSER_EXTENSION_ID: b.extensionId, NOVA_BROWSER_SHOT_DIR: b.shotDir, NOVA_BROWSER_SEARCH_URL: b.searchUrl, ...siteSearchForTests() };
+    return { SYNTAZ_BROWSER_PORT: String(b.port), SYNTAZ_BROWSER_TOKEN_FILE: b.tokenFile, SYNTAZ_BROWSER_EXTENSION_ID: b.extensionId, SYNTAZ_BROWSER_SHOT_DIR: b.shotDir, SYNTAZ_BROWSER_SEARCH_URL: b.searchUrl, ...siteSearchForTests() };
   }
   return {};
 }
 
-/** Automated tests only (NOVA_ENABLE_TEST_FIXTURES=true): site searches go to a local page. */
+/** Automated tests only (SYNTAZ_ENABLE_TEST_FIXTURES=true): site searches go to a local page. */
 function siteSearchForTests(): Record<string, string> {
-  const base = process.env.NOVA_BROWSER_SITE_SEARCH_BASE ?? "";
-  return process.env.NOVA_ENABLE_TEST_FIXTURES === "true" && /^http:\/\/(127\.0\.0\.1|localhost):\d+\/[\w./-]*$/.test(base) ? { NOVA_BROWSER_SITE_SEARCH_BASE: base } : {};
+  const base = process.env.SYNTAZ_BROWSER_SITE_SEARCH_BASE ?? "";
+  return process.env.SYNTAZ_ENABLE_TEST_FIXTURES === "true" && /^http:\/\/(127\.0\.0\.1|localhost):\d+\/[\w./-]*$/.test(base) ? { SYNTAZ_BROWSER_SITE_SEARCH_BASE: base } : {};
 }
 
 function scriptPath(server: TrustedMcpServer): string {
@@ -90,7 +90,7 @@ async function connect(server: TrustedMcpServer, timeoutMs: number): Promise<Con
     logged += chunk.length;
     console.warn(`[mcp:${server.id}] ${chunk.toString("utf8").slice(0, 1_000).trimEnd()}`);
   });
-  const client = new Client({ name: "nova-ai", version: "0.1.0" }, { capabilities: {} });
+  const client = new Client({ name: "syntaz-ai", version: "0.1.0" }, { capabilities: {} });
   const conn: Connection = { client, closed: false };
   client.onclose = () => {
     conn.closed = true;

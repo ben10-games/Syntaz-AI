@@ -2,8 +2,8 @@
 // is open and allowed to read it. It only notices that the page changed and tells the
 // panel; it never reads or sends page text itself. It stops as soon as the panel is gone.
 (() => {
-  if (window.__novaWatch && window.__novaWatch.alive()) return;
-  if (window.__novaWatch) window.__novaWatch.stop(); // left over from before the extension was reloaded
+  if (window.__syntazWatch && window.__syntazWatch.alive()) return;
+  if (window.__syntazWatch) window.__syntazWatch.stop(); // left over from before the extension was reloaded
   const DEBOUNCE_MS = 1200;
   const MIN_GAP_MS = 2500;
   let timer = null;
@@ -19,7 +19,7 @@
     observer.disconnect();
     window.removeEventListener("popstate", schedule);
     window.removeEventListener("hashchange", schedule);
-    window.__novaWatch = null;
+    window.__syntazWatch = null;
   }
 
   function notify() {
@@ -32,7 +32,7 @@
     lastSig = sig;
     lastSent = Date.now();
     try {
-      chrome.runtime.sendMessage({ type: "nova_page_changed" }).then(
+      chrome.runtime.sendMessage({ type: "syntaz_page_changed" }).then(
         (reply) => (!reply || !reply.watching) && stop(),
         () => stop(), // the side panel is closed
       );
@@ -53,5 +53,5 @@
   window.addEventListener("popstate", schedule);
   window.addEventListener("hashchange", schedule);
   lastSig = signature();
-  window.__novaWatch = { stop, alive: () => !stopped && !!(chrome.runtime && chrome.runtime.id) };
+  window.__syntazWatch = { stop, alive: () => !stopped && !!(chrome.runtime && chrome.runtime.id) };
 })();

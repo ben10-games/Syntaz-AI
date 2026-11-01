@@ -123,7 +123,7 @@ export default function SettingsDialog({
               value={settings.model ?? ""}
               disabled={modelLocked}
               onChange={(e) => set({ model: e.target.value || null })}
-              className="mt-2 w-full rounded-xl border border-ink-600 bg-ink-850 px-3 py-2.5 text-sm text-zinc-100 focus:border-nova-500 focus:outline-none disabled:opacity-60"
+              className="mt-2 w-full rounded-xl border border-ink-600 bg-ink-850 px-3 py-2.5 text-sm text-zinc-100 focus:border-syntaz-500 focus:outline-none disabled:opacity-60"
             >
               <option value="">
                 {provider.kind === "lmstudio" ? "Auto — currently loaded" : "Default"}
@@ -181,7 +181,7 @@ export default function SettingsDialog({
                   type="checkbox"
                   checked={settings.maxTokens === null}
                   onChange={(e) => set({ maxTokens: e.target.checked ? null : 1024 })}
-                  className="h-4 w-4 rounded accent-nova-500"
+                  className="h-4 w-4 rounded accent-syntaz-500"
                 />
                 No limit
               </label>
@@ -199,7 +199,7 @@ export default function SettingsDialog({
                 const n = Math.round(Number(e.target.value));
                 if (Number.isFinite(n) && n > 0) set({ maxTokens: Math.min(32768, n) });
               }}
-              className="mt-2 w-full rounded-xl border border-ink-600 bg-ink-850 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-nova-500 focus:outline-none disabled:opacity-60"
+              className="mt-2 w-full rounded-xl border border-ink-600 bg-ink-850 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-syntaz-500 focus:outline-none disabled:opacity-60"
             />
             <p className="mt-1 text-xs text-zinc-400">Maximum tokens per reply. Long replies stop early when reached.</p>
           </div>
@@ -217,7 +217,7 @@ export default function SettingsDialog({
               rows={4}
               onChange={(e) => set({ systemPrompt: e.target.value })}
               placeholder="Leave empty to use Syntaz's default instructions. Example: You are a senior game developer. Answer briefly and prefer C# examples."
-              className="w-full resize-y rounded-xl border border-ink-600 bg-ink-850 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-nova-500 focus:outline-none"
+              className="w-full resize-y rounded-xl border border-ink-600 bg-ink-850 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-syntaz-500 focus:outline-none"
             />
             <p className="mt-1 text-right text-xs tabular-nums text-zinc-500">{settings.systemPrompt.length} / 4000</p>
           </div>

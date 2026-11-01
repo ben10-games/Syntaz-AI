@@ -20,8 +20,8 @@ const config: Config = {
           600: "#33403a",
           500: "#56635c",
         },
-        // Volt accent: electric lime (the name stays "nova" so the class names don't change)
-        nova: {
+        // Volt accent: electric lime
+        syntaz: {
           300: "#e2fb9a",
           400: "#d4f76a",
           500: "#c8f550",

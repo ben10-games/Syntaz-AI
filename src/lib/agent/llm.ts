@@ -33,7 +33,7 @@ async function post(config: AiConfig, body: Record<string, unknown>, signal: Abo
     throw new UpstreamError(`Cannot reach ${config.providerName}.`, 503);
   }
   const text = await res.text();
-  if (process.env.NOVA_DEBUG_LLM === "true") {
+  if (process.env.SYNTAZ_DEBUG_LLM === "true") {
     // Timing only (no content): how long the model took and how much it read and wrote.
     const usage = (() => { try { return JSON.parse(text).usage ?? {}; } catch { return {}; } })();
     console.error(`[agent] model call ${Date.now() - started} ms, prompt ${usage.prompt_tokens ?? "?"} tokens, answer ${usage.completion_tokens ?? "?"} tokens`);

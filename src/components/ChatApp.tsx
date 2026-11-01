@@ -483,7 +483,7 @@ export default function ChatApp() {
                 type="button"
                 onClick={() => setSidebarOpen(true)}
                 aria-label="Open sidebar"
-                aria-controls="nova-sidebar"
+                aria-controls="syntaz-sidebar"
                 aria-expanded={false}
                 title="Open sidebar (Ctrl+B)"
                 className="rounded-lg p-2 text-zinc-400 transition-colors hover:bg-ink-800 hover:text-zinc-100"
@@ -574,9 +574,9 @@ export default function ChatApp() {
                     disabled={streaming}
                     onClick={() => setDraftSeed({ text: prompt, key: Date.now() })}
                     style={{ animationDelay: `${60 + i * 40}ms` }}
-                    className="group flex animate-fade-in-up items-start gap-3 glass rounded-[22px] border border-white/10 p-4 text-left transition-colors hover:border-nova-500/50 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="group flex animate-fade-in-up items-start gap-3 glass rounded-[22px] border border-white/10 p-4 text-left transition-colors hover:border-syntaz-500/50 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-nova-500/10 text-nova-300 transition-colors group-hover:bg-nova-500/20">
+                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-syntaz-500/10 text-syntaz-300 transition-colors group-hover:bg-syntaz-500/20">
                       <Icon width={17} height={17} />
                     </span>
                     <span className="min-w-0">

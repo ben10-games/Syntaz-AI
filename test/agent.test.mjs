@@ -14,7 +14,7 @@ const ENV_SECRET = "sk-live-should-never-be-read";
 let mock, rw, ro, native, disabled, big, tmp, workspace, bigWorkspace;
 
 function makeWorkspace() {
-  tmp = mkdtempSync(path.join(os.tmpdir(), "nova-actions-test-"));
+  tmp = mkdtempSync(path.join(os.tmpdir(), "syntaz-actions-test-"));
   workspace = path.join(tmp, "workspace");
   mkdirSync(path.join(workspace, "notes"), { recursive: true });
   mkdirSync(path.join(workspace, "node_modules", "pkg"), { recursive: true });
@@ -111,13 +111,13 @@ before(async () => {
     RATE_LIMIT_CONCURRENT: "1",
     BASIC_AUTH_USER: "",
     BASIC_AUTH_PASSWORD: "",
-    NOVA_ACTIONS_ENABLED: "true",
+    SYNTAZ_ACTIONS_ENABLED: "true",
   };
   [rw, ro, native, disabled, big] = await Promise.all([
     startApp({ ...common, WORKSPACE_DIR: workspace, WORKSPACE_ALLOW_WRITES: "true", AGENT_MAX_STEPS: "4", AGENT_APPROVAL_TIMEOUT_MS: "2500", TRUST_PROXY: "true" }),
     startApp({ ...common, WORKSPACE_DIR: workspace, WORKSPACE_ALLOW_WRITES: "false" }),
     startApp({ ...common, WORKSPACE_DIR: workspace, WORKSPACE_ALLOW_WRITES: "false", AI_AGENT_MODE: "native" }),
-    startApp({ ...common, NOVA_ACTIONS_ENABLED: "false" }),
+    startApp({ ...common, SYNTAZ_ACTIONS_ENABLED: "false" }),
     startApp({ ...common, WORKSPACE_DIR: bigWorkspace, WORKSPACE_ALLOW_WRITES: "false", AGENT_MAX_STEPS: "3" }),
   ]);
 });

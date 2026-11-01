@@ -64,7 +64,7 @@ function startFakeBlender() {
         return summary(o);
       }
       case "render_image":
-        return { file: `/tmp/nova-blender-renders/${p.filename}`, resolution: [p.resolution_x, p.resolution_y] };
+        return { file: `/tmp/syntaz-blender-renders/${p.filename}`, resolution: [p.resolution_x, p.resolution_y] };
       default:
         throw new Error(`unknown command: ${command}`);
     }
@@ -160,7 +160,7 @@ const intersect = (a, b) => [0, 1, 2].every((i) => Math.min(a.max[i], b.max[i]) 
 const close = (a, b, tol = 0.002) => Math.abs(a - b) <= tol;
 
 before(async () => {
-  tmp = mkdtempSync(path.join(os.tmpdir(), "nova-scene-test-"));
+  tmp = mkdtempSync(path.join(os.tmpdir(), "syntaz-scene-test-"));
   writeFileSync(path.join(tmp, "token"), TOKEN);
   mock = await startMockProvider();
   fake = await startFakeBlender();
@@ -177,11 +177,11 @@ before(async () => {
     RATE_LIMIT_CONCURRENT: "1",
     BASIC_AUTH_USER: "",
     BASIC_AUTH_PASSWORD: "",
-    NOVA_ACTIONS_ENABLED: "true",
+    SYNTAZ_ACTIONS_ENABLED: "true",
     WORKSPACE_DIR: "",
     MCP_SERVERS: "blender",
-    NOVA_BLENDER_PORT: String(fake.port),
-    NOVA_BLENDER_TOKEN_FILE: path.join(tmp, "token"),
+    SYNTAZ_BLENDER_PORT: String(fake.port),
+    SYNTAZ_BLENDER_TOKEN_FILE: path.join(tmp, "token"),
   });
 });
 

@@ -9,7 +9,7 @@ if (-not (Test-Path $node)) {
   [System.Windows.MessageBox]::Show('Syntaz needs Node.js. Double-click "Syntaz Setup (Windows).bat" in the Syntaz folder to install it.', 'Syntaz AI') | Out-Null
   exit 1
 }
-$arguments = @('"' + (Join-Path $root 'setup\nova-app.mjs') + '"')
+$arguments = @('"' + (Join-Path $root 'setup\syntaz-app.mjs') + '"')
 if ($Background) { $arguments += '--background' }
 if ($Uninstall) { $arguments += '--uninstall' }
 Start-Process -FilePath $node -ArgumentList $arguments -WorkingDirectory $root -WindowStyle Hidden

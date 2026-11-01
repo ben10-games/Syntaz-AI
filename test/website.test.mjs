@@ -1,7 +1,7 @@
 // The Syntaz AI website (website/) in real Chrome, served over HTTP like GitHub Pages serves it. Google's
 // Gemini API is a local stand-in: Chrome maps generativelanguage.googleapis.com to it (HTTPS with a throwaway
 // certificate), so the chat's real request code, CORS and its Content-Security-Policy all apply.
-// NOVA_SITE_SHOTS=<folder> also saves screenshots of every page.
+// SYNTAZ_SITE_SHOTS=<folder> also saves screenshots of every page.
 import { after, before, test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -14,8 +14,8 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const site = path.join(root, "website");
-const CHROME = process.env.NOVA_TEST_CHROME_BIN;
-const SHOTS = process.env.NOVA_SITE_SHOTS;
+const CHROME = process.env.SYNTAZ_TEST_CHROME_BIN;
+const SHOTS = process.env.SYNTAZ_SITE_SHOTS;
 const GOOD = "AQ.SiteTestKey_abcdefghijklmnopqrstuvwxyz0123";
 const PAGES = ["index.html", "features.html", "download.html", "chat.html", "safety.html", "faq.html", "changelog.html"];
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

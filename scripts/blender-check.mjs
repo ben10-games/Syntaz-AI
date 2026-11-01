@@ -1,12 +1,12 @@
 // Read-only check that Syntaz can reach the Syntaz Blender Bridge in your running Blender.
-// Usage: npm run blender:check   (uses NOVA_BLENDER_PORT / NOVA_BLENDER_TOKEN_FILE if set)
+// Usage: npm run blender:check   (uses SYNTAZ_BLENDER_PORT / SYNTAZ_BLENDER_TOKEN_FILE if set)
 import { readFileSync } from "node:fs";
 import net from "node:net";
 import os from "node:os";
 import path from "node:path";
 
-const port = Number(process.env.NOVA_BLENDER_PORT ?? 9890);
-const tokenFile = process.env.NOVA_BLENDER_TOKEN_FILE ?? path.join(os.homedir(), ".config", "nova-blender", "token");
+const port = Number(process.env.SYNTAZ_BLENDER_PORT ?? 9890);
+const tokenFile = process.env.SYNTAZ_BLENDER_TOKEN_FILE ?? path.join(os.homedir(), ".config", "syntaz-blender", "token");
 
 function call(command) {
   const token = readFileSync(tokenFile, "utf8").trim();

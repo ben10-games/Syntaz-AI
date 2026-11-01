@@ -5,10 +5,10 @@
 // imitate page controls. It removes itself when idle and never exists twice on a page.
 (() => {
   const VERSION = 1;
-  if (window.__novaCursor && window.__novaCursor.v === VERSION && window.__novaCursor.alive()) return;
-  if (window.__novaCursor) window.__novaCursor.remove(); // an older copy (extension reloaded)
+  if (window.__syntazCursor && window.__syntazCursor.v === VERSION && window.__syntazCursor.alive()) return;
+  if (window.__syntazCursor) window.__syntazCursor.remove(); // an older copy (extension reloaded)
 
-  const TAG = "nova-cursor";
+  const TAG = "syntaz-cursor";
   let host = null;
   let parts = null;
   let pos = null; // last viewport position {x, y}
@@ -173,7 +173,7 @@
     parts = null;
   }
 
-  window.__novaCursor = {
+  window.__syntazCursor = {
     v: VERSION,
     alive: () => !!(chrome.runtime && chrome.runtime.id),
     moveTo,

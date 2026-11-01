@@ -249,9 +249,9 @@ const API = "https://generativelanguage.googleapis.com/v1beta/models";
 const SYSTEM = "You are Syntaz, a friendly, helpful assistant. Answer clearly and briefly unless the user asks for detail. Use Markdown for lists and code. If you are not sure, say so.";
 const $ = (id) => document.getElementById(id);
 const store = {
-  get(k, d) { try { const v = localStorage.getItem(`nova-lite:${k}`) ?? sessionStorage.getItem(`nova-lite:${k}`); return v === null ? d : JSON.parse(v); } catch { return d; } },
-  set(k, v, session = false) { try { (session ? sessionStorage : localStorage).setItem(`nova-lite:${k}`, JSON.stringify(v)); } catch {} },
-  del(k) { try { localStorage.removeItem(`nova-lite:${k}`); sessionStorage.removeItem(`nova-lite:${k}`); } catch {} },
+  get(k, d) { try { const v = localStorage.getItem(`syntaz-lite:${k}`) ?? sessionStorage.getItem(`syntaz-lite:${k}`); return v === null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v, session = false) { try { (session ? sessionStorage : localStorage).setItem(`syntaz-lite:${k}`, JSON.stringify(v)); } catch {} },
+  del(k) { try { localStorage.removeItem(`syntaz-lite:${k}`); sessionStorage.removeItem(`syntaz-lite:${k}`); } catch {} },
 };
 
 let key = store.get("key", "");

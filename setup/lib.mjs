@@ -1,4 +1,4 @@
-// What Syntaz's installer does, shared by the Syntaz window (nova-app.mjs) and the text setup (setup.mjs).
+// What Syntaz's installer does, shared by the Syntaz window (syntaz-app.mjs) and the text setup (setup.mjs).
 // Only Node's own modules: this runs before anything is installed.
 import { spawn, spawnSync } from "node:child_process";
 import { chmodSync, copyFileSync, cpSync, existsSync, mkdirSync, openSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
@@ -11,25 +11,25 @@ export const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "
 export const win = process.platform === "win32";
 export const mac = process.platform === "darwin";
 /** Syntaz's own runtime files (process id, log); never shared. */
-export const dataDir = path.join(root, ".nova");
+export const dataDir = path.join(root, ".syntaz");
 // Tests point these at local stand-ins; normal use talks to Google and GitHub over https.
-export const GEMINI = process.env.NOVA_SETUP_GEMINI_BASE || "https://generativelanguage.googleapis.com/v1beta/openai";
-export const testing = !!process.env.NOVA_SETUP_GEMINI_BASE || process.env.NOVA_APP_TEST === "1";
-export const LMSTUDIO = process.env.NOVA_SETUP_LMSTUDIO_BASE || "http://127.0.0.1:1234/v1";
-export const REPO = "ben10-games/Nova-AI";
+export const GEMINI = process.env.SYNTAZ_SETUP_GEMINI_BASE || "https://generativelanguage.googleapis.com/v1beta/openai";
+export const testing = !!process.env.SYNTAZ_SETUP_GEMINI_BASE || process.env.SYNTAZ_APP_TEST === "1";
+export const LMSTUDIO = process.env.SYNTAZ_SETUP_LMSTUDIO_BASE || "http://127.0.0.1:1234/v1";
+export const REPO = "ben10-games/Syntaz-AI";
 // Updates come from GitHub Releases: each release has one download per system (see scripts/make-release.mjs),
 // so a Mac update never brings Windows files and the other way round.
 export const RELEASE_ASSET = mac ? "Syntaz-for-Mac.zip" : win ? "Syntaz-for-Windows.zip" : "Syntaz-for-Linux.zip";
 const RELEASES_API = `https://api.github.com/repos/${REPO}/releases/latest`;
-const UPDATE_ZIP = process.env.NOVA_UPDATE_ZIP || null; // tests
-const UPDATE_VERSION_URL = process.env.NOVA_UPDATE_VERSION_URL || null; // tests
-export const NOVA_PORT = Number(process.env.NOVA_APP_NOVA_PORT || 3000);
+const UPDATE_ZIP = process.env.SYNTAZ_UPDATE_ZIP || null; // tests
+const UPDATE_VERSION_URL = process.env.SYNTAZ_UPDATE_VERSION_URL || null; // tests
+export const SYNTAZ_PORT = Number(process.env.SYNTAZ_APP_SYNTAZ_PORT || 3000);
 // Tried in this order; the first one this key may use becomes Syntaz's model. Measured October 2026:
 // Flash-Lite does every Syntaz benchmark task and its free tier allows hundreds of requests a day, while
 // the bigger Flash models allow only ~20 a day (a handful of tasks), so they come last.
 export const GEMINI_MODELS = ["gemini-3.1-flash-lite", "gemini-flash-lite-latest", "gemini-3.5-flash-lite", "gemini-3.6-flash", "gemini-flash-latest"];
 
-const home = () => process.env.NOVA_APP_HOME || os.homedir(); // tests use a scratch home
+const home = () => process.env.SYNTAZ_APP_HOME || os.homedir(); // tests use a scratch home
 
 export async function http(url, { key, body, timeoutMs = 20_000 } = {}) {
   try {
@@ -97,14 +97,14 @@ export async function checkGemini(rawKey) {
 
 // Providers you pay for yourself (your own API key and billing). Tests point the addresses at stand-ins.
 export const PAID = {
-  openai: { name: "OpenAI", base: process.env.NOVA_SETUP_OPENAI_BASE || "https://api.openai.com/v1", keys: "https://platform.openai.com/api-keys", billing: "https://platform.openai.com/settings/organization/billing/overview", chat: /^(gpt-|o\d|chatgpt-)/i },
-  anthropic: { name: "Anthropic (Claude)", base: process.env.NOVA_SETUP_ANTHROPIC_BASE || "https://api.anthropic.com", keys: "https://platform.claude.com/settings/keys", billing: "https://platform.claude.com/settings/billing", chat: /^claude-/i },
-  xai: { name: "xAI (Grok)", base: process.env.NOVA_SETUP_XAI_BASE || "https://api.x.ai/v1", keys: "https://console.x.ai/", billing: "https://console.x.ai/", chat: /^grok-/i },
+  openai: { name: "OpenAI", base: process.env.SYNTAZ_SETUP_OPENAI_BASE || "https://api.openai.com/v1", keys: "https://platform.openai.com/api-keys", billing: "https://platform.openai.com/settings/organization/billing/overview", chat: /^(gpt-|o\d|chatgpt-)/i },
+  anthropic: { name: "Anthropic (Claude)", base: process.env.SYNTAZ_SETUP_ANTHROPIC_BASE || "https://api.anthropic.com", keys: "https://platform.claude.com/settings/keys", billing: "https://platform.claude.com/settings/billing", chat: /^claude-/i },
+  xai: { name: "xAI (Grok)", base: process.env.SYNTAZ_SETUP_XAI_BASE || "https://api.x.ai/v1", keys: "https://console.x.ai/", billing: "https://console.x.ai/", chat: /^grok-/i },
   // Groq (not Grok): very fast open models. Can't make pictures.
-  groq: { name: "Groq", base: process.env.NOVA_SETUP_GROQ_BASE || "https://api.groq.com/openai/v1", keys: "https://console.groq.com/keys", billing: "https://console.groq.com/settings/billing", chat: /./ },
+  groq: { name: "Groq", base: process.env.SYNTAZ_SETUP_GROQ_BASE || "https://api.groq.com/openai/v1", keys: "https://console.groq.com/keys", billing: "https://console.groq.com/settings/billing", chat: /./ },
   // Hugging Face Inference Providers: many open models with one token. The key page link pre-ticks the one permission
   // Syntaz needs ("Make calls to Inference Providers"). Pictures go through its text-to-image endpoint.
-  huggingface: { name: "Hugging Face", base: process.env.NOVA_SETUP_HF_BASE || "https://router.huggingface.co/v1", keys: "https://huggingface.co/settings/tokens/new?ownUserPermissions=inference.serverless.write&tokenType=fineGrained", billing: "https://huggingface.co/settings/billing", chat: /\//, image: "stabilityai/stable-diffusion-3-medium-diffusers" },
+  huggingface: { name: "Hugging Face", base: process.env.SYNTAZ_SETUP_HF_BASE || "https://router.huggingface.co/v1", keys: "https://huggingface.co/settings/tokens/new?ownUserPermissions=inference.serverless.write&tokenType=fineGrained", billing: "https://huggingface.co/settings/billing", chat: /\//, image: "stabilityai/stable-diffusion-3-medium-diffusers" },
 };
 const released = (m) => (typeof m.created === "number" ? m.created : Date.parse(m.created_at ?? "") / 1000 || 0);
 const NOT_CHAT = /embed|whisper|tts|dall-e|moderation|rerank|transcribe|image|imagine|audio|realtime|search|vision-preview|computer-use|guard|playai|orpheus|distil/i;
@@ -208,7 +208,7 @@ const envFile = () => path.join(root, ".env.local");
 export function writeEnv(ai) {
   const file = envFile();
   if (existsSync(file)) copyFileSync(file, path.join(root, ".env.local.before-setup")); // keep the old settings
-  const values = { ...ai, AI_AGENT_MODE: "json", MCP_SERVERS: "browser", NOVA_ACTIONS_ENABLED: "true", WORKSPACE_DIR: "", RATE_LIMIT_MAX: "120", RATE_LIMIT_CONCURRENT: "3" };
+  const values = { ...ai, AI_AGENT_MODE: "json", MCP_SERVERS: "browser", SYNTAZ_ACTIONS_ENABLED: "true", WORKSPACE_DIR: "", RATE_LIMIT_MAX: "120", RATE_LIMIT_CONCURRENT: "3" };
   const text = ["# Written by Syntaz's setup. Stays on this computer; never share or upload this file.", ...Object.entries(values).map(([k, v]) => `${k}=${v}`), ""].join("\n");
   writeFileSync(file, text, { mode: 0o600 });
   try {
@@ -336,23 +336,23 @@ export async function latestVersion() {
 // Running Syntaz (in the background, no window)
 // ---------------------------------------------------------------------------
 
-const pidFile = () => path.join(dataDir, "nova.pid");
+const pidFile = () => path.join(dataDir, "syntaz.pid");
 
 export async function isRunning() {
   try {
-    await fetch(`http://127.0.0.1:${NOVA_PORT}/api/pair`, { signal: AbortSignal.timeout(2_000) });
+    await fetch(`http://127.0.0.1:${SYNTAZ_PORT}/api/pair`, { signal: AbortSignal.timeout(2_000) });
     return true;
   } catch {
     return false;
   }
 }
 
-export async function startNova() {
+export async function startSyntaz() {
   if (await isRunning()) return true;
   if (!isInstalled()) return false;
   mkdirSync(dataDir, { recursive: true });
-  const log = openSync(path.join(dataDir, "nova.log"), "a");
-  const child = spawn(process.execPath, [path.join(root, "node_modules", "next", "dist", "bin", "next"), "start", "-H", "127.0.0.1", "-p", String(NOVA_PORT)], {
+  const log = openSync(path.join(dataDir, "syntaz.log"), "a");
+  const child = spawn(process.execPath, [path.join(root, "node_modules", "next", "dist", "bin", "next"), "start", "-H", "127.0.0.1", "-p", String(SYNTAZ_PORT)], {
     cwd: root,
     env: withNodeOnPath(),
     detached: true,
@@ -368,7 +368,7 @@ export async function startNova() {
   return false;
 }
 
-export async function stopNova() {
+export async function stopSyntaz() {
   let pid = null;
   try {
     pid = Number(readFileSync(pidFile(), "utf8"));
@@ -436,7 +436,7 @@ export function unzip(buffer, dest) {
 }
 
 /** What an update replaces: everything except settings, runtime files and installed packages. */
-const KEEP = new Set([".env.local", ".env.local.before-setup", ".nova", "node_modules", ".git"]);
+const KEEP = new Set([".env.local", ".env.local.before-setup", ".syntaz", "node_modules", ".git"]);
 
 /** Downloads the newest Syntaz and puts it over this folder. Settings (.env.local) are kept. */
 export async function downloadUpdate(onLine = () => {}) {
@@ -452,12 +452,12 @@ export async function downloadUpdate(onLine = () => {}) {
   }
   if (!res.ok) return { ok: false, error: `The update download failed (HTTP ${res.status}).` };
   const zip = Buffer.from(await res.arrayBuffer());
-  const temp = path.join(os.tmpdir(), `nova-update-${process.pid}-${Date.now()}`);
+  const temp = path.join(os.tmpdir(), `syntaz-update-${process.pid}-${Date.now()}`);
   try {
     unzip(zip, temp);
     const top = readdirSync(temp).filter((n) => statSync(path.join(temp, n)).isDirectory());
     const src = top.length === 1 ? path.join(temp, top[0]) : temp;
-    if (!existsSync(path.join(src, "package.json")) || !existsSync(path.join(src, "setup", "nova-app.mjs"))) return { ok: false, error: "The download doesn't look like Syntaz." };
+    if (!existsSync(path.join(src, "package.json")) || !existsSync(path.join(src, "setup", "syntaz-app.mjs"))) return { ok: false, error: "The download doesn't look like Syntaz." };
     onLine("Replacing Syntaz's files (your settings are kept)…");
     for (const name of readdirSync(root)) if (!KEEP.has(name)) rmSync(path.join(root, name), { recursive: true, force: true });
     for (const name of readdirSync(src)) if (!KEEP.has(name)) cpSync(path.join(src, name), path.join(root, name), { recursive: true });
@@ -473,7 +473,7 @@ export async function downloadUpdate(onLine = () => {}) {
 // Shortcuts with the Syntaz logo, start with the computer, uninstall entry
 // ---------------------------------------------------------------------------
 
-const appScript = () => path.join(root, "setup", "nova-app.mjs");
+const appScript = () => path.join(root, "setup", "syntaz-app.mjs");
 
 /** Runs a PowerShell script without quoting trouble (Windows). */
 function powershell(script) {
@@ -488,7 +488,7 @@ function windowsShortcut(folder, extraArgs) {
   return powershell(
     `$f=[Environment]::GetFolderPath(${psq(folder)}); $s=(New-Object -ComObject WScript.Shell).CreateShortcut((Join-Path $f 'Syntaz AI.lnk'));` +
       ` $s.TargetPath=(Join-Path $env:WINDIR 'System32\\WindowsPowerShell\\v1.0\\powershell.exe'); $s.Arguments=${psq(args)};` +
-      ` $s.WorkingDirectory=${psq(root)}; $s.IconLocation=${psq(path.join(root, "setup", "assets", "nova.ico") + ",0")}; $s.WindowStyle=7; $s.Description='Syntaz AI'; $s.Save()`,
+      ` $s.WorkingDirectory=${psq(root)}; $s.IconLocation=${psq(path.join(root, "setup", "assets", "syntaz.ico") + ",0")}; $s.WindowStyle=7; $s.Description='Syntaz AI'; $s.Save()`,
   );
 }
 
@@ -497,13 +497,13 @@ function macApp(dir, extraArgs = "") {
   rmSync(app, { recursive: true, force: true });
   mkdirSync(path.join(app, "Contents", "MacOS"), { recursive: true });
   mkdirSync(path.join(app, "Contents", "Resources"), { recursive: true });
-  copyFileSync(path.join(root, "setup", "assets", "nova.icns"), path.join(app, "Contents", "Resources", "nova.icns"));
+  copyFileSync(path.join(root, "setup", "assets", "syntaz.icns"), path.join(app, "Contents", "Resources", "syntaz.icns"));
   writeFileSync(
     path.join(app, "Contents", "Info.plist"),
-    `<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0"><dict>\n<key>CFBundleName</key><string>Syntaz AI</string>\n<key>CFBundleDisplayName</key><string>Syntaz AI</string>\n<key>CFBundleIdentifier</key><string>ai.novaryn.nova</string>\n<key>CFBundleExecutable</key><string>nova</string>\n<key>CFBundleIconFile</key><string>nova</string>\n<key>CFBundlePackageType</key><string>APPL</string>\n<key>CFBundleShortVersionString</key><string>${version()}</string>\n</dict></plist>\n`,
+    `<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0"><dict>\n<key>CFBundleName</key><string>Syntaz AI</string>\n<key>CFBundleDisplayName</key><string>Syntaz AI</string>\n<key>CFBundleIdentifier</key><string>ai.novaryn.syntaz</string>\n<key>CFBundleExecutable</key><string>syntaz</string>\n<key>CFBundleIconFile</key><string>syntaz</string>\n<key>CFBundlePackageType</key><string>APPL</string>\n<key>CFBundleShortVersionString</key><string>${version()}</string>\n</dict></plist>\n`,
   );
   writeFileSync(
-    path.join(app, "Contents", "MacOS", "nova"),
+    path.join(app, "Contents", "MacOS", "syntaz"),
     `#!/bin/bash\n# Opens the Syntaz window (and starts Syntaz). Made by Syntaz's installer.\nnohup ${JSON.stringify(process.execPath)} ${JSON.stringify(appScript())} ${extraArgs} >/dev/null 2>&1 &\n`,
     { mode: 0o755 },
   );
@@ -514,7 +514,7 @@ function linuxDesktopFile(file, extraArgs = "") {
   mkdirSync(path.dirname(file), { recursive: true });
   writeFileSync(
     file,
-    `[Desktop Entry]\nType=Application\nName=Syntaz AI\nComment=Syntaz AI in Chrome's side panel\nExec="${process.execPath}" "${appScript()}" ${extraArgs}\nIcon=${path.join(root, "setup", "assets", "nova-256.png")}\nTerminal=false\nCategories=Utility;\n`,
+    `[Desktop Entry]\nType=Application\nName=Syntaz AI\nComment=Syntaz AI in Chrome's side panel\nExec="${process.execPath}" "${appScript()}" ${extraArgs}\nIcon=${path.join(root, "setup", "assets", "syntaz-256.png")}\nTerminal=false\nCategories=Utility;\n`,
     { mode: 0o755 },
   );
 }
@@ -522,45 +522,32 @@ function linuxDesktopFile(file, extraArgs = "") {
 /** Where shortcuts go (also what uninstall removes). */
 export function shortcutPaths() {
   const h = home();
-  if (mac) return { app: path.join(h, "Applications", "Syntaz AI.app"), desktop: path.join(h, "Desktop", "Syntaz AI.app"), autostart: path.join(h, "Library", "LaunchAgents", "ai.novaryn.nova.plist") };
-  if (!win) return { app: path.join(h, ".local", "share", "applications", "nova-ai.desktop"), desktop: path.join(h, "Desktop", "nova-ai.desktop"), autostart: path.join(h, ".config", "autostart", "nova-ai.desktop") };
+  if (mac) return { app: path.join(h, "Applications", "Syntaz AI.app"), desktop: path.join(h, "Desktop", "Syntaz AI.app"), autostart: path.join(h, "Library", "LaunchAgents", "ai.novaryn.syntaz.plist") };
+  if (!win) return { app: path.join(h, ".local", "share", "applications", "syntaz-ai.desktop"), desktop: path.join(h, "Desktop", "syntaz-ai.desktop"), autostart: path.join(h, ".config", "autostart", "syntaz-ai.desktop") };
   return {};
 }
 
-// Before the rename (Syntaz used to be "Nova AI"), shortcuts had the old name: an update replaces them.
-const LEGACY_NAME = "Nova AI";
-
-/** Was starting with the computer switched on (under the old or the new name)? An update keeps it. */
+/** Was starting with the computer switched on? An update keeps it. */
 function autostartWasOn() {
-  if (win) return powershell(`$f=[Environment]::GetFolderPath('Startup'); if ((Test-Path (Join-Path $f 'Syntaz AI.lnk')) -or (Test-Path (Join-Path $f '${LEGACY_NAME}.lnk'))) { exit 0 } else { exit 1 }`);
+  if (win) return powershell(`$f=[Environment]::GetFolderPath('Startup'); if (Test-Path (Join-Path $f 'Syntaz AI.lnk')) { exit 0 } else { exit 1 }`);
   return existsSync(shortcutPaths().autostart);
-}
-
-/** Removes shortcuts that still have the old name (Nova AI). */
-function removeLegacyShortcuts() {
-  if (win) {
-    powershell(`foreach ($f in 'Desktop','Programs','Startup') { $p = Join-Path ([Environment]::GetFolderPath($f)) '${LEGACY_NAME}.lnk'; if (Test-Path $p) { Remove-Item -Force $p } }`);
-  } else if (mac) {
-    for (const dir of [path.join(home(), "Applications"), path.join(home(), "Desktop")]) rmSync(path.join(dir, `${LEGACY_NAME}.app`), { recursive: true, force: true });
-  }
 }
 
 /** Desktop + Start menu / Applications shortcut with the Syntaz logo, and optionally start with the computer. */
 export function createShortcuts({ autostart }) {
   const done = [];
   autostart = autostart || autostartWasOn(); // an update never switches it off
-  removeLegacyShortcuts();
   if (win) {
     if (windowsShortcut("Desktop")) done.push("desktop");
     if (windowsShortcut("Programs")) done.push("Start menu");
     if (autostart && windowsShortcut("Startup", "-Background")) done.push("start with Windows");
     // Listed in Settings → Apps, with the Syntaz logo and an Uninstall button.
-    const key = "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\NovaAI";
+    const key = "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\SyntazAI";
     const uninstall = `"${path.join(process.env.WINDIR || "C:\\Windows", "System32", "WindowsPowerShell", "v1.0", "powershell.exe")}" -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "${path.join(root, "setup", "windows", "launch.ps1")}" -Uninstall`;
     const reg = (name, type, value) => spawnSync("reg", ["add", key, "/v", name, "/t", type, "/d", value, "/f"], { stdio: "ignore", windowsHide: true }).status === 0;
     if (
       reg("DisplayName", "REG_SZ", "Syntaz AI") &&
-      reg("DisplayIcon", "REG_SZ", path.join(root, "setup", "assets", "nova.ico")) &&
+      reg("DisplayIcon", "REG_SZ", path.join(root, "setup", "assets", "syntaz.ico")) &&
       reg("DisplayVersion", "REG_SZ", version()) &&
       reg("Publisher", "REG_SZ", "Novaryn") &&
       reg("InstallLocation", "REG_SZ", root) &&
@@ -583,7 +570,7 @@ export function createShortcuts({ autostart }) {
       const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
       writeFileSync(
         p.autostart,
-        `<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0"><dict>\n<key>Label</key><string>ai.novaryn.nova</string>\n<key>ProgramArguments</key><array><string>${esc(process.execPath)}</string><string>${esc(appScript())}</string><string>--background</string></array>\n<key>WorkingDirectory</key><string>${esc(root)}</string>\n<key>RunAtLoad</key><true/>\n</dict></plist>\n`,
+        `<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0"><dict>\n<key>Label</key><string>ai.novaryn.syntaz</string>\n<key>ProgramArguments</key><array><string>${esc(process.execPath)}</string><string>${esc(appScript())}</string><string>--background</string></array>\n<key>WorkingDirectory</key><string>${esc(root)}</string>\n<key>RunAtLoad</key><true/>\n</dict></plist>\n`,
       );
       done.push("start at login");
     }
@@ -604,26 +591,25 @@ export function createShortcuts({ autostart }) {
 
 /** Removes shortcuts, start-with-computer, the Apps entry and Syntaz's pairing code. Files stay unless asked. */
 export async function uninstall({ removeFiles }) {
-  await stopNova();
-  removeLegacyShortcuts();
+  await stopSyntaz();
   if (win) {
     powershell(
       `foreach ($f in 'Desktop','Programs','Startup') { $p = Join-Path ([Environment]::GetFolderPath($f)) 'Syntaz AI.lnk'; if (Test-Path $p) { Remove-Item -Force $p } }`,
     );
-    spawnSync("reg", ["delete", "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\NovaAI", "/f"], { stdio: "ignore", windowsHide: true });
+    spawnSync("reg", ["delete", "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\SyntazAI", "/f"], { stdio: "ignore", windowsHide: true });
   } else {
     const p = shortcutPaths();
     if (mac && existsSync(p.autostart)) spawnSync("launchctl", ["unload", p.autostart], { stdio: "ignore" });
     for (const f of [p.app, p.desktop, p.autostart]) rmSync(f, { recursive: true, force: true });
   }
-  rmSync(path.join(home(), ".config", "nova-browser"), { recursive: true, force: true }); // the pairing code
+  rmSync(path.join(home(), ".config", "syntaz-browser"), { recursive: true, force: true }); // the pairing code
   if (removeFiles && !isDevCopy()) scheduleFolderRemoval();
   return true;
 }
 
 /** Deletes the Syntaz folder after this program has exited (a running program can't delete its own folder). */
 function scheduleFolderRemoval() {
-  if (testing && !process.env.NOVA_APP_ALLOW_DELETE) return;
+  if (testing && !process.env.SYNTAZ_APP_ALLOW_DELETE) return;
   const script = win
     ? ["cmd", ["/c", `ping -n 4 127.0.0.1 >nul & rmdir /s /q "${root}"`]]
     : ["/bin/sh", ["-c", `sleep 3; rm -rf ${JSON.stringify(root)}`]];

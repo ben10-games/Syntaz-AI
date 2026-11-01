@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 test("release ZIPs: Mac gets the Mac app (executable), Windows the .bat (CRLF), no tests, all in a 'Syntaz AI' folder", () => {
-  const out = mkdtempSync(path.join(os.tmpdir(), "nova-release-"));
+  const out = mkdtempSync(path.join(os.tmpdir(), "syntaz-release-"));
   try {
     const r = spawnSync("python3", ["-I", path.join(root, "scripts", "make-release.py"), "--out", out], { cwd: root, encoding: "utf8" });
     assert.equal(r.status, 0, r.stderr);
@@ -25,10 +25,10 @@ test("release ZIPs: Mac gets the Mac app (executable), Windows the .bat (CRLF), 
     for (const entries of [mac, windows, linux]) {
       assert.ok(entries.every(([n]) => n.startsWith("Syntaz AI/")), "everything is inside the Syntaz AI folder");
       assert.ok(!entries.some(([n]) => n.startsWith("Syntaz AI/test/")), "no tests");
-      assert.ok(entries.some(([n]) => n === "Syntaz AI/setup/nova-app.mjs"));
+      assert.ok(entries.some(([n]) => n === "Syntaz AI/setup/syntaz-app.mjs"));
       assert.ok(entries.some(([n]) => n === "Syntaz AI/chrome-extension/manifest.json"));
     }
-    const launcher = mac.find(([n]) => n === "Syntaz AI/Syntaz Setup.app/Contents/MacOS/nova-setup");
+    const launcher = mac.find(([n]) => n === "Syntaz AI/Syntaz Setup.app/Contents/MacOS/syntaz-setup");
     assert.ok(launcher, "the Mac app is in the Mac download");
     assert.ok(launcher[1] & 0o100, "its launcher is executable");
     assert.equal(launcher[2], false, "with Unix line endings");

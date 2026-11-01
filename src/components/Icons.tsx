@@ -84,7 +84,7 @@ export const AlertIcon = (p: P) => (
 /** The Syntaz logo (the same drawing as src/app/icon.svg, served by Next at /icon.svg). */
 export function SyntazLogo({ className = "" }: { className?: string }) {
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src="/icon.svg" alt="" aria-hidden className={`shrink-0 rounded-[25%] shadow-md shadow-nova-700/30 ${className}`} />;
+  return <img src="/icon.svg" alt="" aria-hidden className={`shrink-0 rounded-[25%] shadow-md shadow-syntaz-700/30 ${className}`} />;
 }
 export const BoltIcon = (p: P) => (
   <svg {...base} {...p}><path d="M13 3 4 14h7l-1 7 9-11h-7z" /></svg>

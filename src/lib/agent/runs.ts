@@ -13,8 +13,8 @@ type ActiveRun = {
 
 // Kept on globalThis: in `next dev` each route can load its own copy of this module (on first use and
 // after hot reloads), and the "approve" route must see the runs the "agent" route is waiting on.
-const g = globalThis as { __novaRuns?: Map<string, ActiveRun> };
-const runs: Map<string, ActiveRun> = (g.__novaRuns ??= new Map());
+const g = globalThis as { __syntazRuns?: Map<string, ActiveRun> };
+const runs: Map<string, ActiveRun> = (g.__syntazRuns ??= new Map());
 
 export function registerRun(runId: string, owner: string) {
   runs.set(runId, { owner, pending: new Map() });

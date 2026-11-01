@@ -2,7 +2,7 @@
 """Builds the downloads for a GitHub release, one per system, from the committed project (git HEAD):
   dist/Syntaz-for-Mac.zip      Syntaz Setup.app (no Windows files)
   dist/Syntaz-for-Windows.zip  Syntaz Setup (Windows).bat (no Mac app)
-  dist/Syntaz-for-Linux.zip    for `node setup/nova-app.mjs`
+  dist/Syntaz-for-Linux.zip    for `node setup/syntaz-app.mjs`
   dist/Syntaz-Lite.html        Syntaz Lite: chat in one file, nothing to install
 Each unzips to a "Syntaz AI" folder. The names never change, so the Syntaz window's Update button and the
 README link (releases/latest/download/...) always find the newest one.
@@ -58,10 +58,6 @@ def main():
                 info.compress_type = zipfile.ZIP_DEFLATED
                 z.writestr(info, data)
         print(f"{zip_name}: {os.path.getsize(path) // 1024} KB")
-    # Downloads under the old name (Syntaz used to be "Nova AI") from earlier builds: not uploaded any more.
-    for old in ("Nova-for-Mac.zip", "Nova-for-Windows.zip", "Nova-for-Linux.zip", "Nova-Lite.html"):
-        if os.path.exists(os.path.join(out, old)):
-            os.remove(os.path.join(out, old))
     # Syntaz Lite on its own: one file, nothing to install.
     lite = next(d for n, _, d in members if n == "lite/Syntaz Lite.html")
     with open(os.path.join(out, "Syntaz-Lite.html"), "wb") as f:

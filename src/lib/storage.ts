@@ -1,8 +1,8 @@
 import { DEFAULT_SETTINGS, type Conversation, type Settings } from "./types";
 
-const KEY = "nova.conversations.v1";
-const ACTIVE_KEY = "nova.activeConversation.v1";
-const SETTINGS_KEY = "nova.settings.v1";
+const KEY = "syntaz.conversations.v1";
+const ACTIVE_KEY = "syntaz.activeConversation.v1";
+const SETTINGS_KEY = "syntaz.settings.v1";
 
 function isConversation(value: unknown): value is Conversation {
   if (!value || typeof value !== "object") return false;

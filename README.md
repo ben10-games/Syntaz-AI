@@ -2,13 +2,11 @@
 
 <img src="src/app/icon.svg" width="72" alt="Syntaz AI logo">
 
-*(Syntaz AI used to be called Nova AI.)*
-
 **An AI helper that lives in Chrome's side panel.** Ask about the page you're on, or tell it what to do — "open remix beatbox on YouTube", "fill this out", "summarize this video" — and it does it in your browser. Works on slow computers too (with Google's free Gemini AI).
 
 ## Just want to chat? Syntaz Lite — one file, nothing to install
 
-Download **[Syntaz-Lite.html](https://github.com/ben10-games/Nova-AI/releases/latest/download/Syntaz-Lite.html)** and double-click it: it opens in your browser (any computer, also Chromebooks and school laptops that can't install things). Paste a free Gemini key once ([get one here](https://aistudio.google.com/apikey)) and chat — you can add pictures (screenshots, photos of homework questions) and text files. Chats are saved in that browser only.
+Download **[Syntaz-Lite.html](https://github.com/ben10-games/Syntaz-AI/releases/latest/download/Syntaz-Lite.html)** and double-click it: it opens in your browser (any computer, also Chromebooks and school laptops that can't install things). Paste a free Gemini key once ([get one here](https://aistudio.google.com/apikey)) and chat — you can add pictures (screenshots, photos of homework questions) and text files. Chats are saved in that browser only.
 
 Syntaz Lite can only chat: it can't read or click on other websites. For that, install the full Syntaz below.
 
@@ -17,8 +15,8 @@ Syntaz Lite can only chat: it can't read or click on other websites. For that, i
 You need **Google Chrome** and a **Google account**.
 
 1. **Download** the version for your computer:
-   - **Windows:** [Syntaz-for-Windows.zip](https://github.com/ben10-games/Nova-AI/releases/latest/download/Syntaz-for-Windows.zip)
-   - **Mac:** [Syntaz-for-Mac.zip](https://github.com/ben10-games/Nova-AI/releases/latest/download/Syntaz-for-Mac.zip)
+   - **Windows:** [Syntaz-for-Windows.zip](https://github.com/ben10-games/Syntaz-AI/releases/latest/download/Syntaz-for-Windows.zip)
+   - **Mac:** [Syntaz-for-Mac.zip](https://github.com/ben10-games/Syntaz-AI/releases/latest/download/Syntaz-for-Mac.zip)
 
    Unzip it (Windows: right-click → *Extract All*; Mac: double-click) and put the **Syntaz AI** folder where you'll keep it, e.g. *Documents* — Syntaz runs from there.
 2. **Open Syntaz Setup** in that folder:
@@ -103,14 +101,14 @@ Syntaz Actions can use tools from **trusted local MCP servers** (official SDK `@
 - Discovered tools are validated (names, flat argument schemas, length limits, no extra arguments), namespaced as `mcp__<server>__<tool>`, and **every call needs your approval**. Declined actions are never re-requested in the same task.
 - Results are capped; errors, timeouts, malformed results and disconnects are reported as failures.
 
-The bundled test server `nova-test` (`mcp-servers/nova-test-server.mjs`) has harmless tools only: `text_stats`, `convert_temperature`, `add_note`, `list_notes` (notes live in memory). Enable it with `MCP_SERVERS=nova-test`.
+The bundled test server `syntaz-test` (`mcp-servers/syntaz-test-server.mjs`) has harmless tools only: `text_stats`, `convert_temperature`, `add_note`, `list_notes` (notes live in memory). Enable it with `MCP_SERVERS=syntaz-test`.
 
 ## Blender (optional)
 
 Syntaz can inspect and edit a running Blender scene through its own small, reviewed bridge instead of a third-party server, because the existing Blender MCP servers (the official Blender Lab server and the community "MCP for Blender") edit scenes by running arbitrary Python and have no socket authentication.
 
-- **Add-on** `blender-addon/nova_blender_bridge.py` (Blender 4.2+, tested on 5.2.2; standard library only): listens on **127.0.0.1 only**, requires a random **token** (written to `~/.config/nova-blender/token`, mode 600, on Start), and offers **fixed commands only — no code execution**: scene/object inspection, create primitive, transform, delete, material, light, camera, set active camera, render (PNG into a fixed temp folder, max 1920x1080). Changes are undo steps and require Object Mode.
-- **MCP server** `mcp-servers/nova-blender-server.mjs` (Node, stdio) is enabled with `MCP_SERVERS=nova-test,blender`. Inspection (`scene_info`, `object_info`) runs without approval; **every change and render needs approval**.
+- **Add-on** `blender-addon/syntaz_blender_bridge.py` (Blender 4.2+, tested on 5.2.2; standard library only): listens on **127.0.0.1 only**, requires a random **token** (written to `~/.config/syntaz-blender/token`, mode 600, on Start), and offers **fixed commands only — no code execution**: scene/object inspection, create primitive, transform, delete, material, light, camera, set active camera, render (PNG into a fixed temp folder, max 1920x1080). Changes are undo steps and require Object Mode.
+- **MCP server** `mcp-servers/syntaz-blender-server.mjs` (Node, stdio) is enabled with `MCP_SERVERS=syntaz-test,blender`. Inspection (`scene_info`, `object_info`) runs without approval; **every change and render needs approval**.
 - Arbitrary Python execution is **not available**. Approval is a confirmation step, not a sandbox.
 
 **Building whole scenes.** For requests with several objects, Syntaz uses `blender_build_scene` instead of creating objects one by one:
@@ -121,9 +119,9 @@ Syntaz can inspect and edit a running Blender scene through its own small, revie
 4. you approve the whole build once, seeing every object and every exact Blender call;
 5. it builds in order (geometry → materials → lights → camera → render), then measures the real objects in Blender against the design and reports differences. Syntaz does not look at the render image itself.
 
-Set `NOVA_DEBUG_SCENE=true` to log the model's scene specs on the server.
+Set `SYNTAZ_DEBUG_SCENE=true` to log the model's scene specs on the server.
 
-Setup: Blender → Edit → Preferences → Add-ons → ⌄ → Install from Disk → choose `blender-addon/nova_blender_bridge.py` → enable it. In the 3D View press `N` → **Syntaz** tab → **Start**. Then `npm run blender:check` should report PASS.
+Setup: Blender → Edit → Preferences → Add-ons → ⌄ → Install from Disk → choose `blender-addon/syntaz_blender_bridge.py` → enable it. In the 3D View press `N` → **Syntaz** tab → **Start**. Then `npm run blender:check` should report PASS.
 
 ## Chrome browser control (optional)
 
@@ -131,7 +129,7 @@ Syntaz can inspect and, with your approval, operate tabs in your own Chrome thro
 
 **Tools:** `browser_status`, `list_tabs`, `get_page`, `list_elements`, `read_field`, `scroll`, `look_at_page`, `video_transcript` (read-only, no approval) and `search_web`, `site_search`, `open_tab`, `navigate`, `switch_tab`, `click` (by element id or by its visible label), `type_text`, `fill_field`, `select_option`, `press_key`, `screenshot` (each needs your approval).
 
-`search_web` really searches: it opens the search engine's results page in your Chrome (default DuckDuckGo's plain HTML page, `https://html.duckduckgo.com/html/?q=`; change it with `NOVA_BROWSER_SEARCH_URL`) and reads the result links. `site_search` searches *inside* a known site and opens the best result — YouTube, Google, Wikipedia, Amazon, eBay, GitHub, Reddit, Stack Overflow, Bing, Google Maps, Spotify — so "open remix beatbox in youtube" goes straight to the video (opening a video plays it; Syntaz doesn't press Play/Pause unless you ask). `open_tab` opens a page in a new background tab and returns its text, so research tasks need fewer steps.
+`search_web` really searches: it opens the search engine's results page in your Chrome (default DuckDuckGo's plain HTML page, `https://html.duckduckgo.com/html/?q=`; change it with `SYNTAZ_BROWSER_SEARCH_URL`) and reads the result links. `site_search` searches *inside* a known site and opens the best result — YouTube, Google, Wikipedia, Amazon, eBay, GitHub, Reddit, Stack Overflow, Bing, Google Maps, Spotify — so "open remix beatbox in youtube" goes straight to the video (opening a video plays it; Syntaz doesn't press Play/Pause unless you ask). `open_tab` opens a page in a new background tab and returns its text, so research tasks need fewer steps.
 
 **Safety:**
 - the extension only connects out to `ws://127.0.0.1:9895` when you open the Syntaz panel or press Connect (not after you pressed Disconnect in this Chrome session) and must present the pairing code; Syntaz only accepts the extension's fixed id as origin;
@@ -143,7 +141,7 @@ Syntaz can inspect and, with your approval, operate tabs in your own Chrome thro
 
 ### Set up on Linux Mint
 
-1. In `.env.local` add `browser` to `MCP_SERVERS` (e.g. `MCP_SERVERS=nova-test,blender,browser`), then run `npm run dev`.
+1. In `.env.local` add `browser` to `MCP_SERVERS` (e.g. `MCP_SERVERS=syntaz-test,blender,browser`), then run `npm run dev`.
 2. In Chrome open `chrome://extensions`, switch on **Developer mode** (top right), click **Load unpacked**, and choose the `chrome-extension` folder of this project. The extension id should be `njhcnnbpmgoojpeomkogbkikggecmacm`.
 3. Click the puzzle-piece icon → pin **Syntaz AI**, then click the Syntaz icon: the **Syntaz side panel** opens on the right. **That's it:** the panel gets the pairing code from Syntaz by itself and connects the browser (the badge shows **ON**). Syntaz gives the code only to this extension, and only at `127.0.0.1`/`localhost`; it is never shown. After **Disconnect** the panel stays disconnected until you press **Connect** (or Chrome restarts). If automatic pairing can't work (e.g. basic auth is on), paste the code from `npm run browser:token` in ⚙ and press **Connect**.
 4. On a site you want Syntaz to read, press **Allow** next to "Syntaz can't read …" above the message box (or **Allow on this site** in ⚙ Settings). Chrome asks you to confirm. Press **Allow tab access** in ⚙ if Syntaz should list and switch tabs.
@@ -219,11 +217,11 @@ The README links (`releases/latest/download/...`) always give the newest release
 
 ### The website
 
-`website/` is the Syntaz AI website (Home, Features, Download, Chat, Safety, FAQ, What's new): plain HTML, no build step. Its Chat works like Syntaz Lite, in the browser with the visitor's own Gemini key. On every push to `main` that changes it, `.github/workflows/website.yml` publishes it to GitHub Pages (one-time setup: repo **Settings → Pages → Source: GitHub Actions**). Test it with `node --test test/website.test.mjs` (`NOVA_SITE_SHOTS=<folder>` saves screenshots). It isn't part of the release downloads.
+`website/` is the Syntaz AI website (Home, Features, Download, Chat, Safety, FAQ, What's new): plain HTML, no build step. Its Chat works like Syntaz Lite, in the browser with the visitor's own Gemini key. On every push to `main` that changes it, `.github/workflows/website.yml` publishes it to GitHub Pages (one-time setup: repo **Settings → Pages → Source: GitHub Actions**). Test it with `node --test test/website.test.mjs` (`SYNTAZ_SITE_SHOTS=<folder>` saves screenshots). It isn't part of the release downloads.
 
 ### Comparing models (benchmark)
 
-`npm run benchmark` runs realistic tasks with the model loaded in LM Studio, in a separate headless Chrome on local test pages (your running Syntaz and Chrome are not touched), and checks the real pages: `npm run benchmark -- browser math vision --runs 2 --verbose`. It needs a production build (`NOVA_NEXT_DIST_DIR=.next-test npm run build` while `npm run dev` is running, then the same variable for the benchmark).
+`npm run benchmark` runs realistic tasks with the model loaded in LM Studio, in a separate headless Chrome on local test pages (your running Syntaz and Chrome are not touched), and checks the real pages: `npm run benchmark -- browser math vision --runs 2 --verbose`. It needs a production build (`SYNTAZ_NEXT_DIST_DIR=.next-test npm run build` while `npm run dev` is running, then the same variable for the benchmark).
 
 ### Making the local model faster (LM Studio)
 
@@ -234,7 +232,7 @@ Each Syntaz step sends the model about 3,000 tokens; how fast it *reads* them de
 - 32768 does **not** fit on 8 GB (tested: loading crashed with out of memory even at 50% offload). 8192 with ~70% offload is the fastest option if you prefer speed.
 - At full GPU offload qwen3-vl doesn't load ("out of memory"), because its vision part needs ~1.1 GB more.
 
-To measure, start Syntaz with `NOVA_DEBUG_LLM=true` and watch for lines like `[agent] model call 9100 ms, prompt 2745 tokens, answer 83 tokens`.
+To measure, start Syntaz with `SYNTAZ_DEBUG_LLM=true` and watch for lines like `[agent] model call 9100 ms, prompt 2745 tokens, answer 83 tokens`.
 
 ### Reloading after an update (Linux Mint)
 
@@ -251,7 +249,7 @@ If the side panel shows *Syntaz isn't running*, start it (`npm run dev`) and pre
 npm run lint          # TypeScript type-check
 npm run build         # production build
 npm test              # all integration tests with a mock model (needs the build)
-NOVA_TEST_CHROME_BIN=/usr/bin/google-chrome npm test   # also run the real-Chrome extension + side panel tests
+SYNTAZ_TEST_CHROME_BIN=/usr/bin/google-chrome npm test   # also run the real-Chrome extension + side panel tests
 npm run start:local   # production server on http://127.0.0.1:3000 (uses .env.local)
 npm run test:smoke    # in a second terminal: checks the running app with your real provider
 ```
@@ -259,8 +257,8 @@ npm run test:smoke    # in a second terminal: checks the running app with your r
 While `npm run dev` is running it owns the `.next` folder, so build and test in a separate folder instead (it is git-ignored):
 
 ```bash
-NOVA_NEXT_DIST_DIR=.next-test npm run build
-NOVA_NEXT_DIST_DIR=.next-test NOVA_TEST_CHROME_BIN=/usr/bin/google-chrome npm test
+SYNTAZ_NEXT_DIST_DIR=.next-test npm run build
+SYNTAZ_NEXT_DIST_DIR=.next-test SYNTAZ_TEST_CHROME_BIN=/usr/bin/google-chrome npm test
 ```
 
 `npm run dev` and `npm run start:local` bind to `127.0.0.1` only. `npm start` uses the host's `PORT` and binds to all interfaces, which is what hosting platforms expect.

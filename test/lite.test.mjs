@@ -11,7 +11,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const CHROME = process.env.NOVA_TEST_CHROME_BIN;
+const CHROME = process.env.SYNTAZ_TEST_CHROME_BIN;
 const GOOD = "AQ.LiteTestKey_abcdefghijklmnopqrstuvwxyz0123";
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -22,7 +22,7 @@ let next = []; // scripted answers for streamGenerateContent: { status, body } o
 const sse = (chunks) => chunks.map((t) => `data: ${JSON.stringify({ candidates: [{ content: { role: "model", parts: [{ text: t }] } }] })}\r\n\r\n`).join("");
 
 before(async () => {
-  tmp = mkdtempSync(path.join(os.tmpdir(), "nova-lite-test-"));
+  tmp = mkdtempSync(path.join(os.tmpdir(), "syntaz-lite-test-"));
   spawnSync("openssl", ["req", "-x509", "-newkey", "rsa:2048", "-nodes", "-keyout", path.join(tmp, "k.pem"), "-out", path.join(tmp, "c.pem"), "-days", "1", "-subj", "/CN=generativelanguage.googleapis.com"], { stdio: "ignore" });
   server = https.createServer({ key: readFileSync(path.join(tmp, "k.pem")), cert: readFileSync(path.join(tmp, "c.pem")) }, (req, res) => {
     const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "content-type,x-goog-api-key", "Access-Control-Allow-Methods": "GET,POST" };
@@ -157,7 +157,7 @@ test("chats are saved in the browser (without the pictures) and can be reopened 
   await page.click("#chatList .open");
   await waitFor(async () => /A black square\./.test(await page.$eval("#list", (l) => l.innerText)));
   assert.match(await page.$eval("#list", (l) => l.innerText), /1 picture\(s\) \(not saved\)/);
-  const stored = await page.evaluate(() => localStorage.getItem("nova-lite:chats"));
+  const stored = await page.evaluate(() => localStorage.getItem("syntaz-lite:chats"));
   assert.ok(!stored.includes("base64") && stored.length < 5_000, "no picture data in storage");
   await page.click("#chatList .chat button.icon");
   assert.equal(await page.$$eval("#chatList .open", (b) => b.length), 0);

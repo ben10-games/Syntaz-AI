@@ -6,7 +6,7 @@
 // (only on sites Syntaz may read). The snapshot is sent to Syntaz only with a message the
 // user sends, marked as untrusted, and only the newest page text stays in the history.
 
-const DEFAULT_NOVA_URL = "http://127.0.0.1:3000";
+const DEFAULT_SYNTAZ_URL = "http://127.0.0.1:3000";
 const $ = (id) => document.getElementById(id);
 
 const ui = {
@@ -33,7 +33,7 @@ const ui = {
   shortcuts: [], // the user's own /shortcuts
   stats: { snapshots: 0, notifications: 0 },
 };
-window.__novaPanelStats = ui.stats; // read by the automated tests
+window.__syntazPanelStats = ui.stats; // read by the automated tests
 
 class UiError extends Error {}
 
@@ -50,8 +50,8 @@ function loopbackUrl(raw) {
 }
 
 async function settings() {
-  const { token = "", novaUrl = DEFAULT_NOVA_URL } = await chrome.storage.local.get(["token", "novaUrl"]);
-  return { token, novaUrl };
+  const { token = "", syntazUrl = DEFAULT_SYNTAZ_URL } = await chrome.storage.local.get(["token", "syntazUrl"]);
+  return { token, syntazUrl };
 }
 
 /**
@@ -59,10 +59,10 @@ async function settings() {
  * then the browser bridge connects. No code to copy. Returns true when a code is saved.
  */
 async function autoPair({ force = false } = {}) {
-  const { token, novaUrl } = await settings();
+  const { token, syntazUrl } = await settings();
   if (!force && /^[0-9a-f]{64}$/.test(token)) return true;
   try {
-    const res = await fetch(`${loopbackUrl(novaUrl)}/api/pair`);
+    const res = await fetch(`${loopbackUrl(syntazUrl)}/api/pair`);
     if (!res.ok) return false;
     const data = await res.json();
     if (!data || typeof data.token !== "string" || !/^[0-9a-f]{64}$/.test(data.token)) return false;
@@ -76,20 +76,20 @@ async function autoPair({ force = false } = {}) {
 }
 
 /** fetch() to Syntaz with the pairing code. The code is never shown or logged. */
-async function nova(path, init = {}, retried = false) {
+async function syntaz(path, init = {}, retried = false) {
   if (!(await autoPair())) {
     throw new UiError("Syntaz isn't running on this computer. Start it (npm run dev), then press Retry.");
   }
-  const { token, novaUrl } = await settings();
+  const { token, syntazUrl } = await settings();
   let res;
   try {
-    res = await fetch(`${loopbackUrl(novaUrl)}${path}`, { ...init, headers: { ...(init.headers || {}), Authorization: `Bearer ${token}` } });
+    res = await fetch(`${loopbackUrl(syntazUrl)}${path}`, { ...init, headers: { ...(init.headers || {}), Authorization: `Bearer ${token}` } });
   } catch (err) {
     if (init.signal && init.signal.aborted) throw err;
-    throw new UiError(`Syntaz isn't running at ${novaUrl}. Start it (npm run dev), then press Retry.`);
+    throw new UiError(`Syntaz isn't running at ${syntazUrl}. Start it (npm run dev), then press Retry.`);
   }
   // An old code (e.g. Syntaz's was renewed): fetch the current one once and try again.
-  if (res.status === 401 && !retried && (await autoPair({ force: true }))) return nova(path, init, true);
+  if (res.status === 401 && !retried && (await autoPair({ force: true }))) return syntaz(path, init, true);
   if (!res.ok) {
     let message = `Syntaz returned HTTP ${res.status}.`;
     try {
@@ -213,11 +213,11 @@ async function activeTab() {
 
 /** Runs in the page's isolated world, using the extension's own page-lib.js. */
 function readPage(maxChars) {
-  return window.__nova.lib.readable(maxChars);
+  return window.__syntaz.lib.readable(maxChars);
 }
 
 function readVideoWords(maxChars) {
-  return window.__nova.lib.videoTranscript(maxChars);
+  return window.__syntaz.lib.videoTranscript(maxChars);
 }
 
 // Chat questions about what a video says get its transcript (YouTube's, as shown on the page).
@@ -408,7 +408,7 @@ function withPageContext(text, s) {
 }
 
 /** History for /api/chat: only the newest page text is kept; older pages shrink to one line. */
-function historyForNova() {
+function historyForSyntaz() {
   let lastFull = -1;
   ui.messages.forEach((m, i) => m.pageText && (lastFull = i));
   return ui.messages.map((m, i) =>
@@ -448,11 +448,11 @@ async function sendChat(text, snap, missing, shot, words = null) {
   setBusy(controller);
   let answer = "";
   try {
-    const res = await nova("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: historyForNova(), ...(ui.model ? { options: { model: ui.model } } : {}) }), signal: controller.signal });
+    const res = await syntaz("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: historyForSyntaz(), ...(ui.model ? { options: { model: ui.model } } : {}) }), signal: controller.signal });
     for await (const e of ndjson(res)) {
       if (e.type === "delta") {
         answer += e.text;
-        follow(() => NovaMarkdown.render(body, answer));
+        follow(() => SyntazMarkdown.render(body, answer));
       } else if (e.type === "meta") $("model").textContent = e.model;
       else if (e.type === "error") throw new UiError(e.message);
     }
@@ -469,7 +469,7 @@ async function sendChat(text, snap, missing, shot, words = null) {
       body.querySelector(".typing")?.remove();
       body.append(el("div", "err", err instanceof UiError ? err.message : `Error: ${err.message}`), retryButton(text));
       ui.messages.pop(); // the failed turn is not kept in the history sent to Syntaz
-      refreshNova();
+      refreshSyntaz();
     }
   } finally {
     setBusy(null);
@@ -482,7 +482,7 @@ const scrollIfFollowing = () => nearBottom() && scrollDown();
 // Actions: /api/agent with plan, steps and approval cards
 // ---------------------------------------------------------------------------
 
-const TASK_START = /^\s*(?:(?:please|pls|nova|hey nova)[,!]?\s+)?(?:(?:can|could|would) you\s+(?:please\s+)?)?(?:open|go to|goto|navigate|visit|browse|search|google|look up|lookup|find|locate|click|press|tap|fill|type|enter|select|choose|scroll|download|sign up|log ?in|bookmark|compare|switch to|show me (?:the )?(?:page|site|link)|take a screenshot|screenshot|finish|complete|continue|do (?:this|it|that|my|the)|handle|take care of|play|watch|listen to|put on|start|take me to|bring up|pull up|look for|check out|answer (?:the|this|it|that|these|my)|submit|solve)\b/i;
+const TASK_START = /^\s*(?:(?:please|pls|syntaz|hey syntaz)[,!]?\s+)?(?:(?:can|could|would) you\s+(?:please\s+)?)?(?:open|go to|goto|navigate|visit|browse|search|google|look up|lookup|find|locate|click|press|tap|fill|type|enter|select|choose|scroll|download|sign up|log ?in|bookmark|compare|switch to|show me (?:the )?(?:page|site|link)|take a screenshot|screenshot|finish|complete|continue|do (?:this|it|that|my|the)|handle|take care of|play|watch|listen to|put on|start|take me to|bring up|pull up|look for|check out|answer (?:the|this|it|that|these|my)|submit|solve)\b/i;
 const TASK_ANYWHERE = /\b(?:search the web|web search|search (?:google|wikipedia|online)|on the web|(?:on|in|from) (?:youtube|google|wikipedia|amazon|ebay|github|reddit|stack ?overflow|bing|google maps|spotify)|for me[.!]*$|(?:and|then) (?:click )?(?:submit|check) (?:it|this|that|the answers?|my answers?)?|click (?:the )?(?:submit|check)|in (?:a )?new tabs?|in separate tabs|open (?:these|those|the) (?:\w+ )?links?|(?:enter|type|fill in|fill|put|write|input) (?:in |it |that |this )?(?:the |my |your |this |that )?(?:answers?|results?|solution|number)(?! (?:is|was|means))|(?:into|in) (?:the |this |that )?(?:answer )?(?:field|box|input|blank)s?)\b/i;
 /** Auto mode: requests to DO something use the tools; questions are answered directly. */
 const looksLikeTask = (text) => TASK_START.test(text) || TASK_ANYWHERE.test(text);
@@ -496,7 +496,7 @@ async function sendImage(text) {
   const controller = new AbortController();
   setBusy(controller);
   try {
-    const res = await nova("/api/image", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt: text }), signal: controller.signal });
+    const res = await syntaz("/api/image", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt: text }), signal: controller.signal });
     const data = await res.json();
     if (!data || typeof data.image !== "string" || !/^data:image\/(png|jpeg|webp|gif);base64,/.test(data.image)) throw new UiError("Syntaz didn't get a picture back.");
     const img = Object.assign(document.createElement("img"), { className: "made", src: data.image, alt: `Picture: ${text.slice(0, 120)}` });
@@ -678,7 +678,7 @@ async function sendAction(text, snap, missing, auto) {
     state.className = `runstate ${cls}`;
   };
   try {
-    const res = await nova("/api/agent", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ goal, expectTools: true, focus: "browser", handsOff: ui.actFreely, ...(ui.model ? { model: ui.model } : {}) }), signal: controller.signal });
+    const res = await syntaz("/api/agent", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ goal, expectTools: true, focus: "browser", handsOff: ui.actFreely, ...(ui.model ? { model: ui.model } : {}) }), signal: controller.signal });
     for await (const e of ndjson(res)) {
       follow(() => {
         if (!started) {
@@ -739,7 +739,7 @@ async function sendAction(text, snap, missing, auto) {
           run.append(el("div", "note", e.message));
         } else if (e.type === "final") {
           const answer = el("div");
-          NovaMarkdown.render(answer, e.answer);
+          SyntazMarkdown.render(answer, e.answer);
           finalText = e.answer;
           run.append(answer);
         } else if (e.type === "error") {
@@ -768,7 +768,7 @@ async function sendAction(text, snap, missing, auto) {
     else {
       setState("Failed", "failed");
       run.append(el("div", "err", err instanceof UiError ? err.message : `Error: ${err.message}`), retryButton(text));
-      refreshNova();
+      refreshSyntaz();
     }
   } finally {
     ui.live = null;
@@ -869,7 +869,7 @@ function approvalCard(e, runId, call, steps) {
     // The extension may report progress before Syntaz's "approved" event arrives: follow this step from now on.
     if (approved && ui.liveFor.has(e.callId)) ui.live = ui.liveFor.get(e.callId);
     try {
-      await nova("/api/agent/approve", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ runId, callId: e.callId, approved }) });
+      await syntaz("/api/agent/approve", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ runId, callId: e.callId, approved }) });
       card.replaceChildren(el("div", "note", `${approved ? "Allowed" : "Denied"} ${how}: ${what}`));
       if (how.includes("hands-off")) {
         const off = el("button", "link", "Turn off hands-off");
@@ -943,26 +943,26 @@ function banner(text, actionLabel, action) {
   $("bannerAction").onclick = action || null;
 }
 
-async function refreshNova() {
+async function refreshSyntaz() {
   try {
-    const res = await nova("/api/status");
+    const res = await syntaz("/api/status");
     const s = await res.json();
-    $("novaDot").className = `dot ${s.model ? "ok" : "warn"}`;
-    $("novaStatus").textContent = s.model ? "Syntaz ready" : "No model";
-    $("novaStat").title = s.model ? `Model: ${s.model}` : s.warning || "No model is loaded.";
+    $("syntazDot").className = `dot ${s.model ? "ok" : "warn"}`;
+    $("syntazStatus").textContent = s.model ? "Syntaz ready" : "No model";
+    $("syntazStat").title = s.model ? `Model: ${s.model}` : s.warning || "No model is loaded.";
     if (s.model && !ui.controller) $("model").textContent = ui.model || s.model;
     if (s.contextLength) ui.ctxChars = Math.max(2000, Math.min(24000, Math.round(s.contextLength * 3 * 0.3)));
     ui.searchOrigin = s.browser && s.browser.searchOrigin ? s.browser.searchOrigin : null;
     ui.images = s.images && typeof s.images === "object" ? s.images : { available: false, reason: "" };
     fillModels(s);
-    banner(s.model ? "" : s.warning || "Syntaz is running but no model is loaded in LM Studio.", "Retry", refreshNova);
+    banner(s.model ? "" : s.warning || "Syntaz is running but no model is loaded in LM Studio.", "Retry", refreshSyntaz);
   } catch (err) {
     const msg = err instanceof UiError ? err.message : "Syntaz is unreachable.";
-    $("novaDot").className = "dot bad";
-    $("novaStatus").textContent = /Not paired|not paired/.test(msg) ? "Not paired" : "Syntaz offline";
-    $("novaStat").title = msg;
+    $("syntazDot").className = "dot bad";
+    $("syntazStatus").textContent = /Not paired|not paired/.test(msg) ? "Not paired" : "Syntaz offline";
+    $("syntazStat").title = msg;
     if (/Not paired|not paired|browser:token/.test(msg)) banner(msg, "Open settings", () => openSettings(true));
-    else banner(msg, "Retry", refreshNova);
+    else banner(msg, "Retry", refreshSyntaz);
   }
 }
 
@@ -1066,7 +1066,7 @@ function openSettings(open) {
   if (open && !$("historyDrawer").hidden) openHistory(false);
   $("settings").hidden = !open;
   $("toggleSettings").setAttribute("aria-expanded", String(open));
-  if (open) $("novaUrl").focus();
+  if (open) $("syntazUrl").focus();
   else $("input").focus();
 }
 
@@ -1077,7 +1077,7 @@ async function setAuto(on) {
   if (!on) {
     ui.ctx.snap = null;
     // Tell the watcher in the current tab to stop.
-    if (ui.tabId !== null) chrome.scripting.executeScript({ target: { tabId: ui.tabId }, func: () => window.__novaWatch && window.__novaWatch.stop() }).catch(() => {});
+    if (ui.tabId !== null) chrome.scripting.executeScript({ target: { tabId: ui.tabId }, func: () => window.__syntazWatch && window.__syntazWatch.stop() }).catch(() => {});
   }
   scheduleContext(0);
 }
@@ -1246,7 +1246,7 @@ function openChat(c) {
     if (m.role === "user") addUserBubble(m.text, "");
     else {
       const { body } = addAssistantBubble();
-      NovaMarkdown.render(body, m.text || "(no answer)");
+      SyntazMarkdown.render(body, m.text || "(no answer)");
     }
   }
   openHistory(false);
@@ -1311,17 +1311,17 @@ $("cursorToggle").onchange = () => chrome.storage.local.set({ cursor: $("cursorT
 $("modelSelect").onchange = async () => {
   ui.model = $("modelSelect").value;
   await chrome.storage.local.set({ model: ui.model });
-  refreshNova();
+  refreshSyntaz();
 };
-$("saveNovaUrl").onclick = async () => {
-  $("novaUrlError").textContent = "";
+$("saveSyntazUrl").onclick = async () => {
+  $("syntazUrlError").textContent = "";
   try {
-    const origin = loopbackUrl($("novaUrl").value.trim());
-    await chrome.storage.local.set({ novaUrl: origin });
-    $("novaUrl").value = origin;
-    refreshNova();
+    const origin = loopbackUrl($("syntazUrl").value.trim());
+    await chrome.storage.local.set({ syntazUrl: origin });
+    $("syntazUrl").value = origin;
+    refreshSyntaz();
   } catch (err) {
-    $("novaUrlError").textContent = err instanceof UiError ? err.message : "That is not a valid address.";
+    $("syntazUrlError").textContent = err instanceof UiError ? err.message : "That is not a valid address.";
   }
 };
 
@@ -1363,11 +1363,11 @@ function onProgress(msg) {
 }
 
 chrome.runtime.onMessage.addListener((msg, sender, reply) => {
-  if (msg && msg.type === "nova_action_progress" && !sender.tab && sender.id === chrome.runtime.id) {
+  if (msg && msg.type === "syntaz_action_progress" && !sender.tab && sender.id === chrome.runtime.id) {
     onProgress(msg);
     return false;
   }
-  if (!msg || msg.type !== "nova_page_changed" || !sender.tab || sender.id !== chrome.runtime.id) return false;
+  if (!msg || msg.type !== "syntaz_page_changed" || !sender.tab || sender.id !== chrome.runtime.id) return false;
   const watching = ui.auto && sender.tab.id === ui.tabId;
   if (watching) {
     ui.stats.notifications++;
@@ -1396,10 +1396,10 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
   ui.model = typeof stored.model === "string" ? stored.model : "";
   ui.auto = stored.autoContext !== false;
   $("autoContext").checked = ui.auto;
-  $("novaUrl").value = (await settings()).novaUrl;
+  $("syntazUrl").value = (await settings()).syntazUrl;
   setMode("auto");
   setCtx({ state: "loading", text: "Looking at this tab…" });
-  await refreshNova();
+  await refreshSyntaz();
   // Opening the panel connects the browser bridge (unless you pressed Disconnect in this Chrome session).
   const bridge = await chrome.runtime.sendMessage({ cmd: "state" }).catch(() => null);
   if (bridge && bridge.status === "disconnected" && !bridge.userOff && (await autoPair())) {
@@ -1407,7 +1407,7 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
   }
   refreshContext();
   refreshBridge();
-  setInterval(refreshNova, 15_000);
+  setInterval(refreshSyntaz, 15_000);
   setInterval(refreshBridge, 2_000);
   takePendingAsk();
   $("input").focus();

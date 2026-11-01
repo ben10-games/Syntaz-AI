@@ -18,7 +18,7 @@ const csp = [
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Normally ".next". Tests can build or run a second dev server in another folder (e.g. ".next-devtest").
-  distDir: /^\.next-[a-z0-9-]+$/.test(process.env.NOVA_NEXT_DIST_DIR ?? "") ? process.env.NOVA_NEXT_DIST_DIR : ".next",
+  distDir: /^\.next-[a-z0-9-]+$/.test(process.env.SYNTAZ_NEXT_DIST_DIR ?? "") ? process.env.SYNTAZ_NEXT_DIST_DIR : ".next",
   reactStrictMode: true,
   poweredByHeader: false,
   // Hide the floating Next.js "N" dev-tools button shown during `npm run dev`.

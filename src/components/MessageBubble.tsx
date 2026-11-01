@@ -24,7 +24,7 @@ function TypingDots() {
       {[0, 1, 2].map((i) => (
         <span
           key={i}
-          className="h-1.5 w-1.5 animate-blink rounded-full bg-nova-300"
+          className="h-1.5 w-1.5 animate-blink rounded-full bg-syntaz-300"
           style={{ animationDelay: `${i * 0.16}s` }}
         />
       ))}
@@ -53,7 +53,7 @@ function MessageBubble({ message, streaming, isLast, canRegenerate, onRegenerate
     return (
       <div className="flex animate-fade-in-up flex-col items-end gap-2">
         {message.kind === "action" && (
-          <span className="flex items-center gap-1 text-[11px] font-medium uppercase tracking-wider text-nova-300">
+          <span className="flex items-center gap-1 text-[11px] font-medium uppercase tracking-wider text-syntaz-300">
             <BoltIcon width={12} height={12} /> Goal
           </span>
         )}
@@ -64,7 +64,7 @@ function MessageBubble({ message, streaming, isLast, canRegenerate, onRegenerate
                 key={a.id}
                 className="flex items-center gap-2 rounded-xl border border-ink-700 bg-ink-850 px-3 py-2 text-xs"
               >
-                <FileIcon width={15} height={15} className="shrink-0 text-nova-300" />
+                <FileIcon width={15} height={15} className="shrink-0 text-syntaz-300" />
                 <span className="max-w-[180px] truncate font-medium text-zinc-200">{a.name}</span>
                 <span className="text-zinc-400">{formatBytes(a.size)}</span>
               </li>
@@ -109,8 +109,8 @@ function MessageBubble({ message, streaming, isLast, canRegenerate, onRegenerate
             <p className="text-sm italic text-zinc-400">{message.stopped ? "Stopped before any output." : "No response."}</p>
           ) : (
             <div
-              className={`nova-prose prose prose-invert max-w-none break-words text-[15px] leading-relaxed prose-headings:font-semibold prose-headings:text-zinc-50 prose-p:leading-relaxed prose-a:text-nova-300 prose-strong:text-zinc-50 prose-code:text-zinc-100 prose-pre:my-0 prose-li:my-0.5 prose-th:text-zinc-200 ${
-                streaming ? "nova-caret" : ""
+              className={`syntaz-prose prose prose-invert max-w-none break-words text-[15px] leading-relaxed prose-headings:font-semibold prose-headings:text-zinc-50 prose-p:leading-relaxed prose-a:text-syntaz-300 prose-strong:text-zinc-50 prose-code:text-zinc-100 prose-pre:my-0 prose-li:my-0.5 prose-th:text-zinc-200 ${
+                streaming ? "syntaz-caret" : ""
               }`}
             >
               <Markdown content={message.content} />

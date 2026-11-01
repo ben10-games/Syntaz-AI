@@ -4,7 +4,7 @@ import { existsSync, readFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-const file = process.env.NOVA_BROWSER_TOKEN_FILE ?? path.join(os.homedir(), ".config", "nova-browser", "token");
+const file = process.env.SYNTAZ_BROWSER_TOKEN_FILE ?? path.join(os.homedir(), ".config", "syntaz-browser", "token");
 if (!existsSync(file)) {
   console.error("No pairing code yet. Add browser to MCP_SERVERS in .env.local, start Syntaz (npm run dev), open it in the browser once, then run this again.");
   process.exit(1);

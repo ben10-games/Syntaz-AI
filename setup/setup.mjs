@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Syntaz setup in a terminal (Linux, or anyone who prefers text). Most people use the Syntaz window instead:
-// "Syntaz Setup (Windows).bat", "Syntaz Setup.app" (Mac) or `node setup/nova-app.mjs`.
+// "Syntaz Setup (Windows).bat", "Syntaz Setup.app" (Mac) or `node setup/syntaz-app.mjs`.
 // 1. Choose the AI: free Google Gemini (any PC) or LM Studio on this PC (strong GPU).
 // 2. Check it works, write .env.local (stays on this PC, never uploaded).
 // 3. Install and build Syntaz, then add the Syntaz shortcuts.
@@ -144,7 +144,7 @@ async function main() {
   const made = lib.createShortcuts({ autostart: auto !== "n" && auto !== "no" });
   rl.close();
   if (made.length) say(`✔ Syntaz AI added: ${made.join(", ")}.`);
-  say(lib.isInstalled() && (await lib.startNova()) ? "✔ Syntaz is running." : "Start Syntaz from the Syntaz AI shortcut.");
+  say(lib.isInstalled() && (await lib.startSyntaz()) ? "✔ Syntaz is running." : "Start Syntaz from the Syntaz AI shortcut.");
   say("\nLast step, once: in Chrome open chrome://extensions, turn on Developer mode, click Load unpacked and choose:");
   say(`  ${path.join(lib.root, "chrome-extension")}`);
   say("Then click the puzzle icon → pin Syntaz AI. Syntaz connects by itself.");

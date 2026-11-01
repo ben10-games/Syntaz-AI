@@ -6,10 +6,10 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 export const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-// The production build to test: ".next", or another folder via NOVA_NEXT_DIST_DIR (e.g. while `npm run dev` uses .next).
-export const distDir = /^\.next-[a-z0-9-]+$/.test(process.env.NOVA_NEXT_DIST_DIR ?? "") ? process.env.NOVA_NEXT_DIST_DIR : ".next";
+// The production build to test: ".next", or another folder via SYNTAZ_NEXT_DIST_DIR (e.g. while `npm run dev` uses .next).
+export const distDir = /^\.next-[a-z0-9-]+$/.test(process.env.SYNTAZ_NEXT_DIST_DIR ?? "") ? process.env.SYNTAZ_NEXT_DIST_DIR : ".next";
 if (!existsSync(path.join(root, distDir, "BUILD_ID"))) {
-  throw new Error(`No production build found in ${distDir}. Run \`npm run build\` (with the same NOVA_NEXT_DIST_DIR) before \`npm test\`.`);
+  throw new Error(`No production build found in ${distDir}. Run \`npm run build\` (with the same SYNTAZ_NEXT_DIST_DIR) before \`npm test\`.`);
 }
 
 export const freePort = () =>

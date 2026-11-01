@@ -2,9 +2,9 @@
 // The Syntaz window: install, start/stop, change the AI, update and uninstall Syntaz, with buttons instead of a
 // command prompt. A small server on this computer only (127.0.0.1, random port, random secret per launch)
 // shows setup/app/index.html in a Chrome/Edge app window with the Syntaz logo.
-//   node setup/nova-app.mjs               open the Syntaz window (and start Syntaz if it's installed)
-//   node setup/nova-app.mjs --background  just start Syntaz (used when the computer starts)
-//   node setup/nova-app.mjs --uninstall   open the window on the uninstall page
+//   node setup/syntaz-app.mjs               open the Syntaz window (and start Syntaz if it's installed)
+//   node setup/syntaz-app.mjs --background  just start Syntaz (used when the computer starts)
+//   node setup/syntaz-app.mjs --uninstall   open the window on the uninstall page
 import { spawn } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -15,10 +15,10 @@ import * as lib from "./lib.mjs";
 
 const args = new Set(process.argv.slice(2));
 const page = path.join(lib.root, "setup", "app", "index.html");
-const FILES = { "/nova.png": [path.join(lib.root, "setup", "assets", "nova-256.png"), "image/png"], "/favicon.ico": [path.join(lib.root, "setup", "assets", "nova.ico"), "image/x-icon"] };
+const FILES = { "/syntaz.png": [path.join(lib.root, "setup", "assets", "syntaz-256.png"), "image/png"], "/favicon.ico": [path.join(lib.root, "setup", "assets", "syntaz.ico"), "image/x-icon"] };
 
 if (args.has("--background")) {
-  await lib.startNova();
+  await lib.startSyntaz();
   process.exit(0);
 }
 
@@ -87,7 +87,7 @@ async function api(route, body) {
         next(3);
         lib.createShortcuts({ autostart: body.autostart !== false }).forEach((s) => note(s));
         next(4);
-        if (!(await lib.startNova())) return "Syntaz was installed but didn't start. Click Start Syntaz.";
+        if (!(await lib.startSyntaz())) return "Syntaz was installed but didn't start. Click Start Syntaz.";
         next(5);
         return null;
       });
@@ -95,17 +95,17 @@ async function api(route, body) {
     case "change-ai":
       if (!pending) return { ok: false, error: "Check the AI first." };
       lib.writeEnv(pending);
-      await lib.stopNova();
-      return { ok: await lib.startNova() };
+      await lib.stopSyntaz();
+      return { ok: await lib.startSyntaz() };
     case "start":
-      return { ok: await lib.startNova() };
+      return { ok: await lib.startSyntaz() };
     case "stop":
-      return { ok: await lib.stopNova() };
+      return { ok: await lib.stopSyntaz() };
     case "update":
       if (job?.status === "running") return { ok: false, error: "Syntaz is busy. Wait for it to finish." };
       if (lib.isDevCopy()) return { ok: false, error: "This is a developer copy: update it with git pull." };
       startJob("update", ["Stopping Syntaz", "Downloading the newest Syntaz", "Downloading Syntaz's parts", "Building Syntaz", "Starting Syntaz"], async ({ log, next }) => {
-        await lib.stopNova();
+        await lib.stopSyntaz();
         next(1);
         const d = await lib.downloadUpdate(log);
         if (!d.ok) return d.error;
@@ -115,7 +115,7 @@ async function api(route, body) {
         if (!(await lib.build(log))) return "Building Syntaz failed. Try updating again.";
         lib.createShortcuts({ autostart: false });
         next(4);
-        if (!(await lib.startNova())) return "Syntaz was updated but didn't start. Click Start Syntaz.";
+        if (!(await lib.startSyntaz())) return "Syntaz was updated but didn't start. Click Start Syntaz.";
         next(5);
         return null;
       });
@@ -182,16 +182,16 @@ const address = `http://127.0.0.1:${server.address().port}/#${secret}`;
 mkdirSync(lib.dataDir, { recursive: true });
 writeFileSync(path.join(lib.dataDir, "window.json"), JSON.stringify({ pid: process.pid }));
 
-if (lib.isInstalled()) lib.startNova(); // opening Syntaz's window also starts Syntaz
+if (lib.isInstalled()) lib.startSyntaz(); // opening Syntaz's window also starts Syntaz
 
 if (lib.testing) {
-  process.stdout.write(`NOVA_APP_URL=${address}\n`);
+  process.stdout.write(`SYNTAZ_APP_URL=${address}\n`);
 } else {
   const browser = lib.findBrowser();
   if (browser) {
     // Its own small window (no tabs or address bar), with a separate profile so it never touches your Chrome
     // (kept outside the Syntaz folder, so uninstalling can delete that folder while the window is open).
-    spawn(browser, [`--app=${address}`, `--user-data-dir=${path.join(os.tmpdir(), "nova-ai-window")}`, "--no-first-run", "--no-default-browser-check", "--window-size=760,720"], { detached: true, stdio: "ignore" }).unref();
+    spawn(browser, [`--app=${address}`, `--user-data-dir=${path.join(os.tmpdir(), "syntaz-ai-window")}`, "--no-first-run", "--no-default-browser-check", "--window-size=760,720"], { detached: true, stdio: "ignore" }).unref();
   } else lib.open(address);
 }
 

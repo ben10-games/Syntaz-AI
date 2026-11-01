@@ -131,5 +131,5 @@
     flush();
   }
 
-  window.NovaMarkdown = { render };
+  window.SyntazMarkdown = { render };
 })();

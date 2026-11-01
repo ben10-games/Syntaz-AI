@@ -50,20 +50,20 @@ function runSetup(dir, input, env) {
 
 test("setup with a free Gemini key: checks the key, picks a model that answers, writes private settings, never prints the key", async () => {
   const g = await fakeGemini();
-  const dir = mkdtempSync(path.join(os.tmpdir(), "nova-setup-"));
+  const dir = mkdtempSync(path.join(os.tmpdir(), "syntaz-setup-"));
   try {
     mkdirSync(path.join(dir, "setup"));
     for (const f of ["setup.mjs", "lib.mjs"]) copyFileSync(path.join(root, "setup", f), path.join(dir, "setup", f));
     writeFileSync(path.join(dir, ".env.local"), "AI_BASE_URL=http://127.0.0.1:1234/v1\n");
     // Choice 1 (Gemini) → not a key → a wrong key → the right key.
-    const { code, out } = await runSetup(dir, `1\nhello there\nAIzaWrongKey_0000000000000000000000\n${GOOD}\n`, { NOVA_SETUP_GEMINI_BASE: g.base });
+    const { code, out } = await runSetup(dir, `1\nhello there\nAIzaWrongKey_0000000000000000000000\n${GOOD}\n`, { SYNTAZ_SETUP_GEMINI_BASE: g.base });
     assert.equal(code, 0, out);
     assert.match(out, /doesn't look like an API key/);
     assert.match(out, /Google says this key doesn't work/);
     assert.match(out, /✔ The key works\. Syntaz will use gemini-3\.6-flash\./);
     assert.ok(!out.includes(GOOD), "the key is never shown");
     const env = readFileSync(path.join(dir, ".env.local"), "utf8");
-    for (const line of [`AI_BASE_URL=${g.base}`, `AI_API_KEY=${GOOD}`, "AI_PROVIDER=openai-compatible", "AI_PROVIDER_NAME=Google Gemini", "AI_MODEL=gemini-3.6-flash", "AI_MODELS=gemini-3.6-flash", "AI_REASONING_EFFORT=", "MCP_SERVERS=browser", "NOVA_ACTIONS_ENABLED=true", "WORKSPACE_DIR="]) {
+    for (const line of [`AI_BASE_URL=${g.base}`, `AI_API_KEY=${GOOD}`, "AI_PROVIDER=openai-compatible", "AI_PROVIDER_NAME=Google Gemini", "AI_MODEL=gemini-3.6-flash", "AI_MODELS=gemini-3.6-flash", "AI_REASONING_EFFORT=", "MCP_SERVERS=browser", "SYNTAZ_ACTIONS_ENABLED=true", "WORKSPACE_DIR="]) {
       assert.ok(env.split("\n").includes(line), `missing ${line}`);
     }
     assert.ok(!env.startsWith("﻿"), "no byte-order mark (it would break the first setting)");
@@ -77,11 +77,11 @@ test("setup with a free Gemini key: checks the key, picks a model that answers, 
 });
 
 test("setup without internet says so plainly and writes nothing", async () => {
-  const dir = mkdtempSync(path.join(os.tmpdir(), "nova-setup-"));
+  const dir = mkdtempSync(path.join(os.tmpdir(), "syntaz-setup-"));
   try {
     mkdirSync(path.join(dir, "setup"));
     for (const f of ["setup.mjs", "lib.mjs"]) copyFileSync(path.join(root, "setup", f), path.join(dir, "setup", f));
-    const { code, out } = await runSetup(dir, `1\n${GOOD}\n`, { NOVA_SETUP_GEMINI_BASE: "http://127.0.0.1:9" });
+    const { code, out } = await runSetup(dir, `1\n${GOOD}\n`, { SYNTAZ_SETUP_GEMINI_BASE: "http://127.0.0.1:9" });
     assert.equal(code, 1);
     assert.match(out, /Can't reach Google\. Check your internet connection/);
     assert.ok(!existsSync(path.join(dir, ".env.local")));
@@ -98,7 +98,7 @@ test("the update check asks GitHub at most once per 15 minutes (it allows 60 che
     res.end(JSON.stringify({ version: "9.9.9" }));
   });
   await new Promise((r) => server.listen(0, "127.0.0.1", r));
-  process.env.NOVA_UPDATE_VERSION_URL = `http://127.0.0.1:${server.address().port}/version`;
+  process.env.SYNTAZ_UPDATE_VERSION_URL = `http://127.0.0.1:${server.address().port}/version`;
   try {
     const lib = await import(`../setup/lib.mjs?cache-test=${Date.now()}`);
     for (let i = 0; i < 30; i++) assert.equal(await lib.latestVersion(), "9.9.9"); // the window refreshing every 2 s for a minute
@@ -106,7 +106,7 @@ test("the update check asks GitHub at most once per 15 minutes (it allows 60 che
     await lib.latestRelease({ fresh: true }); // what Update does
     assert.equal(hits, 2);
   } finally {
-    delete process.env.NOVA_UPDATE_VERSION_URL;
+    delete process.env.SYNTAZ_UPDATE_VERSION_URL;
     server.close();
   }
 });

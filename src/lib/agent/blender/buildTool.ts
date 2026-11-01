@@ -74,7 +74,7 @@ async function design(brief: string, obstacles: Obstacle[], ctx: ToolContext, re
     const user = [`Request: ${brief}`, problems.length ? `Your previous spec:\n${previous}\n\nIt has these problems. Return the complete corrected spec:\n- ${problems.join("\n- ")}` : ""].filter(Boolean).join("\n\n");
     const res = await ctx.completeJson!(DESIGN_SYSTEM, user, "scene_spec", SCENE_SPEC_SCHEMA, ctx.signal);
     previous = res.raw.slice(0, 6_000);
-    if (process.env.NOVA_DEBUG_SCENE === "true") console.info(`[scene] design attempt ${attempt}: ${previous}`);
+    if (process.env.SYNTAZ_DEBUG_SCENE === "true") console.info(`[scene] design attempt ${attempt}: ${previous}`);
 
     const normalized = normalizeSpec(res.value);
     const structure = checkStructure(normalized.raw);
@@ -154,7 +154,7 @@ export function blenderBuildTool(tools: Map<string, ToolDefinition>): ToolDefini
       const obstacles = await inspectScene(tools, ctx);
       const requested = typeof args.preview_filename === "string" ? args.preview_filename.trim() : "";
       if (requested && !/^[A-Za-z0-9_-]{1,64}\.png$/.test(requested)) throw new ToolError("preview_filename must look like name.png (letters, digits, - and _ only).");
-      const { plan, problems, attempts } = await design(String(args.brief), obstacles, ctx, requested || `nova-scene-${Date.now()}.png`);
+      const { plan, problems, attempts } = await design(String(args.brief), obstacles, ctx, requested || `syntaz-scene-${Date.now()}.png`);
       if (!plan) throw new ToolError(`Syntaz could not produce a valid scene design after ${attempts} attempts, so nothing was built. Remaining problems:\n- ${problems.join("\n- ")}`);
       // Every compiled call must satisfy the real Blender tool's schema before the user is asked.
       for (const call of plan.calls) {

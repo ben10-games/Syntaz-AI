@@ -83,7 +83,7 @@ export function Button({
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "secondary" | "danger" | "ghost" }) {
   const styles = {
-    primary: "bg-nova-600 text-white hover:bg-nova-500",
+    primary: "bg-syntaz-600 text-white hover:bg-syntaz-500",
     secondary: "border border-ink-600 bg-ink-850 text-zinc-200 hover:bg-ink-800",
     danger: "bg-red-600 text-white hover:bg-red-500",
     ghost: "text-zinc-300 hover:bg-ink-800 hover:text-zinc-100",

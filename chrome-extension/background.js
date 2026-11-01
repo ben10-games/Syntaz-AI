@@ -143,7 +143,7 @@ async function handleRequest(ws, msg) {
   }
   const fn = COMMANDS[command];
   if (!fn) return send({ ok: false, error: { code: "unknown_command", message: `Unknown command: ${String(command).slice(0, 40)}` } });
-  const invalid = NovaProtocolCheck.checkRequest(await PROTOCOL, command, params);
+  const invalid = SyntazProtocolCheck.checkRequest(await PROTOCOL, command, params);
   if (invalid) return send({ ok: false, error: { code: "bad_request", message: `The extension refused a malformed request: ${invalid}.` } });
   inflight.set(id, { command, tabId: null });
   try {
@@ -290,11 +290,11 @@ function checkExpectations(after, params) {
 }
 
 // ---------------------------------------------------------------------------
-// Functions injected into the page's isolated world (they use window.__nova from page-lib.js)
+// Functions injected into the page's isolated world (they use window.__syntaz from page-lib.js)
 // ---------------------------------------------------------------------------
 
 function inspectPage(maxChars, expectText) {
-  const L = window.__nova.lib;
+  const L = window.__syntaz.lib;
   const raw = (document.body ? document.body.innerText : "").replace(/\n{3,}/g, "\n\n");
   const text = L.redact(raw);
   return {
@@ -313,12 +313,12 @@ function inspectPage(maxChars, expectText) {
 }
 
 function readPage(maxChars) {
-  return window.__nova.lib.readable(maxChars);
+  return window.__syntaz.lib.readable(maxChars);
 }
 
 /** Result links on a search results page (DuckDuckGo's HTML layout, or any page's main links). */
 function searchResults(max, sameSite) {
-  const L = window.__nova.lib;
+  const L = window.__syntaz.lib;
   const out = [];
   const seen = new Set();
   const add = (a, snippetEl, titleText) => {
@@ -373,7 +373,7 @@ function searchResults(max, sameSite) {
 }
 
 function listElements(filter, max) {
-  const N = window.__nova;
+  const N = window.__syntaz;
   const L = N.lib;
   const standard = document.querySelectorAll('a[href], button, input:not([type="hidden"]), textarea, select, [role="button"], [role="link"], [role="checkbox"], [role="textbox"], [contenteditable="true"]');
   // Plus custom controls made of plain elements (pointer cursor + own text), in page order.
@@ -425,7 +425,7 @@ function listElements(filter, max) {
 }
 
 function clickElement(snapshotId, elementId, confirmed) {
-  const N = window.__nova;
+  const N = window.__syntaz;
   const found = N.lib.find(snapshotId, elementId);
   if (found.error) return found;
   const el = found.el;
@@ -436,7 +436,7 @@ function clickElement(snapshotId, elementId, confirmed) {
   }
   el.scrollIntoView({ block: "center" });
   const before = N.lib.pageSignature();
-  if (window.__novaCursor) window.__novaCursor.clickPulse();
+  if (window.__syntazCursor) window.__syntazCursor.clickPulse();
   if (N.lib.kind(el) === "field" || el.tagName === "SELECT") {
     el.focus();
     const out = { ok: true, clicked: label, kind: el.tagName === "SELECT" ? "select" : "field", focused: document.activeElement === el, before };
@@ -450,7 +450,7 @@ function clickElement(snapshotId, elementId, confirmed) {
 }
 
 function typeIntoElement(snapshotId, elementId, text, submit, confirmed) {
-  const N = window.__nova;
+  const N = window.__syntaz;
   const L = N.lib;
   const found = L.find(snapshotId, elementId);
   if (found.error) return found;
@@ -458,7 +458,7 @@ function typeIntoElement(snapshotId, elementId, text, submit, confirmed) {
   if (L.kind(el) !== "field") return { error: "not_a_field", message: "That element is not a text field." };
   if (L.isSensitive(el)) return { error: "sensitive_field", message: "Syntaz never types into password, payment, one-time-code or other secret fields." };
   if (submit && !confirmed) return { error: "needs_confirmation", message: "Pressing Enter submits the form. Ask the user first; only with their explicit agreement call again with confirm_consequential=true." };
-  const C = window.__novaCursor;
+  const C = window.__syntazCursor;
   if (C) C.typing(true);
   const res = L.enterText(el, text);
   if (C) setTimeout(() => C.typing(false), 700);
@@ -481,7 +481,7 @@ function typeIntoElement(snapshotId, elementId, text, submit, confirmed) {
  * no match or several matches is an error listing what exists.
  */
 function resolveByDescription(want, hint) {
-  const N = window.__nova;
+  const N = window.__syntaz;
   const L = N.lib;
   const norm = (s) => String(s || "").toLowerCase().replace(/\s+/g, " ").replace(/[\s:=?.]+$/g, "").trim();
   const candidates = [];
@@ -614,7 +614,7 @@ function resolveByDescription(want, hint) {
  * for this action, bring it into view, and report where it is (for the cursor). Nothing is changed.
  */
 function locateTarget(snapshotId, elementId, action, confirmed, submit, peek) {
-  const N = window.__nova;
+  const N = window.__syntaz;
   const L = N.lib;
   const found = L.find(snapshotId, elementId);
   if (found.error) return found;
@@ -644,7 +644,7 @@ function locateTarget(snapshotId, elementId, action, confirmed, submit, peek) {
 
 /** Where the largest picture/graph on screen is (CSS pixels), for zooming a screenshot into it. */
 function largestVisual() {
-  const L = window.__nova.lib;
+  const L = window.__syntaz.lib;
   let best = null;
   for (const v of document.querySelectorAll("img, svg, canvas, video, picture")) {
     if (v.closest("svg") && v.tagName !== "svg") continue;
@@ -664,7 +664,7 @@ const KEYS = ["Enter", "Tab", "Escape", "ArrowUp", "ArrowDown", "ArrowLeft", "Ar
  * and submitting needs the user's confirmation.
  */
 function pressKey(snapshotId, elementId, key, confirmed) {
-  const N = window.__nova;
+  const N = window.__syntaz;
   const L = N.lib;
   let el = document.activeElement && document.activeElement !== document.body ? document.activeElement : document.body;
   if (elementId) {
@@ -679,7 +679,7 @@ function pressKey(snapshotId, elementId, key, confirmed) {
   }
   const before = L.pageSignature();
   if (el !== document.body && el.focus) el.focus();
-  if (window.__novaCursor) window.__novaCursor.clickPulse();
+  if (window.__syntazCursor) window.__syntazCursor.clickPulse();
   const opts = { key, code: key === " " ? "Space" : key, bubbles: true, cancelable: true, composed: true };
   const down = el.dispatchEvent(new KeyboardEvent("keydown", opts));
   if (key.length === 1) el.dispatchEvent(new KeyboardEvent("keypress", opts));
@@ -710,25 +710,25 @@ function pressKey(snapshotId, elementId, key, confirmed) {
 
 /** Phase 2: the visible cursor moves to the target (resolves when it arrives). */
 async function cursorMove(rect, label, ms, idleMs) {
-  const C = window.__novaCursor;
+  const C = window.__syntazCursor;
   if (!C) return false;
   C.setIdle(idleMs);
   return C.moveTo(rect, label, ms);
 }
 
 function removeCursor() {
-  if (window.__novaCursor) window.__novaCursor.remove();
-  for (const el of document.querySelectorAll("nova-cursor")) el.remove();
+  if (window.__syntazCursor) window.__syntazCursor.remove();
+  for (const el of document.querySelectorAll("syntaz-cursor")) el.remove();
   return true;
 }
 
 function pageSignatureNow() {
-  return window.__nova.lib.pageSignature();
+  return window.__syntaz.lib.pageSignature();
 }
 
 /** Chooses an option of a <select> by its visible text or value and checks the selection. */
 function selectOption(snapshotId, elementId, option) {
-  const L = window.__nova.lib;
+  const L = window.__syntaz.lib;
   const found = L.find(snapshotId, elementId);
   if (found.error) return found;
   const el = found.el;
@@ -737,7 +737,7 @@ function selectOption(snapshotId, elementId, option) {
   const opts = [...el.options].filter((o) => !o.disabled);
   const match = opts.find((o) => o.label.trim().toLowerCase() === want) || opts.find((o) => o.value.toLowerCase() === want) || null;
   if (!match) return { error: "no_such_option", message: `"${String(option).slice(0, 60)}" is not one of the options: ${opts.slice(0, 20).map((o) => `"${o.label.trim()}"`).join(", ")}.` };
-  if (window.__novaCursor) window.__novaCursor.clickPulse();
+  if (window.__syntazCursor) window.__syntazCursor.clickPulse();
   el.focus();
   el.value = match.value;
   el.dispatchEvent(new Event("input", { bubbles: true }));
@@ -752,22 +752,22 @@ function scrollPage(direction) {
   const max = Math.max(0, document.documentElement.scrollHeight - innerHeight);
   const by = Math.round(innerHeight * 0.85);
   const to = { down: before + by, up: before - by, top: 0, bottom: max }[direction] ?? before + by;
-  if (window.__novaCursor) window.__novaCursor.clickPulse();
+  if (window.__syntazCursor) window.__syntazCursor.clickPulse();
   window.scrollTo({ top: Math.max(0, Math.min(max, to)), behavior: "instant" });
-  return window.__nova.lib.scrollReport(before);
+  return window.__syntaz.lib.scrollReport(before);
 }
 
 function scrollReport(before) {
-  return window.__nova.lib.scrollReport(before);
+  return window.__syntaz.lib.scrollReport(before);
 }
 
 /** Reads a field: its value only if Syntaz typed into it on this page (to verify), otherwise just whether it has content. */
 function readTranscript(maxChars) {
-  return window.__nova.lib.videoTranscript(maxChars);
+  return window.__syntaz.lib.videoTranscript(maxChars);
 }
 
 function readField(snapshotId, elementId) {
-  const N = window.__nova;
+  const N = window.__syntaz;
   const L = N.lib;
   const found = L.find(snapshotId, elementId, { allowDisabled: true });
   if (found.error) return found;
@@ -784,9 +784,9 @@ function readField(snapshotId, elementId) {
 
 /** Reads a field back after the page settled: does it still hold the typed text? (Never returns the value.) */
 function fieldStillHas(snapshotId, elementId, text) {
-  const L = window.__nova.lib;
-  if (!window.__nova.snapshots || !window.__nova.snapshots.has(snapshotId)) return { checked: false, reason: "the page changed" };
-  const ref = window.__nova.elements.get(elementId);
+  const L = window.__syntaz.lib;
+  if (!window.__syntaz.snapshots || !window.__syntaz.snapshots.has(snapshotId)) return { checked: false, reason: "the page changed" };
+  const ref = window.__syntaz.elements.get(elementId);
   const el = ref && ref.deref();
   if (!el || !el.isConnected) return { checked: false, reason: "the field is gone" };
   const math = L.mathEditorOf(el);
@@ -834,7 +834,7 @@ async function readBack(tab, args) {
 
 function progress(id, command, phase, extra = {}) {
   // Live status for the side panel (no page content, just the phase and the target's label).
-  chrome.runtime.sendMessage({ type: "nova_action_progress", id, command, phase, ...extra }).catch(() => {});
+  chrome.runtime.sendMessage({ type: "syntaz_action_progress", id, command, phase, ...extra }).catch(() => {});
 }
 
 function checkCancelled(id) {
@@ -1243,14 +1243,14 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
 PROTOCOL.then((p) => {
   const missing = Object.keys(p.commands).filter((c) => !COMMANDS[c]);
   const extra = Object.keys(COMMANDS).filter((c) => !p.commands[c]);
-  if (missing.length || extra.length) console.error("[nova] protocol mismatch inside the extension", { missing, extra });
+  if (missing.length || extra.length) console.error("[syntaz] protocol mismatch inside the extension", { missing, extra });
 });
 
 // Right-click: "Ask Syntaz about …" opens the side panel with a question ready to edit (never sent by itself).
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.removeAll(() => {
-    chrome.contextMenus.create({ id: "nova-ask-selection", title: "Ask Syntaz about “%s”", contexts: ["selection"] });
-    chrome.contextMenus.create({ id: "nova-ask-page", title: "Ask Syntaz about this page", contexts: ["page"] });
+    chrome.contextMenus.create({ id: "syntaz-ask-selection", title: "Ask Syntaz about “%s”", contexts: ["selection"] });
+    chrome.contextMenus.create({ id: "syntaz-ask-page", title: "Ask Syntaz about this page", contexts: ["page"] });
   });
 });
 chrome.contextMenus.onClicked.addListener((info, tab) => askFromMenu(info, tab));
@@ -1259,7 +1259,7 @@ function askFromMenu(info, tab) {
   // The side panel may only be opened during the click itself, so this comes first.
   if (tab && tab.windowId !== undefined) chrome.sidePanel.open({ windowId: tab.windowId }).catch(() => {});
   const selection = String(info.selectionText || "").trim().slice(0, 2000);
-  const prompt = info.menuItemId === "nova-ask-selection" && selection ? `Explain this: “${selection}”` : "Summarize this page.";
+  const prompt = info.menuItemId === "syntaz-ask-selection" && selection ? `Explain this: “${selection}”` : "Summarize this page.";
   return chrome.storage.session.set({ pendingAsk: { prompt, at: Date.now() } });
 }
 

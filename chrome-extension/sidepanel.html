@@ -8,9 +8,9 @@
 </head>
 <body>
   <header class="top">
-    <div class="brand"><img class="logo" src="icons/nova-32.png" alt="" aria-hidden="true"><span>Syntaz</span></div>
+    <div class="brand"><img class="logo" src="icons/syntaz-32.png" alt="" aria-hidden="true"><span>Syntaz</span></div>
     <div class="stats" role="status">
-      <span class="stat" id="novaStat"><span id="novaDot" class="dot"></span><span id="novaStatus">Checking…</span></span>
+      <span class="stat" id="syntazStat"><span id="syntazDot" class="dot"></span><span id="syntazStatus">Checking…</span></span>
       <span class="stat"><span id="bridgeDot" class="dot"></span><span id="bridgeStatus">Browser…</span><button id="bridgeConnect" class="link" hidden>Connect</button><button id="bridgePause" class="link" hidden title="Pause or resume Syntaz's actions in the browser">Pause</button><button id="bridgeDisconnect" class="link" hidden title="Stop everything and disconnect the browser bridge">Disconnect</button></span>
     </div>
     <button id="historyBtn" class="icon" title="Saved chats" aria-label="Saved chats" aria-expanded="false" aria-controls="historyDrawer">🕘</button>
@@ -23,7 +23,7 @@
   <div class="stage">
     <main id="messages" class="messages" aria-live="polite" tabindex="0" aria-label="Conversation">
       <div id="empty" class="welcome">
-        <img class="hero" src="icons/nova-128.png" alt="">
+        <img class="hero" src="icons/syntaz-128.png" alt="">
         <p class="hi">Hi! What should Syntaz do?</p>
         <p class="sub" id="welcomeSub">Tap a suggestion, or just type what you want.</p>
         <div class="ideas" id="ideas"></div>
@@ -33,9 +33,9 @@
 
     <section id="settings" class="drawer" hidden aria-label="Settings">
       <div class="drawer-head"><strong>Settings</strong><button id="closeSettings" class="icon" aria-label="Close settings">✕</button></div>
-      <label for="novaUrl">Syntaz address (this computer only)</label>
-      <div class="row"><input id="novaUrl" type="url" placeholder="http://127.0.0.1:3000" /><button id="saveNovaUrl">Save</button></div>
-      <p id="novaUrlError" class="error small"></p>
+      <label for="syntazUrl">Syntaz address (this computer only)</label>
+      <div class="row"><input id="syntazUrl" type="url" placeholder="http://127.0.0.1:3000" /><button id="saveSyntazUrl">Save</button></div>
+      <p id="syntazUrlError" class="error small"></p>
       <label for="modelSelect">Model (from LM Studio)</label>
       <select id="modelSelect"><option value="">Syntaz's choice (the loaded model)</option></select>
       <p class="muted small">In use: <span id="model">—</span></p>

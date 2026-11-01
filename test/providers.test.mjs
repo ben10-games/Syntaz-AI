@@ -102,7 +102,7 @@ describe("Anthropic (Claude) through the official SDK", () => {
       AI_MAX_OUTPUT_TOKENS: "16000",
       AI_AGENT_MODE: "json",
       WORKSPACE_DIR: path.join(root, "examples", "workspace"),
-      NOVA_ACTIONS_ENABLED: "true",
+      SYNTAZ_ACTIONS_ENABLED: "true",
       MCP_SERVERS: "",
       RATE_LIMIT_MAX: "0",
     });
@@ -194,13 +194,13 @@ describe("setup: checking a paid key", () => {
     anthropic = await fakeAnthropic();
     openai = await fakeOpenAi();
     broke = await fakeOpenAi({ credit: false, ids: ["grok-5"] });
-    process.env.NOVA_SETUP_ANTHROPIC_BASE = anthropic.base;
-    process.env.NOVA_SETUP_OPENAI_BASE = openai.base;
-    process.env.NOVA_SETUP_XAI_BASE = broke.base;
+    process.env.SYNTAZ_SETUP_ANTHROPIC_BASE = anthropic.base;
+    process.env.SYNTAZ_SETUP_OPENAI_BASE = openai.base;
+    process.env.SYNTAZ_SETUP_XAI_BASE = broke.base;
     lib = await import(`../setup/lib.mjs?paid=${Date.now()}`);
   });
   after(() => {
-    for (const k of ["NOVA_SETUP_ANTHROPIC_BASE", "NOVA_SETUP_OPENAI_BASE", "NOVA_SETUP_XAI_BASE"]) delete process.env[k];
+    for (const k of ["SYNTAZ_SETUP_ANTHROPIC_BASE", "SYNTAZ_SETUP_OPENAI_BASE", "SYNTAZ_SETUP_XAI_BASE"]) delete process.env[k];
     for (const f of [anthropic, openai, broke]) f?.server.close();
   });
 
@@ -237,7 +237,7 @@ describe("setup: checking a paid key", () => {
     try {
       mkdirSync(path.join(dir, "setup"));
       for (const f of ["setup.mjs", "lib.mjs"]) copyFileSync(path.join(root, "setup", f), path.join(dir, "setup", f));
-      const child = spawn(process.execPath, [path.join(dir, "setup", "setup.mjs"), "--configure-only"], { env: { ...process.env, NOVA_SETUP_ANTHROPIC_BASE: anthropic.base, NOVA_SETUP_GEMINI_BASE: "http://127.0.0.1:9" }, stdio: ["pipe", "pipe", "pipe"] });
+      const child = spawn(process.execPath, [path.join(dir, "setup", "setup.mjs"), "--configure-only"], { env: { ...process.env, SYNTAZ_SETUP_ANTHROPIC_BASE: anthropic.base, SYNTAZ_SETUP_GEMINI_BASE: "http://127.0.0.1:9" }, stdio: ["pipe", "pipe", "pipe"] });
       let out = "";
       child.stdout.on("data", (d) => (out += d));
       child.stderr.on("data", (d) => (out += d));
@@ -353,7 +353,7 @@ describe("setup: Groq and Hugging Face keys", () => {
       if (r.url === "/models") return send(res, 200, { data: [{ id: "llama-4-scout", created: 9 }, { id: "openai/gpt-oss-120b", created: 5 }, { id: "whisper-large-v3", created: 8 }, { id: "meta-llama/llama-guard-4-12b", created: 7 }, { id: "playai-tts", created: 6 }] });
       send(res, 200, { choices: [{ message: { role: "assistant", content: "OK" } }] });
     });
-    process.env.NOVA_SETUP_GROQ_BASE = fake.base;
+    process.env.SYNTAZ_SETUP_GROQ_BASE = fake.base;
     try {
       const lib = await import(`../setup/lib.mjs?groq=${Date.now()}`);
       const r = await lib.checkPaid("groq", KEY);
@@ -362,7 +362,7 @@ describe("setup: Groq and Hugging Face keys", () => {
       assert.equal(r.values.AI_IMAGE_MODEL, "");
       assert.equal(r.values.AI_PROVIDER_NAME, "Groq");
     } finally {
-      delete process.env.NOVA_SETUP_GROQ_BASE;
+      delete process.env.SYNTAZ_SETUP_GROQ_BASE;
       fake.server.close();
     }
   });
@@ -373,7 +373,7 @@ describe("setup: Groq and Hugging Face keys", () => {
       if (r.url === "/models") return send(res, 200, { data: [{ id: "deepseek-ai/DeepSeek-V3.2" }, { id: "openai/gpt-oss-120b" }, { id: "Qwen/Qwen3-235B-A22B" }] });
       send(res, 200, { choices: [{ message: { role: "assistant", content: "OK" } }] });
     });
-    process.env.NOVA_SETUP_HF_BASE = fake.base;
+    process.env.SYNTAZ_SETUP_HF_BASE = fake.base;
     try {
       const lib = await import(`../setup/lib.mjs?hf=${Date.now()}`);
       assert.match(lib.PAID.huggingface.keys, /ownUserPermissions=inference\.serverless\.write&tokenType=fineGrained/);
@@ -384,7 +384,7 @@ describe("setup: Groq and Hugging Face keys", () => {
       assert.equal(r.values.AI_IMAGE_MODEL, "stabilityai/stable-diffusion-3-medium-diffusers");
       assert.match((await lib.checkPaid("huggingface", "hf_wrongwrongwrongwrongwrong")).error, /Hugging Face says this key doesn't work/);
     } finally {
-      delete process.env.NOVA_SETUP_HF_BASE;
+      delete process.env.SYNTAZ_SETUP_HF_BASE;
       fake.server.close();
     }
   });

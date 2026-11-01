@@ -199,7 +199,7 @@ const SITES: Record<string, string> = {
 function siteRequest(request: string): { site: string; query: string } | null {
   const SITE = "(youtube|wikipedia|amazon|ebay|github|reddit|stack ?overflow|bing|google maps|spotify|google)";
   // "search wikipedia for linux mint"
-  const direct = new RegExp(`^\\s*(?:(?:please|pls|can you|could you|nova)[,\\s]+)*(?:search|check|look up|look on|go to)\\s+${SITE}\\s+(?:for|about)\\s+(.+?)[\\s.!?]*$`, "i").exec(request);
+  const direct = new RegExp(`^\\s*(?:(?:please|pls|can you|could you|syntaz)[,\\s]+)*(?:search|check|look up|look on|go to)\\s+${SITE}\\s+(?:for|about)\\s+(.+?)[\\s.!?]*$`, "i").exec(request);
   if (direct) {
     const site = SITES[direct[1].toLowerCase().replace(/\s+/g, " ")] ?? SITES[direct[1].toLowerCase().replace(/\s+/g, "")];
     const query = direct[2].replace(/\b(?:for me|please)\b/gi, " ").replace(/\s+/g, " ").trim();
@@ -209,7 +209,7 @@ function siteRequest(request: string): { site: string; query: string } | null {
   if (!m) return null;
   const query = request
     .replace(m[0], " ")
-    .replace(/^\s*(?:(?:please|pls|can you|could you|nova)[,\s]+)*(?:open|play|watch|find|search(?: for)?|look up|look for|show me|listen to|put on|pull up|bring up|get me|buy|shop for)\b/i, " ")
+    .replace(/^\s*(?:(?:please|pls|can you|could you|syntaz)[,\s]+)*(?:open|play|watch|find|search(?: for)?|look up|look for|show me|listen to|put on|pull up|bring up|get me|buy|shop for)\b/i, " ")
     .replace(/\b(?:for me|please|now|thanks?|a video of|the video|videos? of|some)\b/gi, " ")
     .replace(/\s+/g, " ")
     .replace(/^[\s"'“]+|[\s"'”.!?]+$/g, "")
@@ -239,7 +239,7 @@ function personalFieldWithoutSource(tool: string, args: Record<string, unknown>,
 
 /** Short requests that only make sense with the page ("finish this for me", "do it"). */
 const VAGUE =
-  /^\s*(?:(?:please|pls|can you|could you|nova)[,\s]+)*(?:finish|complete|do|handle|continue|fill(?: in| out)?|answer|take care of|help(?: me)?(?: with)?|deal with|sort out)\b(?:\s+(?:this|it|that|the rest|everything|the page|this page|this form|the form|these|my homework|the questions?|the work|in|out|up))*(?:\s+(?:for me|please|now|thanks?))*[\s.!?]*$/i;
+  /^\s*(?:(?:please|pls|can you|could you|syntaz)[,\s]+)*(?:finish|complete|do|handle|continue|fill(?: in| out)?|answer|take care of|help(?: me)?(?: with)?|deal with|sort out)\b(?:\s+(?:this|it|that|the rest|everything|the page|this page|this form|the form|these|my homework|the questions?|the work|in|out|up))*(?:\s+(?:for me|please|now|thanks?))*[\s.!?]*$/i;
 
 /** What the user most likely wants done on this page, in plain words (shown to the user, then used as the task). */
 /** Models like to add "then click Submit" when explaining a vague request; only the user may ask for that. */
@@ -477,7 +477,7 @@ export async function runAgent(opts: RunOptions): Promise<RunStatus> {
 
     // ---- 2. Execute ----------------------------------------------------
     const system = systemPrompt(tools, mode, !!registry.workspace, opts.handsOff === true);
-    if (process.env.NOVA_DEBUG_PROMPT === "true") console.error(`[agent] system prompt (${system.length} chars):\n${system}\n[/system prompt]`);
+    if (process.env.SYNTAZ_DEBUG_PROMPT === "true") console.error(`[agent] system prompt (${system.length} chars):\n${system}\n[/system prompt]`);
     const entries: TranscriptEntry[] = [];
     const corrections: string[] = [];
     const knowledge = new Knowledge();
@@ -669,7 +669,7 @@ export async function runAgent(opts: RunOptions): Promise<RunStatus> {
       const options = [...listed.matchAll(/"([^"]{1,60})"/g)].map((m) => word(m[1])).filter(Boolean);
       const named = options.map((o) => ({ o, at: goal.search(new RegExp(`\\b${esc(o)}\\b`, "i")) })).filter((x) => x.at >= 0);
       if (named.length === 1) return named[0].o;
-      // "Fill in Username with nova and Notes with hello" / "type blue mug in the search box": the option the
+      // "Fill in Username with syntaz and Notes with hello" / "type blue mug in the search box": the option the
       // request ties to this exact text by its wording.
       if (named.length > 1 && typeof text === "string" && text.trim()) {
         const t = esc(text.trim());

@@ -1,8 +1,8 @@
 // Blender MCP integration tests. The production build talks to the REAL
-// nova-blender MCP server (stdio), which talks to either:
+// syntaz-blender MCP server (stdio), which talks to either:
 //  - a mock Syntaz Blender Bridge (Node TCP server speaking the same protocol), or
-//  - a real headless Blender running blender-addon/nova_blender_bridge.py,
-//    when NOVA_TEST_BLENDER_BIN points to a Blender executable (optional).
+//  - a real headless Blender running blender-addon/syntaz_blender_bridge.py,
+//    when SYNTAZ_TEST_BLENDER_BIN points to a Blender executable (optional).
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
@@ -114,22 +114,22 @@ const common = (mockUrl) => ({
   RATE_LIMIT_CONCURRENT: "1",
   BASIC_AUTH_USER: "",
   BASIC_AUTH_PASSWORD: "",
-  NOVA_ACTIONS_ENABLED: "true",
+  SYNTAZ_ACTIONS_ENABLED: "true",
   WORKSPACE_DIR: "",
   AGENT_APPROVAL_TIMEOUT_MS: "5000",
 });
 
 before(async () => {
-  tmp = mkdtempSync(path.join(os.tmpdir(), "nova-blender-test-"));
+  tmp = mkdtempSync(path.join(os.tmpdir(), "syntaz-blender-test-"));
   writeFileSync(path.join(tmp, "token"), TOKEN);
   mock = await startMockProvider();
   bridge = await startMockBridge();
   const unusedPort = await freePort();
   [app, notRunning, noToken, badPort] = await Promise.all([
-    startApp({ ...common(mock.url), MCP_SERVERS: "blender", NOVA_BLENDER_PORT: String(bridge.port), NOVA_BLENDER_TOKEN_FILE: path.join(tmp, "token"), MCP_BLENDER_TOOL_TIMEOUT_MS: "2000" }),
-    startApp({ ...common(mock.url), MCP_SERVERS: "blender", NOVA_BLENDER_PORT: String(unusedPort), NOVA_BLENDER_TOKEN_FILE: path.join(tmp, "token") }),
-    startApp({ ...common(mock.url), MCP_SERVERS: "blender", NOVA_BLENDER_PORT: String(bridge.port), NOVA_BLENDER_TOKEN_FILE: path.join(tmp, "no-such-token") }),
-    startApp({ ...common(mock.url), MCP_SERVERS: "blender", NOVA_BLENDER_PORT: "80", NOVA_BLENDER_TOKEN_FILE: path.join(tmp, "token") }),
+    startApp({ ...common(mock.url), MCP_SERVERS: "blender", SYNTAZ_BLENDER_PORT: String(bridge.port), SYNTAZ_BLENDER_TOKEN_FILE: path.join(tmp, "token"), MCP_BLENDER_TOOL_TIMEOUT_MS: "2000" }),
+    startApp({ ...common(mock.url), MCP_SERVERS: "blender", SYNTAZ_BLENDER_PORT: String(unusedPort), SYNTAZ_BLENDER_TOKEN_FILE: path.join(tmp, "token") }),
+    startApp({ ...common(mock.url), MCP_SERVERS: "blender", SYNTAZ_BLENDER_PORT: String(bridge.port), SYNTAZ_BLENDER_TOKEN_FILE: path.join(tmp, "no-such-token") }),
+    startApp({ ...common(mock.url), MCP_SERVERS: "blender", SYNTAZ_BLENDER_PORT: "80", SYNTAZ_BLENDER_TOKEN_FILE: path.join(tmp, "token") }),
   ]);
 });
 
@@ -160,7 +160,7 @@ describe("Blender MCP: discovery and policy", () => {
   });
 
   test("only the servers named in MCP_SERVERS are enabled", async () => {
-    // MCP_SERVERS=blender enables Blender and nothing else (nova-test is off).
+    // MCP_SERVERS=blender enables Blender and nothing else (syntaz-test is off).
     const names = (await status(app)).tools.map((t) => t.name);
     assert.ok(names.some((n) => n.startsWith("mcp__blender__")));
     assert.ok(!names.some((n) => n.startsWith("mcp__") && !n.startsWith("mcp__blender__")));
@@ -274,7 +274,7 @@ describe("Blender MCP: failures are reported honestly", () => {
 
   test("invalid port configuration is reported as a configuration error", async () => {
     const notes = (await status(badPort)).notes.join(" ");
-    assert.match(notes, /MCP server "blender" is unavailable: configuration error: NOVA_BLENDER_PORT must be between 1024 and 65535/);
+    assert.match(notes, /MCP server "blender" is unavailable: configuration error: SYNTAZ_BLENDER_PORT must be between 1024 and 65535/);
   });
 
   test("an unknown object is a clear error from Blender", async () => {
@@ -318,30 +318,30 @@ describe("Blender MCP: failures are reported honestly", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Optional: real Blender (set NOVA_TEST_BLENDER_BIN to a Blender executable).
+// Optional: real Blender (set SYNTAZ_TEST_BLENDER_BIN to a Blender executable).
 // ---------------------------------------------------------------------------
-const BLENDER = process.env.NOVA_TEST_BLENDER_BIN;
-describe("Blender MCP: real headless Blender", { skip: !BLENDER || !existsSync(BLENDER) ? "set NOVA_TEST_BLENDER_BIN to run" : false }, () => {
+const BLENDER = process.env.SYNTAZ_TEST_BLENDER_BIN;
+describe("Blender MCP: real headless Blender", { skip: !BLENDER || !existsSync(BLENDER) ? "set SYNTAZ_TEST_BLENDER_BIN to run" : false }, () => {
   let blender, real, realTmp;
-  const renderName = `nova-test-${process.pid}.png`;
+  const renderName = `syntaz-test-${process.pid}.png`;
 
   before(async () => {
-    realTmp = mkdtempSync(path.join(os.tmpdir(), "nova-real-blender-"));
+    realTmp = mkdtempSync(path.join(os.tmpdir(), "syntaz-real-blender-"));
     const port = await freePort();
     const tokenFile = path.join(realTmp, "token");
     blender = spawn(BLENDER, ["--background", "--factory-startup", "--python", path.join(root, "test/fixtures/blender_headless.py"), "--", String(port), tokenFile], { stdio: ["ignore", "pipe", "pipe"] });
     await new Promise((resolve, reject) => {
       const t = setTimeout(() => reject(new Error("headless Blender did not start")), 120_000);
-      blender.stdout.on("data", (d) => String(d).includes("NOVA_BRIDGE_READY") && (clearTimeout(t), resolve()));
+      blender.stdout.on("data", (d) => String(d).includes("SYNTAZ_BRIDGE_READY") && (clearTimeout(t), resolve()));
       blender.on("exit", (code) => reject(new Error(`Blender exited (${code})`)));
     });
-    real = await startApp({ ...common(mock.url), MCP_SERVERS: "blender", NOVA_BLENDER_PORT: String(port), NOVA_BLENDER_TOKEN_FILE: tokenFile });
+    real = await startApp({ ...common(mock.url), MCP_SERVERS: "blender", SYNTAZ_BLENDER_PORT: String(port), SYNTAZ_BLENDER_TOKEN_FILE: tokenFile });
   });
 
   after(() => {
     real?.child?.kill();
     blender?.kill();
-    rmSync(path.join(os.tmpdir(), "nova-blender-renders", renderName), { force: true });
+    rmSync(path.join(os.tmpdir(), "syntaz-blender-renders", renderName), { force: true });
     if (realTmp) rmSync(realTmp, { recursive: true, force: true });
   });
 
@@ -349,9 +349,9 @@ describe("Blender MCP: real headless Blender", { skip: !BLENDER || !existsSync(B
     await mock.script([
       PLAN,
       step(B("scene_info"), {}),
-      step(B("create_primitive"), { kind: "cube", name: "NovaTestCube", location: [0, 0, 1] }),
-      step(B("set_material"), { object: "NovaTestCube", base_color: [0.1, 0.4, 0.9, 1], roughness: 0.3 }),
-      step(B("object_info"), { name: "NovaTestCube" }),
+      step(B("create_primitive"), { kind: "cube", name: "SyntazTestCube", location: [0, 0, 1] }),
+      step(B("set_material"), { object: "SyntazTestCube", base_color: [0.1, 0.4, 0.9, 1], roughness: 0.3 }),
+      step(B("object_info"), { name: "SyntazTestCube" }),
       step(B("render_image"), { filename: renderName, resolution_x: 64, resolution_y: 36, samples: 1 }),
       finish(),
     ]);

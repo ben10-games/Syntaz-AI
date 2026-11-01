@@ -22,7 +22,7 @@ before(async () => {
   base = `http://127.0.0.1:${port}`;
   child = spawn(process.execPath, [path.join(root, "node_modules/next/dist/bin/next"), "dev", "-H", "127.0.0.1", "-p", String(port)], {
     cwd: root,
-    env: { ...process.env, NODE_ENV: "development", NOVA_NEXT_DIST_DIR: DIST, AI_BASE_URL: mock.url, AI_API_KEY: MOCK_KEY, AI_PROVIDER: "openai-compatible", AI_PROVIDER_NAME: "Mock AI", AI_MODEL: "mock-chat-large", AI_MODELS: "", LMSTUDIO_BASE_URL: "", LMSTUDIO_MODEL: "", WORKSPACE_DIR: "", BASIC_AUTH_USER: "", BASIC_AUTH_PASSWORD: "", RATE_LIMIT_MAX: "1000", NOVA_ACTIONS_ENABLED: "true", MCP_SERVERS: "nova-test", AGENT_APPROVAL_TIMEOUT_MS: "8000" },
+    env: { ...process.env, NODE_ENV: "development", SYNTAZ_NEXT_DIST_DIR: DIST, AI_BASE_URL: mock.url, AI_API_KEY: MOCK_KEY, AI_PROVIDER: "openai-compatible", AI_PROVIDER_NAME: "Mock AI", AI_MODEL: "mock-chat-large", AI_MODELS: "", LMSTUDIO_BASE_URL: "", LMSTUDIO_MODEL: "", WORKSPACE_DIR: "", BASIC_AUTH_USER: "", BASIC_AUTH_PASSWORD: "", RATE_LIMIT_MAX: "1000", SYNTAZ_ACTIONS_ENABLED: "true", MCP_SERVERS: "syntaz-test", AGENT_APPROVAL_TIMEOUT_MS: "8000" },
     stdio: ["ignore", "ignore", "ignore"],
   });
   for (let i = 0; i < 400; i++) {
@@ -50,7 +50,7 @@ test("next dev: the first approval after start reaches the waiting task (and lat
   for (const round of [1, 2]) {
     await mock.script([
       { json: { steps: ["a"] } },
-      { json: { thought: "t", step: 1, action: "call_tool", tool: "mcp__nova-test__add_note", arguments: { text: `round ${round}` }, answer: "" } },
+      { json: { thought: "t", step: 1, action: "call_tool", tool: "mcp__syntaz-test__add_note", arguments: { text: `round ${round}` }, answer: "" } },
       { json: { thought: "f", step: 1, action: "finish", tool: "none", arguments: {}, answer: "done" } },
     ]);
     const res = await fetch(base + "/api/agent", { method: "POST", headers: H, body: JSON.stringify({ goal: "add a note" }) });

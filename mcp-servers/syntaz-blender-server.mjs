@@ -4,8 +4,8 @@
 // connects to 127.0.0.1, and authenticates with the token the add-on writes.
 //
 // Syntaz starts it with an empty environment plus exactly two variables:
-//   NOVA_BLENDER_PORT        bridge port (default 9890)
-//   NOVA_BLENDER_TOKEN_FILE  absolute path of the bridge's token file
+//   SYNTAZ_BLENDER_PORT        bridge port (default 9890)
+//   SYNTAZ_BLENDER_TOKEN_FILE  absolute path of the bridge's token file
 import { readFileSync } from "node:fs";
 import net from "node:net";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -13,9 +13,9 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 
 const HOST = "127.0.0.1"; // fixed: never connect anywhere else
-const port = Number(process.env.NOVA_BLENDER_PORT ?? 9890);
-const tokenFile = process.env.NOVA_BLENDER_TOKEN_FILE ?? "";
-if (!Number.isInteger(port) || port < 1024 || port > 65535) throw new Error("NOVA_BLENDER_PORT is invalid");
+const port = Number(process.env.SYNTAZ_BLENDER_PORT ?? 9890);
+const tokenFile = process.env.SYNTAZ_BLENDER_TOKEN_FILE ?? "";
+if (!Number.isInteger(port) || port < 1024 || port > 65535) throw new Error("SYNTAZ_BLENDER_PORT is invalid");
 
 const NOT_RUNNING =
   "Blender is not connected. Open Blender, enable the 'Syntaz Blender Bridge' add-on and press Start in the 3D View sidebar (Syntaz tab).";
@@ -81,7 +81,7 @@ function bridgeCall(command, params, { timeoutMs, signal }) {
   });
 }
 
-const server = new McpServer({ name: "nova-blender", version: "0.1.0" });
+const server = new McpServer({ name: "syntaz-blender", version: "0.1.0" });
 
 const vec3 = (lo, hi) => z.array(z.number().min(lo).max(hi)).length(3);
 const name = z.string().min(1).max(63);

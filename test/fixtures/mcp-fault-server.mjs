@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Fault-injection MCP server for automated tests ONLY (enabled by NOVA_ENABLE_TEST_FIXTURES=true).
+// Fault-injection MCP server for automated tests ONLY (enabled by SYNTAZ_ENABLE_TEST_FIXTURES=true).
 // Uses the low-level SDK Server so it can return malformed results and misbehave on purpose.
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
@@ -28,7 +28,7 @@ const tools = [
 ];
 
 const text = (t) => ({ content: [{ type: "text", text: t }] });
-const server = new Server({ name: "nova-fault-server", version: "1.0.0" }, { capabilities: { tools: {} } });
+const server = new Server({ name: "syntaz-fault-server", version: "1.0.0" }, { capabilities: { tools: {} } });
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools }));
 server.setRequestHandler(CallToolRequestSchema, async (req, extra) => {

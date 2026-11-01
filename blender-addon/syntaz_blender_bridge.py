@@ -6,7 +6,7 @@
 # Security model:
 # - Listens on 127.0.0.1 only (not configurable), never on the network.
 # - Every request must carry the random token written to
-#   ~/.config/nova-blender/token (mode 0600) when you press Start.
+#   ~/.config/syntaz-blender/token (mode 0600) when you press Start.
 # - Every command validates its parameters and rejects unknown ones.
 # - Scene changes are pushed as undo steps (Ctrl+Z works).
 #
@@ -41,9 +41,9 @@ DEFAULT_PORT = 9890
 MAX_LINE_BYTES = 64 * 1024
 MAX_CONNECTIONS = 4
 MAIN_THREAD_TIMEOUT = 300.0  # seconds a request may wait for Blender's main thread (renders)
-TOKEN_DIR = os.path.join(os.path.expanduser("~"), ".config", "nova-blender")
+TOKEN_DIR = os.path.join(os.path.expanduser("~"), ".config", "syntaz-blender")
 TOKEN_FILE = os.path.join(TOKEN_DIR, "token")
-RENDER_DIR = os.path.join(tempfile.gettempdir(), "nova-blender-renders")
+RENDER_DIR = os.path.join(tempfile.gettempdir(), "syntaz-blender-renders")
 MAX_OBJECTS_LISTED = 200
 NAME_RE = re.compile(r"^[^\x00-\x1f\x7f]{1,63}$")
 FILENAME_RE = re.compile(r"^[A-Za-z0-9_-]{1,64}\.png$")
@@ -466,7 +466,7 @@ class Bridge:
         sock.settimeout(0.5)
         self.sock = sock
         self.running = True
-        threading.Thread(target=self._accept_loop, name="nova-bridge-accept", daemon=True).start()
+        threading.Thread(target=self._accept_loop, name="syntaz-bridge-accept", daemon=True).start()
 
     def stop(self):
         self.running = False
@@ -496,7 +496,7 @@ class Bridge:
             if not self.connections.acquire(blocking=False):
                 client.close()
                 continue
-            threading.Thread(target=self._serve, args=(client,), name="nova-bridge-conn", daemon=True).start()
+            threading.Thread(target=self._serve, args=(client,), name="syntaz-bridge-conn", daemon=True).start()
 
     def _serve(self, client):
         try:
@@ -598,7 +598,7 @@ def stop_bridge():
 def serve_blocking(port, token_path):
     """Headless mode (blender --background): serve until the process is killed."""
     bridge = start_bridge(port, token_path)
-    print(f"NOVA_BRIDGE_READY {HOST}:{port}", flush=True)
+    print(f"SYNTAZ_BRIDGE_READY {HOST}:{port}", flush=True)
     while bridge.running:
         bridge.pump()
         time.sleep(0.02)
@@ -608,13 +608,13 @@ def serve_blocking(port, token_path):
 # UI
 # ---------------------------------------------------------------------------
 
-class NovaBridgePreferences(bpy.types.AddonPreferences):
+class SyntazBridgePreferences(bpy.types.AddonPreferences):
     bl_idname = __name__
     port: bpy.props.IntProperty(name="Port", default=DEFAULT_PORT, min=1024, max=65535)
 
     def draw(self, context):
         self.layout.prop(self, "port")
-        self.layout.label(text="Listens on 127.0.0.1 only. Token: ~/.config/nova-blender/token")
+        self.layout.label(text="Listens on 127.0.0.1 only. Token: ~/.config/syntaz-blender/token")
 
 
 def _prefs():
@@ -622,8 +622,8 @@ def _prefs():
     return addon.preferences if addon else None
 
 
-class NOVA_OT_bridge_start(bpy.types.Operator):
-    bl_idname = "nova.bridge_start"
+class SYNTAZ_OT_bridge_start(bpy.types.Operator):
+    bl_idname = "syntaz.bridge_start"
     bl_label = "Start Syntaz Bridge"
     bl_description = "Start the local Syntaz bridge (127.0.0.1, token-authenticated)"
 
@@ -638,8 +638,8 @@ class NOVA_OT_bridge_start(bpy.types.Operator):
         return {"FINISHED"}
 
 
-class NOVA_OT_bridge_stop(bpy.types.Operator):
-    bl_idname = "nova.bridge_stop"
+class SYNTAZ_OT_bridge_stop(bpy.types.Operator):
+    bl_idname = "syntaz.bridge_stop"
     bl_label = "Stop Syntaz Bridge"
 
     def execute(self, context):
@@ -648,9 +648,9 @@ class NOVA_OT_bridge_stop(bpy.types.Operator):
         return {"FINISHED"}
 
 
-class NOVA_PT_bridge(bpy.types.Panel):
+class SYNTAZ_PT_bridge(bpy.types.Panel):
     bl_label = "Syntaz Bridge"
-    bl_idname = "NOVA_PT_bridge"
+    bl_idname = "SYNTAZ_PT_bridge"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "Syntaz"
@@ -659,13 +659,13 @@ class NOVA_PT_bridge(bpy.types.Panel):
         layout = self.layout
         running = _bridge is not None and _bridge.running
         layout.label(text=f"Status: {'running on 127.0.0.1:' + str(_bridge.port) if running else 'stopped'}")
-        layout.operator("nova.bridge_stop" if running else "nova.bridge_start")
+        layout.operator("syntaz.bridge_stop" if running else "syntaz.bridge_start")
         box = layout.box()
         box.label(text="Fixed commands only - no code execution.")
         box.label(text="Syntaz asks before every change or render.")
 
 
-_classes = (NovaBridgePreferences, NOVA_OT_bridge_start, NOVA_OT_bridge_stop, NOVA_PT_bridge)
+_classes = (SyntazBridgePreferences, SYNTAZ_OT_bridge_start, SYNTAZ_OT_bridge_stop, SYNTAZ_PT_bridge)
 
 
 def register():

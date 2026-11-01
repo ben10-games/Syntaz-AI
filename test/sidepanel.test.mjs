@@ -1,7 +1,7 @@
 // Side panel tests.
 //  - Always: Syntaz's API accepts the side panel (extension origin + pairing code) and
 //    nothing else; streaming, approvals and errors work through that path.
-//  - Optional (NOVA_TEST_CHROME_BIN): the REAL Chrome side panel of the real extension,
+//  - Optional (SYNTAZ_TEST_CHROME_BIN): the REAL Chrome side panel of the real extension,
 //    talking to a real Syntaz server (with a scripted model so answers are deterministic).
 import assert from "node:assert/strict";
 import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -34,7 +34,7 @@ const env = (extra) => ({
   RATE_LIMIT_CONCURRENT: "1",
   BASIC_AUTH_USER: "",
   BASIC_AUTH_PASSWORD: "",
-  NOVA_ACTIONS_ENABLED: "true",
+  SYNTAZ_ACTIONS_ENABLED: "true",
   WORKSPACE_DIR: "",
   ...extra,
 });
@@ -42,10 +42,10 @@ const ext = (extra = {}) => ({ Origin: EXT, "Sec-Fetch-Site": "cross-site", Auth
 const chatBody = (content) => JSON.stringify({ messages: [{ role: "user", content }] });
 
 before(async () => {
-  tmp = mkdtempSync(path.join(os.tmpdir(), "nova-panel-test-"));
+  tmp = mkdtempSync(path.join(os.tmpdir(), "syntaz-panel-test-"));
   writeFileSync(path.join(tmp, "token"), TOKEN, { mode: 0o600 });
   mock = await startMockProvider();
-  app = await startApp(env({ MCP_SERVERS: "nova-test", NOVA_BROWSER_TOKEN_FILE: path.join(tmp, "token") }));
+  app = await startApp(env({ MCP_SERVERS: "syntaz-test", SYNTAZ_BROWSER_TOKEN_FILE: path.join(tmp, "token") }));
 });
 after(() => {
   app?.child.kill();
@@ -91,7 +91,7 @@ describe("side panel → Syntaz API (extension origin + pairing code)", () => {
   });
 
   test("actions from the side panel still need approval; denial is enforced", async () => {
-    await mock.script([PLAN, step("mcp__nova-test__add_note", { text: "from the side panel" }), finish()]);
+    await mock.script([PLAN, step("mcp__syntaz-test__add_note", { text: "from the side panel" }), finish()]);
     const res = await fetch(app.base + "/api/agent", { method: "POST", headers: { ...json, ...ext() }, body: JSON.stringify({ goal: "Save a note" }) });
     assert.equal(res.status, 200);
     let runId;
@@ -147,8 +147,8 @@ describe("side panel → Syntaz API (extension origin + pairing code)", () => {
 // ---------------------------------------------------------------------------
 // The real Chrome side panel
 // ---------------------------------------------------------------------------
-const CHROME = process.env.NOVA_TEST_CHROME_BIN;
-describe("real Chrome side panel", { timeout: 180_000, skip: !CHROME || !existsSync(CHROME) ? "set NOVA_TEST_CHROME_BIN to run" : false }, () => {
+const CHROME = process.env.SYNTAZ_TEST_CHROME_BIN;
+describe("real Chrome side panel", { timeout: 180_000, skip: !CHROME || !existsSync(CHROME) ? "set SYNTAZ_TEST_CHROME_BIN to run" : false }, () => {
   let browser, panel, page, site, siteBase, lockedBase, real, realTmp, sw, bridgePort, tokenFile;
 
   const waitFor = async (fn, ms = 15_000) => {
@@ -182,12 +182,12 @@ describe("real Chrome side panel", { timeout: 180_000, skip: !CHROME || !existsS
     await p.bringToFront();
     await sleep(300);
   };
-  const startNova = (base) =>
-    startApp(env({ MCP_SERVERS: "browser", NOVA_BROWSER_PORT: String(bridgePort), NOVA_BROWSER_TOKEN_FILE: tokenFile, NOVA_BROWSER_SEARCH_URL: `${base}/search.html?q=` }));
+  const startSyntaz = (base) =>
+    startApp(env({ MCP_SERVERS: "browser", SYNTAZ_BROWSER_PORT: String(bridgePort), SYNTAZ_BROWSER_TOKEN_FILE: tokenFile, SYNTAZ_BROWSER_SEARCH_URL: `${base}/search.html?q=` }));
 
   before(async () => {
     const { default: puppeteer } = await import("puppeteer-core");
-    realTmp = mkdtempSync(path.join(os.tmpdir(), "nova-real-panel-"));
+    realTmp = mkdtempSync(path.join(os.tmpdir(), "syntaz-real-panel-"));
     site = http.createServer((req, res) => {
       const name = path.basename(req.url.split("?")[0]) || "index.html";
       try {
@@ -203,7 +203,7 @@ describe("real Chrome side panel", { timeout: 180_000, skip: !CHROME || !existsS
     lockedBase = `http://127.0.0.1:${site.address().port}`; // the same site under a host Syntaz was NOT allowed on
     tokenFile = path.join(realTmp, "token");
     bridgePort = await freePort();
-    real = await startNova(siteBase);
+    real = await startSyntaz(siteBase);
     await (await fetch(real.base + "/api/status")).json();
     await waitFor(async () => existsSync(tokenFile));
     const extDir = path.join(realTmp, "ext");
@@ -217,7 +217,7 @@ describe("real Chrome side panel", { timeout: 180_000, skip: !CHROME || !existsS
     sw = await (await browser.waitForTarget((t) => t.type() === "service_worker" && t.url().startsWith(`${EXT}/`))).worker();
     await waitFor(() => sw.evaluate(() => typeof chrome !== "undefined" && !!chrome.storage?.local));
     // Point the panel at this Syntaz. No pairing code is stored: opening the panel pairs by itself.
-    await sw.evaluate(async (novaUrl, port) => chrome.storage.local.set({ novaUrl, port }), real.base, bridgePort);
+    await sw.evaluate(async (syntazUrl, port) => chrome.storage.local.set({ syntazUrl, port }), real.base, bridgePort);
     page = await browser.newPage();
     await page.setViewport({ width: 1000, height: 700 });
     await page.goto(`${siteBase}/index.html`);
@@ -249,7 +249,7 @@ describe("real Chrome side panel", { timeout: 180_000, skip: !CHROME || !existsS
     await panel.reload();
     await helper.close();
     await show(page);
-    await waitFor(async () => (await text("#novaStatus")) === "Syntaz ready");
+    await waitFor(async () => (await text("#syntazStatus")) === "Syntaz ready");
     // Nothing to paste or press: the panel fetched the pairing code from Syntaz and the browser bridge connected.
     await waitFor(async () => (await text("#bridgeStatus")) === "Browser on");
     assert.equal(await sw.evaluate(async () => (await chrome.storage.local.get("token")).token), readFileSync(tokenFile, "utf8").trim());
@@ -378,7 +378,7 @@ describe("real Chrome side panel", { timeout: 180_000, skip: !CHROME || !existsS
     await sendInPanel("generate an image of a sunset");
     await waitFor(async () => /Groq can't make pictures\. To make pictures, choose OpenAI, Google Gemini, xAI \(Grok\) or Hugging Face/.test(await lastAssistant()));
     assert.equal(mock.seen.imageBodies.length, sent);
-    await panel.evaluate(() => refreshNova());
+    await panel.evaluate(() => refreshSyntaz());
   });
 
   test("switching tabs updates the indicator and the context", async () => {
@@ -406,19 +406,19 @@ describe("real Chrome side panel", { timeout: 180_000, skip: !CHROME || !existsS
     await page.goto(`${siteBase}/dynamic.html`);
     await waitFor(async () => (await ctx()) === "Watching: Live Board");
     await sleep(3500);
-    const idle0 = await panel.evaluate(() => window.__novaPanelStats.snapshots);
+    const idle0 = await panel.evaluate(() => window.__syntazPanelStats.snapshots);
     await sleep(3000); // the clock keeps ticking every 200 ms
-    const idle1 = await panel.evaluate(() => window.__novaPanelStats.snapshots);
+    const idle1 = await panel.evaluate(() => window.__syntazPanelStats.snapshots);
     assert.ok(idle1 - idle0 <= 1, `a ticking clock caused ${idle1 - idle0} re-reads`);
     await page.evaluate(() => window.addItem("Breaking: new item 77"));
-    await waitFor(async () => (await panel.evaluate(() => window.__novaPanelStats.snapshots)) > idle1, 8000);
+    await waitFor(async () => (await panel.evaluate(() => window.__syntazPanelStats.snapshots)) > idle1, 8000);
     const sent = (await chat("What is new?")).messages.at(-1).content;
     assert.match(sent, /Breaking: new item 77/);
     assert.ok(!sent.includes("pineapple-secret-42"), "text being edited by the user is not shared");
     assert.ok(!sent.includes("hunter2"));
     await page.evaluate(() => window.goView(2, "Live Board - View 2")); // pushState: no page load
     await waitFor(async () => (await ctx()) === "Watching: Live Board - View 2");
-    const reads = await panel.evaluate(() => window.__novaPanelStats.snapshots);
+    const reads = await panel.evaluate(() => window.__syntazPanelStats.snapshots);
     assert.ok(reads < 25, `too many reads: ${reads}`);
   });
 
@@ -534,7 +534,7 @@ describe("real Chrome side panel", { timeout: 180_000, skip: !CHROME || !existsS
     assert.match(await panel.evaluate(() => [...document.querySelectorAll(".msg.assistant:last-child .steps .arg")].pop().textContent), /“Show details”/);
     assert.match(await lastAssistant(), /Checked by Syntaz[\s\S]*✔ mcp__browser__click: Clicked "Show details" — the page changed\./);
     assert.equal(await page.$eval("#status", (e) => e.textContent), "Details shown");
-    assert.equal(await page.evaluate(() => document.querySelectorAll("nova-cursor").length), 1);
+    assert.equal(await page.evaluate(() => document.querySelectorAll("syntaz-cursor").length), 1);
     // Header Pause / Resume.
     await panel.click("#bridgePause");
     await waitFor(async () => (await text("#bridgeStatus")) === "Browser paused" && (await text("#bridgePause")) === "Resume");
@@ -552,7 +552,7 @@ describe("real Chrome side panel", { timeout: 180_000, skip: !CHROME || !existsS
     await waitFor(async () => (await lastRunState()) === "Stopped by you");
     await sleep(3500);
     assert.equal(await page.$eval("#status", (e) => e.textContent), "Nothing yet", "Stop cancelled the pending click");
-    assert.equal(await page.evaluate(() => document.querySelectorAll("nova-cursor").length), 0, "Stop removed the cursor");
+    assert.equal(await page.evaluate(() => document.querySelectorAll("syntaz-cursor").length), 0, "Stop removed the cursor");
     await sw.evaluate(() => chrome.storage.local.set({ cursorMs: 300 }));
     await panel.click("#modeAuto");
   });
@@ -718,7 +718,7 @@ describe("real Chrome side panel", { timeout: 180_000, skip: !CHROME || !existsS
     await panel.click("#closeSettings");
     // Right-click "Ask Syntaz about …": the question is put in the box, not sent.
     const sentBefore = mock.seen.chatBodies.length;
-    await sw.evaluate(() => askFromMenu({ menuItemId: "nova-ask-selection", selectionText: "photosynthesis" }, null));
+    await sw.evaluate(() => askFromMenu({ menuItemId: "syntaz-ask-selection", selectionText: "photosynthesis" }, null));
     await waitFor(async () => (await panel.$eval("#input", (e) => e.value)) === "Explain this: “photosynthesis”");
     assert.equal(mock.seen.chatBodies.length, sentBefore, "nothing was sent by itself");
     await panel.evaluate(() => (document.getElementById("input").value = ""));
@@ -923,17 +923,17 @@ describe("real Chrome side panel", { timeout: 180_000, skip: !CHROME || !existsS
     await panel.click("#modeAuto");
     // Reopening the panel does not reconnect behind the user's back after Disconnect.
     await panel.reload();
-    await waitFor(async () => (await text("#novaStatus")) === "Syntaz ready");
+    await waitFor(async () => (await text("#syntazStatus")) === "Syntaz ready");
     await sleep(2500);
     assert.equal(await text("#bridgeStatus"), "Browser off");
   });
 
   test("Syntaz unreachable shows an error with Retry, which works once Syntaz is back", async () => {
-    await sw.evaluate(() => chrome.storage.local.set({ novaUrl: "http://127.0.0.1:9" }));
+    await sw.evaluate(() => chrome.storage.local.set({ syntazUrl: "http://127.0.0.1:9" }));
     await sendInPanel("are you there?");
     await waitFor(async () => /Syntaz isn't running at http:\/\/127\.0\.0\.1:9/.test(await lastAssistant()));
     assert.ok(await panel.$(".msg.assistant:last-child .retry"));
-    await sw.evaluate((u) => chrome.storage.local.set({ novaUrl: u }), real.base);
+    await sw.evaluate((u) => chrome.storage.local.set({ syntazUrl: u }), real.base);
     await panel.click(".msg.assistant:last-child .retry");
     await waitFor(async () => /Hello from mock/.test(await lastAssistant()));
   });
@@ -943,9 +943,9 @@ describe("real Chrome side panel", { timeout: 180_000, skip: !CHROME || !existsS
     await waitFor(async () => (await text("#bridgeStatus")) === "Browser on");
     real.child.kill();
     await waitFor(async () => (await text("#bridgeStatus")) !== "Browser on", 20_000);
-    real = await startNova(siteBase);
+    real = await startSyntaz(siteBase);
     await fetch(real.base + "/api/status"); // starts the browser server again on the same port
-    await sw.evaluate((u) => chrome.storage.local.set({ novaUrl: u }), real.base);
+    await sw.evaluate((u) => chrome.storage.local.set({ syntazUrl: u }), real.base);
     await waitFor(async () => (await text("#bridgeStatus")) === "Browser on", 60_000); // the extension reconnects by itself
     await chat("back?");
     assert.match(await lastAssistant(), /Hello from mock/);
@@ -954,7 +954,7 @@ describe("real Chrome side panel", { timeout: 180_000, skip: !CHROME || !existsS
   test("Markdown from the model is rendered safely (lists, code, links; no markup or script links)", async () => {
     const r = await panel.evaluate(() => {
       const d = document.createElement("div");
-      NovaMarkdown.render(d, "## Title\n- **one**\n- two with `code`\n\n```\n<b>x</b>\n```\n[ok](https://example.com) [bad](javascript:alert(1)) <img src=x onerror=alert(1)>\n\nsnake_case_name");
+      SyntazMarkdown.render(d, "## Title\n- **one**\n- two with `code`\n\n```\n<b>x</b>\n```\n[ok](https://example.com) [bad](javascript:alert(1)) <img src=x onerror=alert(1)>\n\nsnake_case_name");
       return { html: d.innerHTML, links: [...d.querySelectorAll("a")].map((a) => a.href), imgs: d.querySelectorAll("img").length, li: d.querySelectorAll("li").length, pre: d.querySelector("pre").textContent };
     });
     assert.equal(r.li, 2);

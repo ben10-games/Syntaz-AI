@@ -8,7 +8,7 @@ Design and build the official website for **Syntaz AI**: a friendly, free AI hel
 
 ## About the product (use these facts; don't invent others)
 
-Syntaz AI was made by one developer (publisher name: **Novaryn**) and used to be called "Nova AI". It comes in two versions:
+Syntaz AI was made by one developer (publisher name: **Novaryn**). It comes in two versions:
 
 **1. Syntaz (the full app, Windows and Mac).**
 - Install it with "Syntaz Setup", a window with buttons, no command line.
@@ -32,10 +32,10 @@ Syntaz AI was made by one developer (publisher name: **Novaryn**) and used to be
 **2. Syntaz Lite.** One .html file: double-click it and it opens in any browser. Nothing to install, so it works on Chromebooks and school laptops. You chat with a free Gemini key and can add photos (for example a homework question) and text files. It can only chat; it can't act on websites.
 
 **Real download links** (always the newest version):
-- Windows: `https://github.com/ben10-games/Nova-AI/releases/latest/download/Syntaz-for-Windows.zip`
-- Mac: `https://github.com/ben10-games/Nova-AI/releases/latest/download/Syntaz-for-Mac.zip`
-- Syntaz Lite: `https://github.com/ben10-games/Nova-AI/releases/latest/download/Syntaz-Lite.html`
-- Source code: `https://github.com/ben10-games/Nova-AI`
+- Windows: `https://github.com/ben10-games/Syntaz-AI/releases/latest/download/Syntaz-for-Windows.zip`
+- Mac: `https://github.com/ben10-games/Syntaz-AI/releases/latest/download/Syntaz-for-Mac.zip`
+- Syntaz Lite: `https://github.com/ben10-games/Syntaz-AI/releases/latest/download/Syntaz-Lite.html`
+- Source code: `https://github.com/ben10-games/Syntaz-AI`
 
 Put these URLs in one config object at the top of the code, because the repository may be renamed.
 
@@ -80,7 +80,7 @@ Put these URLs in one config object at the top of the code, because the reposito
 
 ## Pages
 
-Make a multi-page static site with a shared header (logo, nav: Features, Download, Chat, Safety, FAQ; a "Download" button) and a footer (GitHub link, "Made by Novaryn", "Syntaz AI used to be called Nova AI", version 1.3.0).
+Make a multi-page static site with a shared header (logo, nav: Features, Download, Chat, Safety, FAQ; a "Download" button) and a footer (GitHub link, "Made by Novaryn", version 1.3.0).
 
 1. **Home**
    - Hero: logo, a short headline (e.g. "Your AI helper, right inside Chrome"), a one-line explanation, and two buttons: **Download Syntaz** (picks Windows or Mac from the visitor's system, with a link to the other) and **Chat now** (goes to the Chat page).
@@ -105,7 +105,7 @@ Make a multi-page static site with a shared header (logo, nav: Features, Downloa
    - 1.0: first release, browser actions, Gemini or LM Studio, one-click setup.
    - 1.1: Syntaz Lite.
    - 1.2: new look everywhere, suggestions that fit the page, easier setup.
-   - 1.3: renamed from Nova AI to Syntaz AI, new logo.
+   - 1.3: the name Syntaz AI and a new logo.
 
 ## The Chat page: real chat with Gemini, in the browser only
 

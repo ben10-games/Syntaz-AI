@@ -1,7 +1,7 @@
 // Browser (Chrome extension) integration tests.
-//  - Always: Syntaz + the real nova-browser MCP server + a FAKE extension (WebSocket client
+//  - Always: Syntaz + the real syntaz-browser MCP server + a FAKE extension (WebSocket client
 //    presenting the extension's origin) that can be scripted to fail in specific ways.
-//  - Optional: real Chrome with the real extension (set NOVA_TEST_CHROME_BIN).
+//  - Optional: real Chrome with the real extension (set SYNTAZ_TEST_CHROME_BIN).
 import assert from "node:assert/strict";
 import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import http from "node:http";
@@ -38,7 +38,7 @@ const commonEnv = (mockUrl) => ({
   RATE_LIMIT_CONCURRENT: "1",
   BASIC_AUTH_USER: "",
   BASIC_AUTH_PASSWORD: "",
-  NOVA_ACTIONS_ENABLED: "true",
+  SYNTAZ_ACTIONS_ENABLED: "true",
   WORKSPACE_DIR: "",
   AGENT_APPROVAL_TIMEOUT_MS: "5000",
 });
@@ -133,11 +133,11 @@ const ELEMENTS = {
 };
 
 before(async () => {
-  tmp = mkdtempSync(path.join(os.tmpdir(), "nova-browser-test-"));
+  tmp = mkdtempSync(path.join(os.tmpdir(), "syntaz-browser-test-"));
   tokenFile = path.join(tmp, "token");
   wsPort = await freePort();
   mock = await startMockProvider();
-  app = await startApp({ ...commonEnv(mock.url), MCP_SERVERS: "browser", NOVA_BROWSER_PORT: String(wsPort), NOVA_BROWSER_TOKEN_FILE: tokenFile, MCP_TOOL_TIMEOUT_MS: "2500" });
+  app = await startApp({ ...commonEnv(mock.url), MCP_SERVERS: "browser", SYNTAZ_BROWSER_PORT: String(wsPort), SYNTAZ_BROWSER_TOKEN_FILE: tokenFile, MCP_TOOL_TIMEOUT_MS: "2500" });
   await status(); // starts the browser MCP server (and its WebSocket)
   for (let i = 0; i < 50 && !existsSync(tokenFile); i++) await new Promise((r) => setTimeout(r, 100));
 });
@@ -521,10 +521,10 @@ describe("with a connected (fake) extension", () => {
       assert.ok(of(events, "notice").some((n) => /using "search", which your request names/.test(n.message)));
       assert.equal(of(events, "approval_required")[0].arguments.field, "search");
       assert.equal(picky.requests().filter((m) => m.command === "fill_field").at(-1).params.field, "search");
-      // Several fields named: the one the request ties to this text ("Username with nova").
+      // Several fields named: the one the request ties to this text ("Username with syntaz").
       const checksBefore = checks.length;
-      await mock.script([PLAN, step(B("type_text"), { text: "nova" }), step(B("type_text"), { text: "nova" }), finish("Typed.")]);
-      events = await run("Fill in Username with nova and Notes with hello there");
+      await mock.script([PLAN, step(B("type_text"), { text: "syntaz" }), step(B("type_text"), { text: "syntaz" }), finish("Typed.")]);
+      events = await run("Fill in Username with syntaz and Notes with hello there");
       assert.equal(of(events, "approval_required")[0]?.arguments.field, "username");
       assert.ok(checks.length > checksBefore);
       // ...but nothing is chosen when the request names none of the options.
@@ -597,8 +597,8 @@ describe("with a connected (fake) extension", () => {
     assert.equal(fill.executed, false);
     assert.match(fill.output, /"Username" asks for personal details, and "testuser" is not something the user gave[\s\S]*\[needs_user_info\]/);
     // ...but details the user gave are typed.
-    await mock.script([step(B("fill_field"), { field: "Username", text: "nova" }), finish("Done.")]);
-    events = await run("Type nova into the username", { focus: "browser" });
+    await mock.script([step(B("fill_field"), { field: "Username", text: "syntaz" }), finish("Done.")]);
+    events = await run("Type syntaz into the username", { focus: "browser" });
     assert.equal(resultFor(events, B("fill_field")).ok, true);
   });
 
@@ -668,14 +668,14 @@ describe("with a connected (fake) extension", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Optional: the REAL extension in a real Chrome (set NOVA_TEST_CHROME_BIN).
+// Optional: the REAL extension in a real Chrome (set SYNTAZ_TEST_CHROME_BIN).
 // ---------------------------------------------------------------------------
 describe("protocol contract between Syntaz's browser server and the extension", () => {
   test("protocol.json, the extension's command handlers and the server's requests list exactly the same commands", () => {
     const bg = readFileSync(path.join(root, "chrome-extension/background.js"), "utf8");
     const block = bg.slice(bg.indexOf("const COMMANDS = {"), bg.indexOf("\n};", bg.indexOf("const COMMANDS = {")));
     const handlers = [...block.matchAll(/^  async ([a-z_]+)\(/gm)].map((m) => m[1]).sort();
-    const server = readFileSync(path.join(root, "mcp-servers/nova-browser-server.mjs"), "utf8");
+    const server = readFileSync(path.join(root, "mcp-servers/syntaz-browser-server.mjs"), "utf8");
     const sent = [...new Set([...server.matchAll(/request\("([a-z_]+)"/g)].map((m) => m[1]))].sort();
     const declared = Object.keys(PROTOCOL.commands).sort();
     assert.deepEqual(handlers, declared, "extension handlers == protocol.json");
@@ -726,12 +726,12 @@ describe("protocol contract between Syntaz's browser server and the extension", 
   });
 });
 
-const CHROME = process.env.NOVA_TEST_CHROME_BIN;
-describe("real Chrome with the real extension", { skip: !CHROME || !existsSync(CHROME) ? "set NOVA_TEST_CHROME_BIN to run" : false }, () => {
+const CHROME = process.env.SYNTAZ_TEST_CHROME_BIN;
+describe("real Chrome with the real extension", { skip: !CHROME || !existsSync(CHROME) ? "set SYNTAZ_TEST_CHROME_BIN to run" : false }, () => {
   let browser, site, siteUrl, real, realTmp, realPort, realToken;
   before(async () => {
     const { default: puppeteer } = await import("puppeteer-core");
-    realTmp = mkdtempSync(path.join(os.tmpdir(), "nova-real-chrome-"));
+    realTmp = mkdtempSync(path.join(os.tmpdir(), "syntaz-real-chrome-"));
     site = http.createServer((req, res) => {
       const name = req.url.split("?")[0] === "/" ? "index.html" : path.basename(req.url.split("?")[0]);
       try {
@@ -746,7 +746,7 @@ describe("real Chrome with the real extension", { skip: !CHROME || !existsSync(C
     siteUrl = `http://127.0.0.1:${site.address().port}`;
     realPort = await freePort();
     realToken = path.join(realTmp, "token");
-    real = await startApp({ ...commonEnv(mock.url), MCP_SERVERS: "browser", NOVA_BROWSER_PORT: String(realPort), NOVA_BROWSER_TOKEN_FILE: realToken, NOVA_ENABLE_TEST_FIXTURES: "true", NOVA_BROWSER_SITE_SEARCH_BASE: `${siteUrl}/sitesearch.html` });
+    real = await startApp({ ...commonEnv(mock.url), MCP_SERVERS: "browser", SYNTAZ_BROWSER_PORT: String(realPort), SYNTAZ_BROWSER_TOKEN_FILE: realToken, SYNTAZ_ENABLE_TEST_FIXTURES: "true", SYNTAZ_BROWSER_SITE_SEARCH_BASE: `${siteUrl}/sitesearch.html` });
     await (await fetch(real.base + "/api/status")).json();
     // Test copy of the extension: Chrome's site-access prompt needs a human, so 127.0.0.1 is pre-granted.
     const ext = path.join(realTmp, "ext");
@@ -1141,11 +1141,11 @@ describe("real Chrome with the real extension", { skip: !CHROME || !existsSync(C
       p.evaluate(() => {
         window.__cursorLog = [];
         new MutationObserver((ms) => {
-          for (const m of ms) if (m.target.tagName === "NOVA-CURSOR" && m.attributeName === "data-state") window.__cursorLog.push(m.target.dataset.state);
+          for (const m of ms) if (m.target.tagName === "SYNTAZ-CURSOR" && m.attributeName === "data-state") window.__cursorLog.push(m.target.dataset.state);
         }).observe(document.documentElement, { subtree: true, attributes: true, attributeFilter: ["data-state"] });
       });
     const log = (p = page) => p.evaluate(() => window.__cursorLog.slice());
-    const hosts = (p = page) => p.evaluate(() => document.querySelectorAll("nova-cursor").length);
+    const hosts = (p = page) => p.evaluate(() => document.querySelectorAll("syntaz-cursor").length);
     await record(page);
 
     // Click by label: cursor moves to the button, click pulse, REAL click verified by its effect.
@@ -1157,14 +1157,14 @@ describe("real Chrome with the real extension", { skip: !CHROME || !existsSync(C
     assert.ok(seq.indexOf("move") >= 0 && seq.indexOf("click") > seq.indexOf("move"), `cursor moved then clicked: ${seq}`);
     assert.equal(await hosts(), 1);
     const btn = await page.$eval("#details", (e) => e.getBoundingClientRect().toJSON());
-    const at = await page.$eval("nova-cursor", (h) => ({ x: +h.dataset.x, y: +h.dataset.y }));
+    const at = await page.$eval("syntaz-cursor", (h) => ({ x: +h.dataset.x, y: +h.dataset.y }));
     assert.ok(at.x >= btn.left && at.x <= btn.right && at.y >= btn.top && at.y <= btn.bottom, `cursor at ${JSON.stringify(at)} is on the button ${JSON.stringify(btn)}`);
     // The overlay never intercepts: the page sees its own button under the cursor, and the user's real clicks go through.
     assert.equal(await page.evaluate(({ x, y }) => document.elementFromPoint(x, y).id, at), "details");
     const count = await page.$eval("#count", (e) => e.getBoundingClientRect().toJSON());
     await page.mouse.click(count.left + count.width / 2, count.top + count.height / 2);
     assert.equal(await page.$eval("#count", (e) => e.textContent), "Count 1", "a trusted user click passed through");
-    assert.equal(await page.$eval("nova-cursor", (h) => getComputedStyle(h).pointerEvents), "none");
+    assert.equal(await page.$eval("syntaz-cursor", (h) => getComputedStyle(h).pointerEvents), "none");
 
     // A click with no effect is reported honestly.
     ({ r } = await one("click", { target: "Do nothing" }));
@@ -1253,7 +1253,7 @@ describe("real Chrome with the real extension", { skip: !CHROME || !existsSync(C
     const page = (await browser.pages()).find((p) => p.url().startsWith(siteUrl));
     await page.goto(`${siteUrl}/cursor.html`);
     await page.bringToFront();
-    const moving = () => page.evaluate(() => document.querySelector("nova-cursor")?.dataset.state === "move");
+    const moving = () => page.evaluate(() => document.querySelector("syntaz-cursor")?.dataset.state === "move");
     const waitMoving = async () => {
       for (let i = 0; i < 100 && !(await moving()); i++) await new Promise((r) => setTimeout(r, 50));
       assert.ok(await moving(), "the cursor started moving");
@@ -1300,7 +1300,7 @@ describe("real Chrome with the real extension", { skip: !CHROME || !existsSync(C
     run1.controller.abort();
     await run1.done;
     assert.equal(await page.$eval("#status", (e) => e.textContent), "Nothing yet", "Disconnect: the click never happened");
-    assert.equal(await page.evaluate(() => document.querySelectorAll("nova-cursor").length), 0, "cursor removed on disconnect");
+    assert.equal(await page.evaluate(() => document.querySelectorAll("syntaz-cursor").length), 0, "cursor removed on disconnect");
     // Reconnect for the remaining tests.
     await worker.evaluate(async () => {
       await chrome.storage.session.set({ intent: true });

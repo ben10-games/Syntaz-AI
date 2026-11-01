@@ -37,5 +37,5 @@
 
   const api = { checkRequest, clean };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
-  else root.NovaProtocolCheck = api;
+  else root.SyntazProtocolCheck = api;
 })(typeof self !== "undefined" ? self : globalThis);

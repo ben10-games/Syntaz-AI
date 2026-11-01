@@ -69,7 +69,7 @@ function ConversationItem({
 
   if (editing) {
     return (
-      <li className="flex items-center gap-1 rounded-lg bg-ink-800 py-1 pl-2 pr-1 ring-1 ring-nova-500/60">
+      <li className="flex items-center gap-1 rounded-lg bg-ink-800 py-1 pl-2 pr-1 ring-1 ring-syntaz-500/60">
         <input
           ref={inputRef}
           value={draft}
@@ -129,7 +129,7 @@ function ConversationItem({
       >
         <span className="truncate">{c.title}</span>
         {streaming && (
-          <span className="ml-auto h-1.5 w-1.5 shrink-0 animate-pulse rounded-full bg-nova-400" aria-label="Generating" />
+          <span className="ml-auto h-1.5 w-1.5 shrink-0 animate-pulse rounded-full bg-syntaz-400" aria-label="Generating" />
         )}
       </button>
       <div
@@ -218,7 +218,7 @@ export default function Sidebar({
         aria-hidden
       />
       <aside
-        id="nova-sidebar"
+        id="syntaz-sidebar"
         aria-label="Conversations"
         inert={!open}
         className={`fixed inset-y-0 left-0 z-40 flex w-[280px] flex-col border-r border-white/10 glass transition-[transform,margin] duration-200 ease-out md:relative md:z-auto ${
@@ -234,7 +234,7 @@ export default function Sidebar({
             type="button"
             onClick={onClose}
             aria-label="Close sidebar"
-            aria-controls="nova-sidebar"
+            aria-controls="syntaz-sidebar"
             title="Close sidebar (Ctrl+B)"
             className="rounded-lg p-2 text-zinc-400 transition-colors hover:bg-ink-800 hover:text-zinc-100"
           >
@@ -246,7 +246,7 @@ export default function Sidebar({
           <button
             type="button"
             onClick={onNew}
-            className="flex w-full items-center gap-2.5 rounded-xl bg-nova-600 px-3 py-2.5 text-sm font-medium text-ink-950 shadow-sm shadow-nova-900/40 transition-colors hover:bg-nova-500"
+            className="flex w-full items-center gap-2.5 rounded-xl bg-syntaz-600 px-3 py-2.5 text-sm font-medium text-ink-950 shadow-sm shadow-syntaz-900/40 transition-colors hover:bg-syntaz-500"
           >
             <PlusIcon width={17} height={17} />
             New chat
@@ -259,7 +259,7 @@ export default function Sidebar({
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search chats"
               aria-label="Search conversations"
-              className="w-full rounded-lg border border-ink-700 bg-ink-850 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-nova-500/70 focus:outline-none"
+              className="w-full rounded-lg border border-ink-700 bg-ink-850 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-syntaz-500/70 focus:outline-none"
             />
           )}
         </div>

@@ -132,7 +132,7 @@ export function getAiConfig(): AiConfig {
     apiKey,
     model: env("AI_MODEL", "LMSTUDIO_MODEL"),
     allowedModels: allowed && allowed.length > 0 ? allowed : null,
-    systemPrompt: env("AI_SYSTEM_PROMPT", "NOVA_SYSTEM_PROMPT") ?? DEFAULT_SYSTEM_PROMPT,
+    systemPrompt: env("AI_SYSTEM_PROMPT", "SYNTAZ_SYSTEM_PROMPT") ?? DEFAULT_SYSTEM_PROMPT,
     contextLength: positiveInt("AI_CONTEXT_LENGTH", null),
     maxOutputTokens: positiveInt("AI_MAX_OUTPUT_TOKENS", null),
     reasoningEffort: reasoningEffort(),
@@ -179,7 +179,7 @@ export function getAgentConfig(): AgentConfig {
   if (mode !== "json" && mode !== "native") throw new ConfigError('AI_AGENT_MODE must be "json" or "native".');
   const dir = env("WORKSPACE_DIR");
   return {
-    enabled: process.env.NOVA_ACTIONS_ENABLED !== "false",
+    enabled: process.env.SYNTAZ_ACTIONS_ENABLED !== "false",
     mode,
     maxSteps: Math.min(positiveInt("AGENT_MAX_STEPS", 8)!, 25),
     approvalTimeoutMs: positiveInt("AGENT_APPROVAL_TIMEOUT_MS", 10 * 60_000)!,
@@ -199,7 +199,7 @@ export type TrustedMcpServer = {
   label: string;
   /** Script path relative to the app root, run with the same Node.js binary as the server. */
   script: string;
-  /** Only available when NOVA_ENABLE_TEST_FIXTURES=true (automated tests). */
+  /** Only available when SYNTAZ_ENABLE_TEST_FIXTURES=true (automated tests). */
   testOnly?: boolean;
   /** Tools Syntaz itself classifies as read-only: they run without approval. Everything else needs approval. */
   readOnlyTools?: string[];
@@ -224,17 +224,17 @@ export type TrustedMcpServer = {
 };
 
 export const TRUSTED_MCP_SERVERS: TrustedMcpServer[] = [
-  { id: "nova-test", label: "Syntaz test server", script: "mcp-servers/nova-test-server.mjs" },
+  { id: "syntaz-test", label: "Syntaz test server", script: "mcp-servers/syntaz-test-server.mjs" },
   {
     id: "blender",
     label: "Blender (Syntaz bridge)",
-    script: "mcp-servers/nova-blender-server.mjs",
+    script: "mcp-servers/syntaz-blender-server.mjs",
     readOnlyTools: ["scene_info", "object_info"],
   },
   {
     id: "browser",
     label: "Chrome (Syntaz Browser Bridge)",
-    script: "mcp-servers/nova-browser-server.mjs",
+    script: "mcp-servers/syntaz-browser-server.mjs",
     readOnlyTools: ["browser_status", "list_tabs", "get_page", "list_elements", "read_field", "scroll", "look_at_page", "video_transcript"],
     haltOnFailure: true,
     // Failures that changed nothing in the page and that the next step can fix (e.g. list the elements again).
@@ -265,8 +265,8 @@ export const TRUSTED_MCP_SERVERS: TrustedMcpServer[] = [
     precheckTools: { click: "check_action", type_text: "check_action", fill_field: "check_action", select_option: "check_action" },
     internalTools: ["check_action"],
   },
-  { id: "nova-faults", label: "Fault-injection test server", script: "test/fixtures/mcp-fault-server.mjs", testOnly: true },
-  { id: "nova-missing", label: "Missing test server", script: "test/fixtures/does-not-exist.mjs", testOnly: true },
+  { id: "syntaz-faults", label: "Fault-injection test server", script: "test/fixtures/mcp-fault-server.mjs", testOnly: true },
+  { id: "syntaz-missing", label: "Missing test server", script: "test/fixtures/does-not-exist.mjs", testOnly: true },
 ];
 
 export type McpConfig = {
@@ -282,7 +282,7 @@ export function getMcpConfig(): McpConfig {
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
-  const fixtures = process.env.NOVA_ENABLE_TEST_FIXTURES === "true";
+  const fixtures = process.env.SYNTAZ_ENABLE_TEST_FIXTURES === "true";
   const servers: TrustedMcpServer[] = [];
   const ignored: string[] = [];
   for (const id of [...new Set(requested)]) {
@@ -304,36 +304,36 @@ export const BROWSER_EXTENSION_ID = DEFAULT_EXTENSION_ID;
 
 /** Where the browser MCP server listens for the extension (always 127.0.0.1) and keeps its pairing token. */
 export function getBrowserConfig(): { port: number; tokenFile: string; extensionId: string; shotDir: string; searchUrl: string } {
-  const port = positiveInt("NOVA_BROWSER_PORT", 9895)!;
-  if (port < 1024 || port > 65535) throw new ConfigError("NOVA_BROWSER_PORT must be between 1024 and 65535.");
-  // Works on Linux, macOS and Windows (C:\Users\<name>\.config\nova-browser\token).
+  const port = positiveInt("SYNTAZ_BROWSER_PORT", 9895)!;
+  if (port < 1024 || port > 65535) throw new ConfigError("SYNTAZ_BROWSER_PORT must be between 1024 and 65535.");
+  // Works on Linux, macOS and Windows (C:\Users\<name>\.config\syntaz-browser\token).
   const home = homeDir();
-  const tokenFile = env("NOVA_BROWSER_TOKEN_FILE") ?? (home ? joinPath(home, ".config", "nova-browser", "token") : "");
-  if (!isAbsolutePath(tokenFile)) throw new ConfigError("NOVA_BROWSER_TOKEN_FILE must be an absolute path.");
-  const extensionId = env("NOVA_BROWSER_EXTENSION_ID") ?? BROWSER_EXTENSION_ID;
-  if (!/^[a-p]{32}$/.test(extensionId)) throw new ConfigError("NOVA_BROWSER_EXTENSION_ID is not a valid Chrome extension id.");
-  const shotDir = joinPath(process.env.TMPDIR || process.env.TEMP || process.env.TMP || "/tmp", "nova-browser-shots");
+  const tokenFile = env("SYNTAZ_BROWSER_TOKEN_FILE") ?? (home ? joinPath(home, ".config", "syntaz-browser", "token") : "");
+  if (!isAbsolutePath(tokenFile)) throw new ConfigError("SYNTAZ_BROWSER_TOKEN_FILE must be an absolute path.");
+  const extensionId = env("SYNTAZ_BROWSER_EXTENSION_ID") ?? BROWSER_EXTENSION_ID;
+  if (!/^[a-p]{32}$/.test(extensionId)) throw new ConfigError("SYNTAZ_BROWSER_EXTENSION_ID is not a valid Chrome extension id.");
+  const shotDir = joinPath(process.env.TMPDIR || process.env.TEMP || process.env.TMP || "/tmp", "syntaz-browser-shots");
   // The search page Syntaz's search_web tool opens; the query is URL-encoded and appended.
-  const searchUrl = env("NOVA_BROWSER_SEARCH_URL") ?? "https://html.duckduckgo.com/html/?q=";
+  const searchUrl = env("SYNTAZ_BROWSER_SEARCH_URL") ?? "https://html.duckduckgo.com/html/?q=";
   let parsed: URL;
   try {
     parsed = new URL(searchUrl);
   } catch {
-    throw new ConfigError("NOVA_BROWSER_SEARCH_URL is not a valid URL.");
+    throw new ConfigError("SYNTAZ_BROWSER_SEARCH_URL is not a valid URL.");
   }
   const local = parsed.hostname === "127.0.0.1" || parsed.hostname === "localhost";
-  if (parsed.protocol !== "https:" && !(local && parsed.protocol === "http:")) throw new ConfigError("NOVA_BROWSER_SEARCH_URL must use https.");
-  if (parsed.username || parsed.password) throw new ConfigError("NOVA_BROWSER_SEARCH_URL must not contain credentials.");
+  if (parsed.protocol !== "https:" && !(local && parsed.protocol === "http:")) throw new ConfigError("SYNTAZ_BROWSER_SEARCH_URL must use https.");
+  if (parsed.username || parsed.password) throw new ConfigError("SYNTAZ_BROWSER_SEARCH_URL must not contain credentials.");
   return { port, tokenFile, extensionId, shotDir, searchUrl };
 }
 
 /** Where the Blender MCP server finds the Syntaz Blender Bridge (always on 127.0.0.1). */
 export function getBlenderConfig(): { port: number; tokenFile: string } {
-  const port = positiveInt("NOVA_BLENDER_PORT", 9890)!;
-  if (port < 1024 || port > 65535) throw new ConfigError("NOVA_BLENDER_PORT must be between 1024 and 65535.");
+  const port = positiveInt("SYNTAZ_BLENDER_PORT", 9890)!;
+  if (port < 1024 || port > 65535) throw new ConfigError("SYNTAZ_BLENDER_PORT must be between 1024 and 65535.");
   const home = homeDir();
-  const tokenFile = env("NOVA_BLENDER_TOKEN_FILE") ?? (home ? joinPath(home, ".config", "nova-blender", "token") : "");
-  if (tokenFile && !isAbsolutePath(tokenFile)) throw new ConfigError("NOVA_BLENDER_TOKEN_FILE must be an absolute path.");
+  const tokenFile = env("SYNTAZ_BLENDER_TOKEN_FILE") ?? (home ? joinPath(home, ".config", "syntaz-blender", "token") : "");
+  if (tokenFile && !isAbsolutePath(tokenFile)) throw new ConfigError("SYNTAZ_BLENDER_TOKEN_FILE must be an absolute path.");
   return { port, tokenFile };
 }
 

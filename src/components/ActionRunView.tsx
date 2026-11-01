@@ -12,7 +12,7 @@ type Props = {
 };
 
 const STATUS: Record<ActionRun["status"], { label: string; className: string }> = {
-  running: { label: "Running", className: "bg-nova-500/15 text-nova-300" },
+  running: { label: "Running", className: "bg-syntaz-500/15 text-syntaz-300" },
   awaiting_approval: { label: "Needs your approval", className: "bg-amber-500/15 text-amber-200" },
   completed: { label: "Completed", className: "bg-emerald-500/15 text-emerald-300" },
   failed: { label: "Failed", className: "bg-red-500/15 text-red-300" },
@@ -31,7 +31,7 @@ function pretty(value: unknown): string {
 function callState(call: ToolCallView, live: boolean): { label: string; className: string } {
   if (call.approval === "pending") return { label: "Waiting for approval", className: "text-amber-200" };
   if (call.approval === "denied") return { label: "Declined — not run", className: "text-zinc-400" };
-  if (!call.result) return live ? { label: "Running…", className: "text-nova-300" } : { label: "Not run", className: "text-zinc-400" };
+  if (!call.result) return live ? { label: "Running…", className: "text-syntaz-300" } : { label: "Not run", className: "text-zinc-400" };
   if (!call.result.executed) return { label: "Not run", className: "text-amber-200" };
   return call.result.ok ? { label: `Done · ${call.result.durationMs} ms`, className: "text-emerald-300" } : { label: "Failed", className: "text-red-300" };
 }
@@ -67,7 +67,7 @@ function ApprovalCard({ call, onDecision }: { call: ToolCallView; onDecision: Pr
           type="button"
           disabled={busy}
           onClick={() => decide(true)}
-          className="rounded-lg bg-nova-600 px-3.5 py-1.5 text-sm font-medium text-ink-950 transition-colors hover:bg-nova-500 disabled:opacity-50"
+          className="rounded-lg bg-syntaz-600 px-3.5 py-1.5 text-sm font-medium text-ink-950 transition-colors hover:bg-syntaz-500 disabled:opacity-50"
         >
           Allow once
         </button>
@@ -92,7 +92,7 @@ function CallCard({ call, live, onDecision }: { call: ToolCallView; live: boolea
     <li className="relative pl-7">
       <span
         className={`absolute left-0 top-1 grid h-5 w-5 place-items-center rounded-full ring-4 ring-ink-850 ${
-          call.result?.ok ? "bg-emerald-500/20 text-emerald-300" : call.result || call.approval === "denied" ? "bg-ink-700 text-zinc-400" : "bg-nova-500/20 text-nova-300"
+          call.result?.ok ? "bg-emerald-500/20 text-emerald-300" : call.result || call.approval === "denied" ? "bg-ink-700 text-zinc-400" : "bg-syntaz-500/20 text-syntaz-300"
         }`}
         aria-hidden
       >
@@ -156,13 +156,13 @@ function ActionRunView({ run, live, onDecision }: Props) {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <span className="flex items-center gap-1.5 text-sm font-semibold text-zinc-100">
-          <BoltIcon width={15} height={15} className="text-nova-300" />
+          <BoltIcon width={15} height={15} className="text-syntaz-300" />
           Syntaz Action
         </span>
         <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${status.className}`} role="status">
           {status.label}
         </span>
-        {live && !finished && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-nova-400" aria-hidden />}
+        {live && !finished && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-syntaz-400" aria-hidden />}
       </div>
 
       {run.plan.length > 0 && (
@@ -175,7 +175,7 @@ function ActionRunView({ run, live, onDecision }: Props) {
                 <li key={i} className={`flex gap-2 text-sm ${active ? "text-zinc-50" : "text-zinc-300"}`}>
                   <span
                     className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full text-[11px] font-semibold ${
-                      active ? "bg-nova-500 text-ink-950" : "bg-ink-700 text-zinc-300"
+                      active ? "bg-syntaz-500 text-ink-950" : "bg-ink-700 text-zinc-300"
                     }`}
                   >
                     {i + 1}
@@ -217,7 +217,7 @@ function ActionRunView({ run, live, onDecision }: Props) {
 
       {run.answer && (
         <section aria-label="Result" className="border-t border-ink-700/70 pt-4">
-          <div className="nova-prose prose prose-invert max-w-none break-words text-[15px] leading-relaxed prose-headings:font-semibold prose-headings:text-zinc-50 prose-a:text-nova-300 prose-strong:text-zinc-50 prose-pre:my-0">
+          <div className="syntaz-prose prose prose-invert max-w-none break-words text-[15px] leading-relaxed prose-headings:font-semibold prose-headings:text-zinc-50 prose-a:text-syntaz-300 prose-strong:text-zinc-50 prose-pre:my-0">
             <Markdown content={run.answer} />
           </div>
         </section>

@@ -1,5 +1,5 @@
 // MCP integration tests: the production build talks to REAL stdio MCP servers
-// (the trusted nova-test server and a fault-injection fixture) while a scripted
+// (the trusted syntaz-test server and a fault-injection fixture) while a scripted
 // mock model chooses the tool calls. No real model or account is used.
 import assert from "node:assert/strict";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
@@ -15,8 +15,8 @@ let mock, m, onlyTrusted, noMcp, tmp, workspace;
 const step = (tool, args) => ({ json: { thought: `use ${tool}`, step: 1, action: "call_tool", tool, arguments: args, answer: "" } });
 const finish = (answer = "Done.") => ({ json: { thought: "finished", step: 1, action: "finish", tool: "none", arguments: {}, answer } });
 const PLAN = { json: { steps: ["Use the tools", "Answer"] } };
-const T = (tool) => `mcp__nova-test__${tool}`;
-const F = (tool) => `mcp__nova-faults__${tool}`;
+const T = (tool) => `mcp__syntaz-test__${tool}`;
+const F = (tool) => `mcp__syntaz-faults__${tool}`;
 
 /** Runs a goal; `onApproval(event, runId)` returns true/false to decide or null to leave pending. */
 async function run(app, goal, { onApproval = () => true, abortOn = () => false, headers = {} } = {}) {
@@ -76,7 +76,7 @@ const faultStats = async () => {
 };
 
 before(async () => {
-  tmp = mkdtempSync(path.join(os.tmpdir(), "nova-mcp-test-"));
+  tmp = mkdtempSync(path.join(os.tmpdir(), "syntaz-mcp-test-"));
   workspace = path.join(tmp, "workspace");
   mkdirSync(path.join(workspace, "notes"), { recursive: true });
   writeFileSync(path.join(workspace, "notes", "plan.md"), "# Plan\nLaunch on 20 October.\n");
@@ -95,20 +95,20 @@ before(async () => {
     RATE_LIMIT_CONCURRENT: "1",
     BASIC_AUTH_USER: "",
     BASIC_AUTH_PASSWORD: "",
-    NOVA_ACTIONS_ENABLED: "true",
+    SYNTAZ_ACTIONS_ENABLED: "true",
     WORKSPACE_ALLOW_WRITES: "false",
   };
   [m, onlyTrusted, noMcp] = await Promise.all([
     startApp({
       ...common,
       WORKSPACE_DIR: workspace,
-      MCP_SERVERS: "nova-test,nova-faults,nova-missing",
-      NOVA_ENABLE_TEST_FIXTURES: "true",
+      MCP_SERVERS: "syntaz-test,syntaz-faults,syntaz-missing",
+      SYNTAZ_ENABLE_TEST_FIXTURES: "true",
       MCP_TOOL_TIMEOUT_MS: "2000",
       AGENT_APPROVAL_TIMEOUT_MS: "5000",
       TRUST_PROXY: "true",
     }),
-    startApp({ ...common, WORKSPACE_DIR: "", MCP_SERVERS: "nova-test,nova-faults,evil-server", NOVA_ENABLE_TEST_FIXTURES: "false" }),
+    startApp({ ...common, WORKSPACE_DIR: "", MCP_SERVERS: "syntaz-test,syntaz-faults,evil-server", SYNTAZ_ENABLE_TEST_FIXTURES: "false" }),
     startApp({ ...common, WORKSPACE_DIR: "", MCP_SERVERS: "" }),
   ]);
 });
@@ -138,8 +138,8 @@ describe("discovery and configuration", () => {
     const actions = await status(m);
     const names = actions.tools.map((t) => t.name);
     assert.ok(!names.some((n) => n.includes("bad name") || n === F("nested")));
-    assert.equal(names.filter((n) => n.startsWith("mcp__nova-faults__")).length, 20);
-    const note = actions.notes.find((n) => n.includes('"nova-faults": skipped'));
+    assert.equal(names.filter((n) => n.startsWith("mcp__syntaz-faults__")).length, 20);
+    const note = actions.notes.find((n) => n.includes('"syntaz-faults": skipped'));
     assert.match(note, /"bad name!" \(invalid name\)/);
     assert.match(note, /"nested" \(argument "opts" has an unsupported type \(object\)\)/);
     assert.match(note, /3 more \(limit 20 tools per server\)/);
@@ -152,16 +152,16 @@ describe("discovery and configuration", () => {
 
   test("an unavailable server is reported and does not break other tools", async () => {
     const actions = await status(m);
-    assert.ok(actions.notes.some((n) => /MCP server "nova-missing" is unavailable: the server program is missing/.test(n)));
-    assert.ok(!actions.tools.some((t) => t.name.startsWith("mcp__nova-missing__")));
+    assert.ok(actions.notes.some((n) => /MCP server "syntaz-missing" is unavailable: the server program is missing/.test(n)));
+    assert.ok(!actions.tools.some((t) => t.name.startsWith("mcp__syntaz-missing__")));
     assert.ok(actions.tools.some((t) => t.name === T("text_stats")));
   });
 
   test("only trusted IDs can be enabled; test-only and unknown IDs are ignored", async () => {
     const names = (await status(onlyTrusted)).tools.map((t) => t.name);
     assert.ok(names.includes(T("text_stats")));
-    assert.ok(!names.some((n) => n.startsWith("mcp__nova-faults__") || n.includes("evil")));
-    assert.match(onlyTrusted.logs(), /MCP_SERVERS contains IDs that are not trusted servers and were ignored: nova-faults, evil-server/);
+    assert.ok(!names.some((n) => n.startsWith("mcp__syntaz-faults__") || n.includes("evil")));
+    assert.match(onlyTrusted.logs(), /MCP_SERVERS contains IDs that are not trusted servers and were ignored: syntaz-faults, evil-server/);
   });
 
   test("without MCP_SERVERS there are no MCP tools", async () => {
@@ -171,14 +171,14 @@ describe("discovery and configuration", () => {
 });
 
 describe("calling MCP tools (real stdio connection)", () => {
-  test("smoke test: text_stats runs on the real nova-test server after approval", async () => {
+  test("smoke test: text_stats runs on the real syntaz-test server after approval", async () => {
     await mock.script([PLAN, step(T("text_stats"), { text: "Hello MCP world. Second sentence!" }), finish()]);
     let preview = "";
     const { events } = await run(m, "Count words", { onApproval: (e) => ((preview = e.preview), true) });
     const call = of(events, "tool_call").find((c) => c.tool === T("text_stats"));
-    assert.deepEqual(call.source, { kind: "mcp", server: "nova-test", serverLabel: "Syntaz test server", tool: "text_stats" });
+    assert.deepEqual(call.source, { kind: "mcp", server: "syntaz-test", serverLabel: "Syntaz test server", tool: "text_stats" });
     assert.equal(call.requiresApproval, true);
-    assert.match(preview, /Run MCP tool "text_stats" on server "Syntaz test server" \(nova-test\)/);
+    assert.match(preview, /Run MCP tool "text_stats" on server "Syntaz test server" \(syntaz-test\)/);
     assert.match(preview, /"text": "Hello MCP world\. Second sentence!"/);
     const r = resultFor(events, T("text_stats"));
     assert.equal(r.executed, true);
@@ -218,7 +218,7 @@ describe("calling MCP tools (real stdio connection)", () => {
       PLAN,
       step(T("delete_everything"), {}),
       step(F("nested"), { opts: {} }),
-      step("mcp__nova-missing__anything", {}),
+      step("mcp__syntaz-missing__anything", {}),
       step("mcp__evil__run", {}),
       finish(),
     ]);

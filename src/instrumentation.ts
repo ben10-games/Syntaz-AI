@@ -2,5 +2,5 @@
 export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
   const { configWarnings } = await import("./lib/config");
-  for (const warning of configWarnings()) console.warn(`[nova] config warning: ${warning}`);
+  for (const warning of configWarnings()) console.warn(`[syntaz] config warning: ${warning}`);
 }

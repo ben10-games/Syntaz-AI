@@ -2,7 +2,7 @@
 // Syntaz browser benchmark: runs realistic tasks with YOUR model (from .env.local / LM Studio) in a
 // throwaway headless Chrome with the real extension, on local test pages, and checks the real page.
 // It starts its own Syntaz on free ports (your running Syntaz is not touched) and needs a production
-// build: `npm run build` (or NOVA_NEXT_DIST_DIR=.next-test npm run build while `npm run dev` runs).
+// build: `npm run build` (or SYNTAZ_NEXT_DIST_DIR=.next-test npm run build while `npm run dev` runs).
 //
 //   npm run benchmark                     # browser tasks
 //   npm run benchmark -- math vision      # other task sets (test/fixtures/benchmark/<name>.json)
@@ -18,8 +18,8 @@ const argv = process.argv.slice(2);
 const runs = Number(argv[argv.indexOf("--runs") + 1]) > 0 && argv.includes("--runs") ? Number(argv[argv.indexOf("--runs") + 1]) : 1;
 const verbose = argv.includes("--verbose");
 const sets = argv.filter((a, i) => !a.startsWith("--") && argv[i - 1] !== "--runs");
-const chrome = process.env.NOVA_TEST_CHROME_BIN || "/usr/bin/google-chrome";
-if (!existsSync(chrome)) throw new Error(`Chrome not found at ${chrome} (set NOVA_TEST_CHROME_BIN).`);
+const chrome = process.env.SYNTAZ_TEST_CHROME_BIN || "/usr/bin/google-chrome";
+if (!existsSync(chrome)) throw new Error(`Chrome not found at ${chrome} (set SYNTAZ_TEST_CHROME_BIN).`);
 
 const { startApp, freePort } = await import(path.join(root, "test/helpers.mjs"));
 const { default: puppeteer } = await import("puppeteer-core");
@@ -37,10 +37,10 @@ const site = http.createServer((req, res) => {
 });
 await new Promise((r) => site.listen(0, "127.0.0.1", r));
 const base = `http://127.0.0.1:${site.address().port}`;
-const tmp = mkdtempSync(path.join(os.tmpdir(), "nova-bench-"));
+const tmp = mkdtempSync(path.join(os.tmpdir(), "syntaz-bench-"));
 const tokenFile = path.join(tmp, "token");
 const port = await freePort();
-const app = await startApp({ MCP_SERVERS: "browser", NOVA_BROWSER_TOKEN_FILE: tokenFile, NOVA_BROWSER_PORT: String(port), WORKSPACE_DIR: "" });
+const app = await startApp({ MCP_SERVERS: "browser", SYNTAZ_BROWSER_TOKEN_FILE: tokenFile, SYNTAZ_BROWSER_PORT: String(port), WORKSPACE_DIR: "" });
 let browser;
 const totals = [];
 try {
