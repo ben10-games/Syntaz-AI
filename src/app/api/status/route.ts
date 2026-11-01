@@ -1,4 +1,5 @@
 import { buildRegistry, summarize } from "@/lib/agent/tools";
+import { imageSupport } from "@/lib/images";
 import { ConfigError, getAgentConfig, getAiConfig, getBrowserConfig, getMcpConfig, getRateLimitConfig } from "@/lib/config";
 import { checkClient, clientKey, jsonError } from "@/lib/http";
 import { listModels, resolveModel, UpstreamError } from "@/lib/provider";
@@ -48,6 +49,7 @@ export async function GET(req: Request) {
         warning,
         actions: await actionsStatus(),
         browser: browserStatus(),
+        images: await imageSupport(config).catch(() => ({ available: false, reason: "Can't check pictures right now." })),
       },
       { headers: { "Cache-Control": "no-store" } },
     );

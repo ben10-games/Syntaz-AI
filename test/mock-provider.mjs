@@ -17,7 +17,7 @@ export const MOCK_KEY = "sk-test-mock-key-0123456789abcdef";
  * { workOut: "..." } answers Syntaz's "work it out first" request (otherwise a neutral default is used).
  */
 export function startMockProvider() {
-  const seen = { auth: [], chatBodies: [], aborted: 0, agentBodies: [], agentAborted: 0 };
+  const seen = { auth: [], chatBodies: [], aborted: 0, agentBodies: [], agentAborted: 0, imageBodies: [] };
   let script = [];
   const server = http.createServer(async (req, res) => {
     if (req.method === "POST" && req.url === "/__script") {
@@ -38,6 +38,21 @@ export function startMockProvider() {
     if (req.method === "GET" && req.url === "/v1/models") {
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ data: [{ id: "mock-chat-large" }, { id: "mock-chat-small" }, { id: "text-embedding-mock" }] }));
+      return;
+    }
+    // Pictures (OpenAI image API): a 1×1 PNG; a prompt containing "FAIL" gets a content-policy error.
+    if (req.method === "POST" && req.url === "/v1/images/generations") {
+      let raw = "";
+      for await (const chunk of req) raw += chunk;
+      const body = JSON.parse(raw);
+      seen.imageBodies.push(body);
+      if (String(body.prompt).includes("FAIL")) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: { message: "Your request was rejected by the safety system." } }));
+        return;
+      }
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ data: [{ b64_json: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/iZk9HQAAAABJRU5ErkJggg==" }] }));
       return;
     }
     if (req.method === "POST" && req.url === "/v1/chat/completions") {

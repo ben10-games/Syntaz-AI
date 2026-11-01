@@ -93,7 +93,7 @@ async function choosePaid(provider) {
       r = await lib.checkPaid(provider, key, model);
       if (!r.ok) fail(r.error);
     }
-    say(`✔ Syntaz will use ${r.model}.`);
+    say(`✔ Syntaz will use ${r.model}.${r.imageModel ? ` It can also make pictures (${r.imageModel}).` : ""}`);
     return r.values;
   }
   fail("The key didn't work three times. Make a new key, then run the setup again.");
@@ -112,9 +112,11 @@ async function main() {
   say("  3 = OpenAI, with your own paid API key");
   say("  4 = Anthropic (Claude), with your own paid API key");
   say("  5 = xAI (Grok), with your own paid API key");
-  const choice = (await ask("Type 1 to 5 and press Enter [1]: ")) || "1";
+  say("  6 = Groq, with your own API key (very fast; not the same as Grok)");
+  say("  7 = Hugging Face, with your own token (many open models; can make pictures)");
+  const choice = (await ask("Type 1 to 7 and press Enter [1]: ")) || "1";
   let ai;
-  const paid = { 3: "openai", 4: "anthropic", 5: "xai" }[choice];
+  const paid = { 3: "openai", 4: "anthropic", 5: "xai", 6: "groq", 7: "huggingface" }[choice];
   if (paid) ai = await choosePaid(paid);
   else if (choice === "2") {
     say("\nChecking LM Studio on this computer…");

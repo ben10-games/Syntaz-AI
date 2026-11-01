@@ -12,6 +12,7 @@ const $ = (id) => document.getElementById(id);
 const ui = {
   mode: "auto", // auto | chat | actions
   messages: [], // { role, content (sent to Syntaz), text, page: {title,url,hash}|null, pageText: bool }
+  images: { available: false, reason: "" }, // can Syntaz's AI make pictures (from /api/status)
   controller: null, // AbortController of the running request
   windowId: null,
   tabId: null,
@@ -485,6 +486,36 @@ const TASK_START = /^\s*(?:(?:please|pls|nova|hey nova)[,!]?\s+)?(?:(?:can|could
 const TASK_ANYWHERE = /\b(?:search the web|web search|search (?:google|wikipedia|online)|on the web|(?:on|in|from) (?:youtube|google|wikipedia|amazon|ebay|github|reddit|stack ?overflow|bing|google maps|spotify)|for me[.!]*$|(?:and|then) (?:click )?(?:submit|check) (?:it|this|that|the answers?|my answers?)?|click (?:the )?(?:submit|check)|in (?:a )?new tabs?|in separate tabs|open (?:these|those|the) (?:\w+ )?links?|(?:enter|type|fill in|fill|put|write|input) (?:in |it |that |this )?(?:the |my |your |this |that )?(?:answers?|results?|solution|number)(?! (?:is|was|means))|(?:into|in) (?:the |this |that )?(?:answer )?(?:field|box|input|blank)s?)\b/i;
 /** Auto mode: requests to DO something use the tools; questions are answered directly. */
 const looksLikeTask = (text) => TASK_START.test(text) || TASK_ANYWHERE.test(text);
+// "draw a cat in space", "make a picture of …", "generate an image of …": a picture, when Syntaz's AI can make one.
+const IMAGE_ASK = /^\s*(?:(?:please|pls|hey syntaz|syntaz)[,!]?\s+)?(?:(?:can|could|would) you\s+(?:please\s+)?)?(?:draw|paint|sketch|(?:generate|create|make|design|show me)\s+(?:me\s+)?(?:an?|some|the|\d+)?\s*(?:\w+\s+){0,2}?(?:image|picture|pic|photo|drawing|painting|illustration|logo|wallpaper|artwork|art|poster|icon|sticker)s?)\b/i;
+const looksLikeImage = (text) => IMAGE_ASK.test(text);
+
+/** Makes a picture with Syntaz's AI and shows it, with a Download button. */
+async function sendImage(text) {
+  const { body } = addAssistantBubble(`🎨 Making a picture with ${ui.images.model || "your AI"}`);
+  const controller = new AbortController();
+  setBusy(controller);
+  try {
+    const res = await nova("/api/image", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt: text }), signal: controller.signal });
+    const data = await res.json();
+    if (!data || typeof data.image !== "string" || !/^data:image\/(png|jpeg|webp|gif);base64,/.test(data.image)) throw new UiError("Syntaz didn't get a picture back.");
+    const img = Object.assign(document.createElement("img"), { className: "made", src: data.image, alt: `Picture: ${text.slice(0, 120)}` });
+    const ext = data.image.slice(11, data.image.indexOf(";")).replace("jpeg", "jpg");
+    const save = Object.assign(el("a", "chip", "⬇ Download"), { href: data.image, download: `syntaz-picture.${ext}` });
+    const row = el("div", "made-row");
+    row.append(save);
+    body.replaceChildren(img, row);
+    ui.messages.push({ role: "user", content: text, text, page: null, pageText: false });
+    ui.messages.push({ role: "assistant", content: `(Syntaz made a picture for: ${text.slice(0, 300)})`, text: "🖼 picture" });
+    saveChat();
+  } catch (err) {
+    body.replaceChildren();
+    if (controller.signal.aborted) body.append(el("div", "note", "Stopped."));
+    else body.append(el("div", "err", err instanceof UiError ? err.message : `Error: ${err.message}`), retryButton(text));
+  } finally {
+    setBusy(null);
+  }
+}
 
 const shortTool = (name) => String(name).replace(/^mcp__[a-z0-9-]+__/i, "");
 const STEP_NAMES = {
@@ -922,6 +953,7 @@ async function refreshNova() {
     if (s.model && !ui.controller) $("model").textContent = ui.model || s.model;
     if (s.contextLength) ui.ctxChars = Math.max(2000, Math.min(24000, Math.round(s.contextLength * 3 * 0.3)));
     ui.searchOrigin = s.browser && s.browser.searchOrigin ? s.browser.searchOrigin : null;
+    ui.images = s.images && typeof s.images === "object" ? s.images : { available: false, reason: "" };
     fillModels(s);
     banner(s.model ? "" : s.warning || "Syntaz is running but no model is loaded in LM Studio.", "Retry", refreshNova);
   } catch (err) {
@@ -986,6 +1018,17 @@ async function send(retryText) {
   if (typeof retryText !== "string") {
     $("input").value = "";
     autosize();
+  }
+  // Pictures: when the AI can make them; otherwise say which AIs can (instead of a confusing answer).
+  if (ui.mode !== "actions" && looksLikeImage(text)) {
+    if (ui.images.available) {
+      addUserBubble(text, "🎨 picture");
+      return sendImage(text);
+    }
+    addUserBubble(text);
+    const { body } = addAssistantBubble("🎨 Pictures");
+    body.replaceChildren(el("div", "note", `${ui.images.reason || "Your AI can't make pictures."} To make pictures, choose OpenAI, Google Gemini, xAI (Grok) or Hugging Face with Change AI in the Syntaz window.`));
+    return;
   }
   const route = ui.mode === "auto" ? (looksLikeTask(text) ? "actions" : "chat") : ui.mode;
   // Read the page now, so the message carries what is on screen at this moment.

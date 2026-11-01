@@ -256,3 +256,136 @@ describe("setup: checking a paid key", () => {
     }
   });
 });
+
+const PNG_B64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/iZk9HQAAAABJRU5ErkJggg==";
+const KEY = "sk-StandInKey_0123456789abcdefghijklmnop";
+/** A provider that can make pictures: OpenAI image API, or Hugging Face's text-to-image endpoint. */
+function fakeImages({ models = [], rejectSize = false } = {}) {
+  return listen((r, res) => {
+    if (r.headers.authorization !== `Bearer ${KEY}`) return send(res, 401, { error: { message: "Invalid API key" } });
+    if (r.method === "GET" && r.url === "/v1/models") return send(res, 200, { data: models });
+    if (r.method === "POST" && r.url === "/v1/images/generations") {
+      if (rejectSize && r.body.size !== undefined) return send(res, 400, { error: { message: "Argument not supported: size" } });
+      return send(res, 200, { data: [{ b64_json: PNG_B64 }] });
+    }
+    if (r.method === "POST" && r.url.startsWith("/hf-inference/models/")) {
+      return res.writeHead(200, { "Content-Type": "image/png" }).end(Buffer.from(PNG_B64, "base64"));
+    }
+    send(res, 404, { error: { message: "not found" } });
+  });
+}
+const appEnv = (base, extra) => ({ AI_PROVIDER: "openai-compatible", AI_PROVIDER_NAME: "Stand-in", AI_BASE_URL: `${base}/v1`, AI_API_KEY: KEY, AI_MODEL: "chat-model", AI_MAX_OUTPUT_TOKENS: "1000", RATE_LIMIT_MAX: "0", MCP_SERVERS: "", AI_IMAGE_MODEL: "", AI_IMAGE_API: "", ...extra });
+const makePicture = async (base, prompt) => {
+  const res = await fetch(`${base}/api/image`, { method: "POST", headers: json, body: JSON.stringify({ prompt }) });
+  return { status: res.status, body: await res.json() };
+};
+
+describe("pictures with the user's own AI", () => {
+  test("OpenAI-style: the newest image model the key has is found by itself; GPT Image gets no response_format", async () => {
+    const fake = await fakeImages({ models: [{ id: "gpt-6-sol", created: 3 }, { id: "gpt-image-1", created: 1 }, { id: "gpt-image-2", created: 2 }, { id: "dall-e-3", created: 0 }] });
+    const app = await startApp(appEnv(fake.base));
+    try {
+      const s = await (await fetch(`${app.base}/api/status`)).json();
+      assert.deepEqual(s.images, { available: true, kind: "openai", model: "gpt-image-2" });
+      const r = await makePicture(app.base, "a cat in space");
+      assert.equal(r.status, 200, JSON.stringify(r.body));
+      assert.equal(r.body.image, `data:image/png;base64,${PNG_B64}`);
+      const req = fake.seen.find((x) => x.url === "/v1/images/generations").body;
+      assert.deepEqual([req.model, req.prompt, req.response_format, req.size], ["gpt-image-2", "a cat in space", undefined, "1024x1024"]);
+      assert.equal((await makePicture(app.base, "  ")).status, 400, "an empty description is refused");
+    } finally {
+      app.child.kill();
+      fake.server.close();
+    }
+  });
+
+  test("xAI-style: a setting the provider rejects (size) is dropped and the picture is made", async () => {
+    const fake = await fakeImages({ rejectSize: true });
+    const app = await startApp(appEnv(fake.base, { AI_IMAGE_MODEL: "grok-imagine-image" }));
+    try {
+      const r = await makePicture(app.base, "a red bike");
+      assert.equal(r.status, 200, JSON.stringify(r.body));
+      const reqs = fake.seen.filter((x) => x.url === "/v1/images/generations").map((x) => x.body);
+      assert.equal(reqs.length, 2);
+      assert.equal(reqs[1].size, undefined);
+      assert.equal(reqs[1].response_format, "b64_json");
+    } finally {
+      app.child.kill();
+      fake.server.close();
+    }
+  });
+
+  test("Hugging Face: its text-to-image endpoint, raw picture back", async () => {
+    const fake = await fakeImages();
+    const app = await startApp(appEnv(fake.base, { AI_IMAGE_API: "huggingface", AI_IMAGE_MODEL: "stabilityai/stable-diffusion-3-medium-diffusers" }));
+    try {
+      const r = await makePicture(app.base, "a lake at sunset");
+      assert.equal(r.status, 200, JSON.stringify(r.body));
+      assert.equal(r.body.image, `data:image/png;base64,${PNG_B64}`);
+      const req = fake.seen.find((x) => x.url.startsWith("/hf-inference/"));
+      assert.equal(req.url, "/hf-inference/models/stabilityai/stable-diffusion-3-medium-diffusers");
+      assert.deepEqual(req.body, { inputs: "a lake at sunset" });
+    } finally {
+      app.child.kill();
+      fake.server.close();
+    }
+  });
+
+  test("Claude can't make pictures: said plainly, nothing is sent", async () => {
+    const fake = await fakeImages();
+    const app = await startApp(appEnv(fake.base, { AI_PROVIDER: "anthropic", AI_PROVIDER_NAME: "Anthropic", AI_MODELS: "claude-opus-5-5", AI_MODEL: "" }));
+    try {
+      const r = await makePicture(app.base, "a dog");
+      assert.equal(r.status, 400);
+      assert.match(r.body.error, /can't make pictures/);
+      assert.equal(fake.seen.filter((x) => x.url.includes("image")).length, 0);
+    } finally {
+      app.child.kill();
+      fake.server.close();
+    }
+  });
+});
+
+describe("setup: Groq and Hugging Face keys", () => {
+  test("Groq: chat models only (no speech or guard models), gpt-oss first, no pictures", async () => {
+    const fake = await listen((r, res) => {
+      if (r.headers.authorization !== `Bearer ${KEY}`) return send(res, 401, { error: { message: "Invalid API Key" } });
+      if (r.url === "/models") return send(res, 200, { data: [{ id: "llama-4-scout", created: 9 }, { id: "openai/gpt-oss-120b", created: 5 }, { id: "whisper-large-v3", created: 8 }, { id: "meta-llama/llama-guard-4-12b", created: 7 }, { id: "playai-tts", created: 6 }] });
+      send(res, 200, { choices: [{ message: { role: "assistant", content: "OK" } }] });
+    });
+    process.env.NOVA_SETUP_GROQ_BASE = fake.base;
+    try {
+      const lib = await import(`../setup/lib.mjs?groq=${Date.now()}`);
+      const r = await lib.checkPaid("groq", KEY);
+      assert.equal(r.ok, true, r.error);
+      assert.deepEqual(r.models, ["openai/gpt-oss-120b", "llama-4-scout"]);
+      assert.equal(r.values.AI_IMAGE_MODEL, "");
+      assert.equal(r.values.AI_PROVIDER_NAME, "Groq");
+    } finally {
+      delete process.env.NOVA_SETUP_GROQ_BASE;
+      fake.server.close();
+    }
+  });
+
+  test("Hugging Face: the token page link pre-ticks the right permission; pictures are set up", async () => {
+    const fake = await listen((r, res) => {
+      if (r.headers.authorization !== `Bearer ${KEY}`) return send(res, 401, { error: "Invalid credentials in Authorization header" });
+      if (r.url === "/models") return send(res, 200, { data: [{ id: "deepseek-ai/DeepSeek-V3.2" }, { id: "openai/gpt-oss-120b" }, { id: "Qwen/Qwen3-235B-A22B" }] });
+      send(res, 200, { choices: [{ message: { role: "assistant", content: "OK" } }] });
+    });
+    process.env.NOVA_SETUP_HF_BASE = fake.base;
+    try {
+      const lib = await import(`../setup/lib.mjs?hf=${Date.now()}`);
+      assert.match(lib.PAID.huggingface.keys, /ownUserPermissions=inference\.serverless\.write&tokenType=fineGrained/);
+      const r = await lib.checkPaid("huggingface", KEY);
+      assert.equal(r.ok, true, r.error);
+      assert.equal(r.model, "openai/gpt-oss-120b");
+      assert.equal(r.values.AI_IMAGE_API, "huggingface");
+      assert.equal(r.values.AI_IMAGE_MODEL, "stabilityai/stable-diffusion-3-medium-diffusers");
+      assert.match((await lib.checkPaid("huggingface", "hf_wrongwrongwrongwrongwrong")).error, /Hugging Face says this key doesn't work/);
+    } finally {
+      delete process.env.NOVA_SETUP_HF_BASE;
+      fake.server.close();
+    }
+  });
+});

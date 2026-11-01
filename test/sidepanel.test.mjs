@@ -27,6 +27,7 @@ const env = (extra) => ({
   AI_PROVIDER_NAME: "Mock AI",
   AI_MODEL: "mock-chat-large",
   AI_MODELS: "",
+  AI_IMAGE_MODEL: "mock-image",
   LMSTUDIO_BASE_URL: "",
   LMSTUDIO_MODEL: "",
   RATE_LIMIT_MAX: "1000",
@@ -354,6 +355,30 @@ describe("real Chrome side panel", { timeout: 180_000, skip: !CHROME || !existsS
     assert.equal(await panel.$eval("#quick", (q) => getComputedStyle(q).display), "none");
     await page.goto(`${siteBase}/index.html`);
     await waitFor(async () => (await ctx()) === "Watching: Syntaz Test Shop");
+  });
+
+  test("pictures: 'draw …' makes one with the AI and shows it with Download; an AI that can't is named plainly", async () => {
+    await panel.click("#newChat");
+    await waitFor(async () => panel.evaluate(() => ui.images.available === true && ui.images.model === "mock-image"));
+    const before = mock.seen.imageBodies.length;
+    await sendInPanel("draw a cat in space");
+    await waitFor(async () => panel.evaluate(() => !!document.querySelector(".msg.assistant:last-child img.made")));
+    assert.deepEqual(mock.seen.imageBodies.slice(before).map((b) => [b.model, b.prompt, b.response_format]), [["mock-image", "draw a cat in space", "b64_json"]]);
+    assert.match(await panel.$eval(".msg.assistant:last-child img.made", (i) => i.src), /^data:image\/png;base64,/);
+    assert.equal(await panel.$eval(".msg.assistant:last-child a[download]", (a) => a.getAttribute("download")), "syntaz-picture.png");
+    assert.match(await lastAssistant(), /Making a picture with mock-image/);
+    assert.equal(mock.seen.chatBodies.filter((b) => JSON.stringify(b).includes("draw a cat in space")).length, 0, "no chat request for a picture");
+    // The provider refuses: said plainly, with Retry.
+    await sendInPanel("make a picture of FAIL");
+    await waitFor(async () => /rejected by the safety system/.test(await lastAssistant()));
+    assert.ok(await panel.$(".msg.assistant:last-child .retry"));
+    // An AI that can't make pictures: Syntaz says which ones can.
+    await panel.evaluate(() => (ui.images = { available: false, reason: "Groq can't make pictures." }));
+    const sent = mock.seen.imageBodies.length;
+    await sendInPanel("generate an image of a sunset");
+    await waitFor(async () => /Groq can't make pictures\. To make pictures, choose OpenAI, Google Gemini, xAI \(Grok\) or Hugging Face/.test(await lastAssistant()));
+    assert.equal(mock.seen.imageBodies.length, sent);
+    await panel.evaluate(() => refreshNova());
   });
 
   test("switching tabs updates the indicator and the context", async () => {

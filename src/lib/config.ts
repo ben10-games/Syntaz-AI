@@ -31,6 +31,10 @@ export type AiConfig = {
   contextLength: number | null;
   /** Server-enforced ceiling on max_tokens per reply. */
   maxOutputTokens: number | null;
+  /** Model for making pictures (src/lib/images.ts); null = the newest image model the key can use. */
+  imageModel: string | null;
+  /** How pictures are made: "openai" (the OpenAI image API) or "huggingface" (its text-to-image endpoint); null = from AI_BASE_URL. */
+  imageApi: "openai" | "huggingface" | null;
   /** Sent as reasoning_effort (e.g. "none" turns Gemini's slow thinking off); null = provider default. */
   reasoningEffort: string | null;
   /** Max time to wait for the provider to start responding. */
@@ -132,6 +136,8 @@ export function getAiConfig(): AiConfig {
     contextLength: positiveInt("AI_CONTEXT_LENGTH", null),
     maxOutputTokens: positiveInt("AI_MAX_OUTPUT_TOKENS", null),
     reasoningEffort: reasoningEffort(),
+    imageModel: env("AI_IMAGE_MODEL"),
+    imageApi: env("AI_IMAGE_API") === "huggingface" ? "huggingface" : env("AI_IMAGE_API") === "openai" ? "openai" : null,
     timeoutMs: positiveInt("AI_TIMEOUT_MS", 120_000)!,
   };
 }

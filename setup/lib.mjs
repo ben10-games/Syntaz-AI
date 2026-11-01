@@ -62,6 +62,7 @@ export async function checkGemini(rawKey) {
   if (list.status === 0) return { ok: false, error: "Can't reach Google. Check your internet connection and try again." };
   if (list.status !== 200) return { ok: false, error: "Google says this key doesn't work. Copy it again (the whole key) and paste it." };
   const offered = new Set((list.json?.data ?? []).map((m) => String(m.id ?? "").replace(/^models\//, "")));
+  const imageModel = pickImageModel(list.json?.data ?? []);
   const usable = [];
   let effort = "none"; // thinking off = much faster answers; kept only if the first model accepts it
   for (const model of GEMINI_MODELS.filter((m) => offered.size === 0 || offered.has(m))) {
@@ -88,7 +89,9 @@ export async function checkGemini(rawKey) {
       AI_CONTEXT_LENGTH: "32768",
       AI_MAX_OUTPUT_TOKENS: "4096",
       AI_REASONING_EFFORT: effort,
+      AI_IMAGE_MODEL: imageModel,
     },
+    imageModel,
   };
 }
 
@@ -97,9 +100,27 @@ export const PAID = {
   openai: { name: "OpenAI", base: process.env.NOVA_SETUP_OPENAI_BASE || "https://api.openai.com/v1", keys: "https://platform.openai.com/api-keys", billing: "https://platform.openai.com/settings/organization/billing/overview", chat: /^(gpt-|o\d|chatgpt-)/i },
   anthropic: { name: "Anthropic (Claude)", base: process.env.NOVA_SETUP_ANTHROPIC_BASE || "https://api.anthropic.com", keys: "https://platform.claude.com/settings/keys", billing: "https://platform.claude.com/settings/billing", chat: /^claude-/i },
   xai: { name: "xAI (Grok)", base: process.env.NOVA_SETUP_XAI_BASE || "https://api.x.ai/v1", keys: "https://console.x.ai/", billing: "https://console.x.ai/", chat: /^grok-/i },
+  // Groq (not Grok): very fast open models. Can't make pictures.
+  groq: { name: "Groq", base: process.env.NOVA_SETUP_GROQ_BASE || "https://api.groq.com/openai/v1", keys: "https://console.groq.com/keys", billing: "https://console.groq.com/settings/billing", chat: /./ },
+  // Hugging Face Inference Providers: many open models with one token. The key page link pre-ticks the one permission
+  // Syntaz needs ("Make calls to Inference Providers"). Pictures go through its text-to-image endpoint.
+  huggingface: { name: "Hugging Face", base: process.env.NOVA_SETUP_HF_BASE || "https://router.huggingface.co/v1", keys: "https://huggingface.co/settings/tokens/new?ownUserPermissions=inference.serverless.write&tokenType=fineGrained", billing: "https://huggingface.co/settings/billing", chat: /\//, image: "stabilityai/stable-diffusion-3-medium-diffusers" },
 };
 const released = (m) => (typeof m.created === "number" ? m.created : Date.parse(m.created_at ?? "") / 1000 || 0);
-const NOT_CHAT = /embed|whisper|tts|dall-e|moderation|rerank|transcribe|image|imagine|audio|realtime|search|vision-preview|computer-use/i;
+const NOT_CHAT = /embed|whisper|tts|dall-e|moderation|rerank|transcribe|image|imagine|audio|realtime|search|vision-preview|computer-use|guard|playai|orpheus|distil/i;
+// Picture models in a key's model list, best first (OpenAI GPT Image, Gemini / Grok image models, Imagen, DALL·E).
+const IMAGE_MODEL = /(^|[/-])(gpt-image|dall-e|imagen|image)(-|$|\d)/i;
+const IMAGE_FIRST = [/^gpt-image/i, /image/i, /imagen/i, /^dall-e-3/i];
+function pickImageModel(entries) {
+  const ids = entries.filter((m) => typeof m?.id === "string").sort((a, b) => released(b) - released(a)).map((m) => m.id.replace(/^models\//, "")).filter((id) => IMAGE_MODEL.test(id) && !/vision|understand/i.test(id));
+  for (const p of IMAGE_FIRST) {
+    const hit = ids.find((id) => p.test(id));
+    if (hit) return hit;
+  }
+  return "";
+}
+// Good first choices where a provider lists many models.
+const PREFERRED = { huggingface: ["openai/gpt-oss-120b"], groq: ["openai/gpt-oss-120b"] };
 // Claude: the current models, best first (the list you pick from keeps any others the key offers).
 const CLAUDE_FIRST = ["claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5"];
 
@@ -144,6 +165,9 @@ export async function checkPaid(provider, rawKey, wantModel = "") {
     .sort((a, b) => released(b) - released(a)) // newest first
     .map((m) => m.id);
   if (provider === "anthropic") models = [...CLAUDE_FIRST.filter((m) => models.includes(m)), ...models.filter((m) => !CLAUDE_FIRST.includes(m))];
+  const first = (PREFERRED[provider] ?? []).filter((m) => models.includes(m));
+  models = [...first, ...models.filter((m) => !first.includes(m))];
+  const imageModel = p.image ?? (provider === "anthropic" || provider === "groq" ? "" : pickImageModel(list.json?.data ?? []));
   if (!models.length) return { ok: false, error: `The key works, but ${p.name} offers it no chat models.` };
   const model = models.includes(wantModel) ? wantModel : models[0];
   const test = provider === "anthropic"
@@ -166,7 +190,10 @@ export async function checkPaid(provider, rawKey, wantModel = "") {
       AI_CONTEXT_LENGTH: "32768",
       AI_MAX_OUTPUT_TOKENS: provider === "anthropic" ? "16000" : "4096",
       AI_REASONING_EFFORT: "",
+      AI_IMAGE_MODEL: imageModel,
+      AI_IMAGE_API: provider === "huggingface" ? "huggingface" : "",
     },
+    imageModel,
   };
 }
 

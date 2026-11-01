@@ -132,6 +132,10 @@
         <div class="muted small" style="margin:4px 0 0 26px">Needs your own Anthropic API key with credit on it.</div></label>
       <label class="choice"><input type="radio" name="ai" value="xai"><b>xAI (Grok)</b><span class="tag paid">You pay</span>
         <div class="muted small" style="margin:4px 0 0 26px">Needs your own xAI API key with credit on it.</div></label>
+      <label class="choice"><input type="radio" name="ai" value="groq"><b>Groq</b><span class="tag paid">Your key</span>
+        <div class="muted small" style="margin:4px 0 0 26px">Very fast open models (not the same as Grok). Can't make pictures.</div></label>
+      <label class="choice"><input type="radio" name="ai" value="huggingface"><b>Hugging Face</b><span class="tag paid">Your key</span>
+        <div class="muted small" style="margin:4px 0 0 26px">Hundreds of open models with one token, and it can make pictures. Pay as you go.</div></label>
       <label class="choice"><input type="radio" name="ai" value="lmstudio"><b>LM Studio on this computer</b>
         <div class="muted small" style="margin:4px 0 0 26px">Private and offline, but needs a strong graphics card and LM Studio running with a model loaded.</div></label>
       <div id="keyBox">
@@ -298,6 +302,8 @@ const PROVIDERS = {
   gemini: { name: "Google", step: "1. Get your free key: click the button, sign in with Google, click <b>Create API key</b> and copy it.", button: "Get a free key from Google", placeholder: "Paste your Gemini API key" },
   openai: { name: "OpenAI", step: "1. Get your key: click the button, sign in to OpenAI, click <b>Create new secret key</b> and copy it. Your account needs credit (Billing).", button: "Open OpenAI's key page", placeholder: "Paste your OpenAI API key (sk-…)" },
   anthropic: { name: "Anthropic", step: "1. Get your key: click the button, sign in to the Claude Console, click <b>Create Key</b> and copy it. Your account needs credit (Billing).", button: "Open Anthropic's key page", placeholder: "Paste your Anthropic API key (sk-ant-…)" },
+  groq: { name: "Groq", step: "1. Get your key: click the button, sign in to GroqCloud, click <b>Create API Key</b>, give it a name (e.g. Syntaz) and copy it.", button: "Open Groq's key page", placeholder: "Paste your Groq API key (gsk_…)" },
+  huggingface: { name: "Hugging Face", step: "1. Click the button and sign in. The token page opens with the right setting already ticked: check that <b>Token type</b> is <b>Fine-grained</b> and that under <b>Inference</b> only <b>Make calls to Inference Providers</b> is ticked (leave everything else off). Name it Syntaz, click <b>Create token</b> at the bottom, and copy it (it starts with hf_).", button: "Open Hugging Face's token page", placeholder: "Paste your Hugging Face token (hf_…)" },
   xai: { name: "xAI", step: "1. Get your key: click the button, sign in to the xAI Console, open <b>API Keys</b>, create one and copy it. Your account needs credit.", button: "Open xAI's key page", placeholder: "Paste your xAI API key (xai-…)" },
 };
 const chosen = () => document.querySelector("input[name=ai]:checked").value;
@@ -343,7 +349,7 @@ async function check(model = "") {
   try {
     const r = await call("check", { provider, key: $("key").value, model });
     $("checkMsg").className = `msg ${r.ok ? "ok" : "bad"}`;
-    $("checkMsg").textContent = r.ok ? (provider === "lmstudio" ? "✓ LM Studio is running." : `✓ The key works. Syntaz will use ${r.model}.`) : r.error;
+    $("checkMsg").textContent = r.ok ? (provider === "lmstudio" ? "✓ LM Studio is running." : `✓ The key works. Syntaz will use ${r.model}.${r.imageModel ? ` 🎨 It can make pictures (${r.imageModel}).` : ""}`) : r.error;
     $("install").disabled = !r.ok;
     // Paid AIs: pick the model (the list is what this key may use; the first is the suggestion).
     const paid = provider !== "gemini" && provider !== "lmstudio";

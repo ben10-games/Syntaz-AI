@@ -73,7 +73,7 @@ async function api(route, body) {
         : lib.PAID[body.provider] ? await lib.checkPaid(body.provider, body.key, body.model)
         : await lib.checkGemini(body.key);
       pending = r.ok ? r.values : null;
-      return { ok: r.ok, error: r.error || "", model: r.model || "", models: r.models || [] };
+      return { ok: r.ok, error: r.error || "", model: r.model || "", models: r.models || [], imageModel: r.imageModel || "" };
     }
     case "install":
       if (!pending) return { ok: false, error: "Check the AI first." };

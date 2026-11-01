@@ -302,3 +302,8 @@ label.check input[type="checkbox"]:checked { box-shadow: inset 0 1px 0 rgba(255,
 .idea:hover:not(:disabled), .idea.main { border-color: var(--accent); }
 .steps .st:not(.ok):not(.fail):not(.skip) { color: var(--accent2); background: var(--accent-soft); }
 @media (prefers-reduced-motion: reduce) { body::before, body::after { animation: none; } button { transition: none; } }
+
+/* Pictures Syntaz made */
+.msg img.made { display: block; width: 100%; max-width: 420px; border-radius: 18px; border: 1px solid var(--edge); box-shadow: var(--rim), var(--shadow); }
+.made-row { display: flex; gap: 6px; margin-top: 8px; }
+.made-row a.chip { text-decoration: none; display: inline-flex; align-items: center; }
