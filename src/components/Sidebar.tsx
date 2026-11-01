@@ -221,7 +221,7 @@ export default function Sidebar({
         id="nova-sidebar"
         aria-label="Conversations"
         inert={!open}
-        className={`fixed inset-y-0 left-0 z-40 flex w-[280px] flex-col border-r border-ink-700/70 bg-ink-900 transition-[transform,margin] duration-200 ease-out md:relative md:z-auto ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-[280px] flex-col border-r border-white/10 glass transition-[transform,margin] duration-200 ease-out md:relative md:z-auto ${
           open ? "translate-x-0" : "-translate-x-full md:-ml-[280px]"
         }`}
       >
@@ -246,7 +246,7 @@ export default function Sidebar({
           <button
             type="button"
             onClick={onNew}
-            className="flex w-full items-center gap-2.5 rounded-xl bg-nova-600 px-3 py-2.5 text-sm font-medium text-white shadow-sm shadow-nova-900/40 transition-colors hover:bg-nova-500"
+            className="flex w-full items-center gap-2.5 rounded-xl bg-nova-600 px-3 py-2.5 text-sm font-medium text-ink-950 shadow-sm shadow-nova-900/40 transition-colors hover:bg-nova-500"
           >
             <PlusIcon width={17} height={17} />
             New chat

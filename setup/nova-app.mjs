@@ -151,7 +151,7 @@ const server = http.createServer(async (req, res) => {
   lastSeen = Date.now();
   if (req.method === "GET" && (url.pathname === "/" || FILES[url.pathname])) {
     const [file, type] = url.pathname === "/" ? [page, "text/html; charset=utf-8"] : FILES[url.pathname];
-    res.writeHead(200, { "Content-Type": type, "Cache-Control": "no-store", "X-Frame-Options": "DENY", "Content-Security-Policy": "default-src 'self'; style-src 'unsafe-inline' 'self'; script-src 'unsafe-inline' 'self'; img-src 'self'" });
+    res.writeHead(200, { "Content-Type": type, "Cache-Control": "no-store", "X-Frame-Options": "DENY", "Content-Security-Policy": "default-src 'self'; style-src 'unsafe-inline' 'self'; script-src 'unsafe-inline' 'self'; img-src 'self' data:" }); // data: for the glass lens maps the page draws
     res.end(readFileSync(file));
     return;
   }

@@ -20,18 +20,18 @@
     :host { all: initial; }
     .layer { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
     .cursor { position: absolute; left: 0; top: 0; width: 26px; height: 30px; transform: translate(-100px, -100px); will-change: transform; filter: drop-shadow(0 1px 2px rgba(0,0,0,.45)); transition: opacity .25s; }
-    .tag { position: absolute; left: 18px; top: 20px; font: 600 11px/1 system-ui, sans-serif; color: #fff; background: #7c3aed; border-radius: 999px; padding: 3px 7px; white-space: nowrap; }
+    .tag { position: absolute; left: 18px; top: 20px; font: 600 11px/1 system-ui, sans-serif; color: #d4f76a; background: rgba(11,16,6,.82); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); border: 1px solid rgba(200,245,80,.55); box-shadow: inset 0 1px 0 rgba(255,255,255,.25); border-radius: 999px; padding: 3px 8px; white-space: nowrap; }
     .tag .what { font-weight: 400; opacity: .9; margin-left: 4px; }
-    .caret { display: none; width: 2px; height: 14px; background: #7c3aed; margin-left: 4px; vertical-align: -3px; animation: blink .6s steps(1) infinite; }
+    .caret { display: none; width: 2px; height: 14px; background: #c8f550; margin-left: 4px; vertical-align: -3px; animation: blink .6s steps(1) infinite; }
     .typing .caret { display: inline-block; }
-    .ring { position: absolute; border: 2px solid #a78bfa; border-radius: 6px; box-shadow: 0 0 0 4px rgba(167,139,250,.25); opacity: 0; transition: opacity .2s; }
-    .ripple { position: absolute; width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%; border: 2px solid #a78bfa; opacity: 0; }
+    .ring { position: absolute; border: 2px solid #b4ec36; border-radius: 8px; box-shadow: 0 0 0 4px rgba(200,245,80,.28), 0 0 18px rgba(200,245,80,.35); opacity: 0; transition: opacity .2s; }
+    .ripple { position: absolute; width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%; border: 2px solid #b4ec36; opacity: 0; }
     .ripple.go { animation: ripple .45s ease-out; }
     @keyframes ripple { from { transform: scale(.3); opacity: 1; } to { transform: scale(1.6); opacity: 0; } }
     @keyframes blink { 50% { opacity: 0; } }
   `;
   const ARROW =
-    '<svg viewBox="0 0 26 30" width="26" height="30"><path d="M3 2 L3 24 L9 18.5 L13 27 L17 25 L13 16.8 L21 16.5 Z" fill="#7c3aed" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>';
+    '<svg viewBox="0 0 26 30" width="26" height="30"><path d="M3 2 L3 24 L9 18.5 L13 27 L17 25 L13 16.8 L21 16.5 Z" fill="#c8f550" stroke="#0b1006" stroke-width="1.6" stroke-linejoin="round"/></svg>';
 
   function ensure() {
     if (host && host.isConnected) return;

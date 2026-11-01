@@ -47,7 +47,7 @@ export default function Dialog({ open, onClose, title, description, children, fo
         // Click on the backdrop (outside the panel) closes.
         if (e.target === ref.current) onClose();
       }}
-      className={`m-auto max-h-[min(90dvh,760px)] w-[calc(100%-2rem)] overflow-hidden rounded-2xl border border-ink-700 bg-ink-900 p-0 text-zinc-200 shadow-2xl shadow-black/50 open:flex open:animate-dialog-in open:flex-col ${
+      className={`m-auto max-h-[min(90dvh,760px)] w-[calc(100%-2rem)] overflow-hidden rounded-[28px] border border-white/15 glass glass-strong p-0 text-zinc-200 shadow-2xl shadow-black/50 open:flex open:animate-dialog-in open:flex-col ${
         size === "sm" ? "max-w-sm" : "max-w-lg"
       }`}
     >

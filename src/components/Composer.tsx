@@ -97,7 +97,7 @@ export default function Composer({ streaming, disabled, onSend, onStop, focusKey
       className="mx-auto w-full max-w-3xl"
     >
       <div
-        className={`rounded-[22px] border bg-ink-850 shadow-lg shadow-black/25 transition-colors ${
+        className={`glass rounded-[26px] border transition-colors ${
           dragging ? "border-nova-400 bg-nova-500/5" : "border-ink-700 focus-within:border-ink-600"
         }`}
       >
@@ -213,7 +213,7 @@ export default function Composer({ streaming, disabled, onSend, onStop, focusKey
                 disabled={!canSend}
                 aria-label={actionMode ? "Run task" : "Send message"}
                 title={actionMode ? "Run task (Enter)" : "Send (Enter)"}
-                className="grid h-9 w-9 place-items-center rounded-full bg-nova-600 text-white transition-colors hover:bg-nova-500 disabled:cursor-not-allowed disabled:bg-ink-700 disabled:text-zinc-500"
+                className="grid h-9 w-9 place-items-center rounded-full bg-nova-600 text-ink-950 transition-colors hover:bg-nova-500 disabled:cursor-not-allowed disabled:bg-ink-700 disabled:text-zinc-500"
               >
                 <SendIcon />
               </button>

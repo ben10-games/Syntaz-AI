@@ -10,13 +10,17 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#0e0e10",
+  themeColor: "#050807",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="font-sans antialiased">{children}</body>
+      <body className="font-sans antialiased">
+        {children}
+        {/* Liquid glass: draws the lens of every .glass panel (public/liquid.js, the same file as the extension's). */}
+        <script src="/liquid.js" data-glass=".glass" defer />
+      </body>
     </html>
   );
 }

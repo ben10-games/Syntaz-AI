@@ -124,7 +124,7 @@ test("the theme button switches, and the choice carries over to other pages", as
   assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), "dark");
   await page.click("[data-theme-toggle]");
   assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), "light");
-  assert.equal(await page.evaluate(() => getComputedStyle(document.querySelector(".site")).backgroundColor), "rgb(255, 255, 255)");
+  assert.equal(await page.evaluate(() => getComputedStyle(document.querySelector(".site")).backgroundColor), "rgb(237, 242, 236)", "the light background");
   await page.goto(`${base}/faq.html`);
   assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), "light");
   await page.click("[data-theme-toggle]");

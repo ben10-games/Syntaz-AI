@@ -1,4 +1,4 @@
-// Makes every Syntaz icon from the one logo, src/app/icon.svg (the violet-to-pink rounded square with a white
+// Makes every Syntaz icon from the one logo, src/app/icon.svg (a dark glass rounded square with a lime-to-mint
 // "S" and a spark): Chrome extension PNGs, Windows .ico, macOS .icns and the setup window's PNGs.
 // Chrome draws the SVG at each size, so every icon matches the logo exactly.
 // Run from the project folder: node scripts/make-icons.mjs   (needs Chrome; set NOVA_TEST_CHROME_BIN if it isn't found)

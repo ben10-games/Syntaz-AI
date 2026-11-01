@@ -49,35 +49,32 @@ Put these URLs in one config object at the top of the code, because the reposito
 
 **Name:** "Syntaz AI" (or "Syntaz" in running text).
 
-**Logo:** a rounded square with a diagonal violet-to-pink gradient, a bold white "S", and a small white four-point spark at the top right. Use exactly this SVG, scaling it freely:
+**Logo:** a dark glass rounded square (near-black with a light rim), a bold "S" with a lime-to-mint gradient, and a small lime four-point spark at the top right. Use exactly this SVG, scaling it freely:
 
 ```svg
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8b9cff"/><stop offset="1" stop-color="#d946ef"/></linearGradient></defs><rect width="32" height="32" rx="8" fill="url(#g)"/><path d="M20.6 11.2c-.9-1.5-2.6-2.4-4.7-2.4-2.8 0-4.8 1.5-4.8 3.6 0 4.6 10 2.7 10 7.6 0 2.2-2.1 3.8-5 3.8-2.3 0-4.2-1-5.1-2.6" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/><path fill="#fff" d="M25 4.6l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><defs><linearGradient id="b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d2a24"/><stop offset="1" stop-color="#080b0a"/></linearGradient><linearGradient id="s" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d9fb5b"/><stop offset="1" stop-color="#2ee6b0"/></linearGradient><linearGradient id="h" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".28"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><rect width="32" height="32" rx="8" fill="url(#b)"/><rect x=".5" y=".5" width="31" height="31" rx="7.5" fill="url(#h)" stroke="#fff" stroke-opacity=".16"/><path d="M20.6 11.2c-.9-1.5-2.6-2.4-4.7-2.4-2.8 0-4.8 1.5-4.8 3.6 0 4.6 10 2.7 10 7.6 0 2.2-2.1 3.8-5 3.8-2.3 0-4.2-1-5.1-2.6" fill="none" stroke="url(#s)" stroke-width="3.2" stroke-linecap="round"/><path fill="#d9fb5b" d="M25 4.6l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></svg>
 ```
 
-**Colours.** These match the app exactly, so the site and the app feel like one product. The site follows the visitor's light/dark setting, with a manual toggle.
+**Look: "Volt liquid glass".** Apple-style liquid glass: soft lime, mint and blue glows drift slowly behind the page, and the header, cards and buttons are clear glass panels with bright rims, a light that follows the pointer, and edges that bend what's behind them. Buttons are rounded pills that squish when pressed; the main ones are lime with dark text. These colours match the app exactly. The site follows the visitor's light/dark setting, with a manual toggle.
 
 | Token | Dark | Light |
 |---|---|---|
-| background | `#0e0e10` | `#ffffff` |
-| side / alt surface | `#141416` | `#f7f7f8` |
-| card | `#18181b` | `#ffffff` |
-| raised | `#232327` | `#f1f1f3` |
-| hover | `#2a2a2f` | `#e9e9ec` |
-| border | `#2a2a2e` | `#e4e4e7` |
-| text | `#f4f4f5` | `#18181b` |
-| muted text | `#a1a1aa` | `#52525b` |
-| faint text | `#71717a` | `#8b8b94` |
-| accent | `#7c3aed` (hover `#6d28d9`) | same |
-| accent soft | `#2e1f52` | `#ede9fe` |
-| accent text | `#c4b5fd` | `#6d28d9` |
-| success | `#34d399` | `#059669` |
+| background | `#050807` | `#edf2ec` |
+| glass panel | `rgba(255,255,255,.055)` | `rgba(255,255,255,.58)` |
+| glass rim | `rgba(255,255,255,.16)` | `rgba(255,255,255,.85)` |
+| text | `#f2f6f3` | `#0d130f` |
+| muted text | `rgba(242,246,243,.68)` | `rgba(13,19,15,.66)` |
+| accent (lime) | `#c8f550` (hover `#d8fb6e`) | `#b9ef2f` |
+| text on accent | `#0b1006` | same |
+| accent text (links) | `#d4f76a` | `#3f7a00` |
+| mint | `#2ee6b0` | same |
+| success | `#3ee6a8` | `#0f9f6e` |
 | warning | `#fbbf24` | `#b45309` |
-| danger | `#f87171` | `#dc2626` |
+| danger | `#ff6b6b` | `#dc2626` |
 
-- The logo gradient (`#8b9cff` → `#d946ef`) may be used for highlights: a hero glow, gradient text on one key word, focus rings.
-- Shape: rounded corners (cards 16–20 px, buttons 10–12 px, pills fully rounded), soft shadows, generous spacing.
-- Type: the system UI font stack (`ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`), bold short headings, 15–16 px body.
+- Highlights: a lime-to-mint gradient (`#e9ff8a` → `#c8f550` → `#2ee6b0`) for gradient text on one key word and hero glows; lime focus rings.
+- Shape: very round (glass cards 24–28 px, pill buttons), bright 1–1.5 px top rims, soft deep shadows, generous spacing.
+- Type: the system UI font stack (`ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`), bold short headings with tight letter spacing, 15–16 px body.
 
 **Tone:** "Hi! What should Syntaz do?", "Tap a suggestion, or just type what you want.", "Syntaz asks before it clicks anything." Short sentences, plain words, no hype.
 

@@ -455,7 +455,7 @@ export default function ChatApp() {
         : null);
 
   return (
-    <div className="flex h-[100dvh] overflow-hidden bg-ink-950 text-zinc-200">
+    <div className="flex h-[100dvh] overflow-hidden text-zinc-200">
       <Sidebar
         open={sidebarOpen}
         conversations={conversations}
@@ -574,7 +574,7 @@ export default function ChatApp() {
                     disabled={streaming}
                     onClick={() => setDraftSeed({ text: prompt, key: Date.now() })}
                     style={{ animationDelay: `${60 + i * 40}ms` }}
-                    className="group flex animate-fade-in-up items-start gap-3 rounded-2xl border border-ink-700 bg-ink-900 p-4 text-left transition-colors hover:border-nova-500/40 hover:bg-ink-850 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="group flex animate-fade-in-up items-start gap-3 glass rounded-[22px] border border-white/10 p-4 text-left transition-colors hover:border-nova-500/50 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-nova-500/10 text-nova-300 transition-colors group-hover:bg-nova-500/20">
                       <Icon width={17} height={17} />

@@ -10,23 +10,24 @@ const config: Config = {
         mono: ["JetBrains Mono", "Fira Code", "ui-monospace", "SFMono-Regular", "Menlo", "Ubuntu Mono", "monospace"],
       },
       colors: {
-        // Charcoal neutrals
+        // Near-black neutrals with a hint of green (Volt liquid glass)
         ink: {
-          950: "#0e0e10",
-          900: "#131315",
-          850: "#18181b",
-          800: "#1f1f23",
-          700: "#2a2a2f",
-          600: "#3a3a41",
-          500: "#52525b",
+          950: "#050807",
+          900: "#0a0f0c",
+          850: "#101612",
+          800: "#151d18",
+          700: "#212b25",
+          600: "#33403a",
+          500: "#56635c",
         },
-        // Violet accent
+        // Volt accent: electric lime (the name stays "nova" so the class names don't change)
         nova: {
-          300: "#c4b5fd",
-          400: "#a78bfa",
-          500: "#8b5cf6",
-          600: "#7c3aed",
-          700: "#6d28d9",
+          300: "#e2fb9a",
+          400: "#d4f76a",
+          500: "#c8f550",
+          600: "#b4ec36",
+          700: "#8fc51c",
+          900: "#2f4a05",
         },
       },
       keyframes: {

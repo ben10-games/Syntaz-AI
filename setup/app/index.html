@@ -6,15 +6,22 @@
 <title>Syntaz AI</title>
 <link rel="icon" href="/nova.png">
 <style>
-  /* Syntaz's look (shared with the side panel and Syntaz Lite): dark by default, light when the computer is light. */
+  /* Syntaz's look, "Volt liquid glass" (shared with the side panel, Syntaz Lite and the website). */
   :root {
-    --bg: #0e0e10; --card: #18181b; --raise: #232327; --hover: #2a2a2f; --line: #2a2a2e; --text: #f4f4f5; --muted: #a1a1aa; --faint: #71717a;
-    --accent: #7c3aed; --accent-hover: #6d28d9; --accent-soft: #2e1f52; --accent2: #c4b5fd; --ok: #34d399; --ok-soft: #0f2a20; --warn: #f59e0b; --bad: #ef4444; --bad-text: #fca5a5; --bad-soft: #2a1215;
-    --grad: linear-gradient(135deg, #8b9cff, #d946ef); --shadow: 0 10px 30px rgba(0,0,0,.35); color-scheme: dark;
+    --bg: #050807; --card: rgba(255,255,255,.055); --raise: rgba(255,255,255,.08); --hover: rgba(255,255,255,.13); --line: rgba(255,255,255,.12); --edge: rgba(255,255,255,.16);
+    --text: #f2f6f3; --muted: rgba(242,246,243,.66); --faint: rgba(242,246,243,.44);
+    --accent: #c8f550; --accent-hover: #d8fb6e; --accent-soft: rgba(200,245,80,.14); --accent2: #d4f76a; --on-accent: #0b1006;
+    --ok: #3ee6a8; --ok-soft: rgba(62,230,168,.13); --warn: #fbbf24; --bad: #ff6b6b; --bad-text: #ff9b9b; --bad-soft: rgba(255,107,107,.13);
+    --grad: linear-gradient(90deg, #c8f550, #2ee6b0); --shadow: 0 12px 34px rgba(0,0,0,.42);
+    --rim: inset 0 1.5px 0 rgba(255,255,255,.42), inset 0 -1px 0 rgba(255,255,255,.1), inset 0 0 20px rgba(255,255,255,.04);
+    --glow-1: #b8f03a; --glow-2: #1fd6a8; --glow-3: #3a7bff; color-scheme: dark;
   }
   @media (prefers-color-scheme: light) { :root {
-    --bg: #f7f7f8; --card: #ffffff; --raise: #f1f1f3; --hover: #e9e9ec; --line: #e4e4e7; --text: #18181b; --muted: #52525b; --faint: #8b8b94;
-    --accent-soft: #ede9fe; --accent2: #6d28d9; --ok: #059669; --ok-soft: #ecfdf5; --bad-text: #b91c1c; --bad-soft: #fef2f2; --shadow: 0 10px 30px rgba(0,0,0,.07); color-scheme: light;
+    --bg: #edf2ec; --card: rgba(255,255,255,.58); --raise: rgba(255,255,255,.72); --hover: rgba(255,255,255,.9); --line: rgba(20,40,25,.1); --edge: rgba(255,255,255,.85);
+    --text: #0d130f; --muted: rgba(13,19,15,.64); --faint: rgba(13,19,15,.44); --accent: #b9ef2f; --accent-soft: rgba(140,200,20,.18); --accent2: #3f7a00;
+    --ok: #0f9f6e; --ok-soft: rgba(15,159,110,.12); --bad-text: #b91c1c; --bad-soft: rgba(220,38,38,.09); --shadow: 0 12px 34px rgba(20,40,25,.12);
+    --rim: inset 0 1.5px 0 rgba(255,255,255,.95), inset 0 -1px 0 rgba(255,255,255,.5), inset 0 0 0 1px rgba(255,255,255,.35);
+    --glow-1: #d4f75a; --glow-2: #6cf0c6; --glow-3: #9cc2ff; color-scheme: light;
   } }
   * { box-sizing: border-box; }
   [hidden] { display: none !important; }
@@ -33,7 +40,7 @@
   button { font: inherit; border: 1px solid var(--line); background: var(--raise); color: var(--text); padding: 9px 16px; border-radius: 12px; cursor: pointer; }
   button:hover:not(:disabled) { background: var(--hover); }
   button:disabled { opacity: .5; cursor: default; }
-  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }
   button.primary:hover:not(:disabled) { background: var(--accent-hover); }
   button.big { padding: 12px 22px; font-size: 15px; }
   button.danger { color: var(--bad-text); }
@@ -42,10 +49,10 @@
   .choice:hover { background: var(--hover); }
   .choice:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
   .choice input { margin-right: 8px; accent-color: var(--accent); }
-  .tag { font-size: 11px; background: var(--accent); color: #fff; border-radius: 999px; padding: 1px 8px; margin-left: 6px; }
+  .tag { font-size: 11px; background: var(--accent); color: var(--on-accent); border-radius: 999px; padding: 1px 8px; margin-left: 6px; }
   .tag.paid { background: var(--raise); color: var(--muted); border: 1px solid var(--line); }
   select { font: inherit; color: var(--text); background: var(--raise); border: 1px solid var(--line); border-radius: 10px; padding: 7px 10px; }
-  input[type=password], input[type=text] { width: 100%; font: inherit; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 12px; padding: 11px 13px; }
+  input[type=password], input[type=text] { width: 100%; font: inherit; background: var(--card); color: var(--text); border: 1px solid var(--line); border-radius: 12px; padding: 11px 13px; }
   input[type=password]:focus, input[type=text]:focus { border-color: var(--accent); outline: none; }
   /* On/off switches */
   input[type=checkbox] { appearance: none; -webkit-appearance: none; flex: 0 0 38px; width: 38px; height: 22px; border-radius: 999px; background: var(--hover); border: 1px solid var(--line); position: relative; cursor: pointer; margin: 0; }
@@ -71,6 +78,29 @@
   .center { text-align: center; }
   .hero { width: 96px; height: 96px; margin: 10px auto 6px; display: block; }
   footer { margin-top: 18px; display: flex; justify-content: space-between; color: var(--faint); font-size: 12px; }
+  /* Liquid glass: glows drift behind; cards are clear glass with bright rims that bend what's behind their edges
+     (lens drawn by the script at the end, used as var(--lens)) and lit where the pointer is. Buttons squish. */
+  body { position: relative; isolation: isolate; min-height: 100vh; }
+  body::before, body::after { content: ""; position: fixed; z-index: -1; border-radius: 50%; filter: blur(60px); pointer-events: none; animation: drift 22s ease-in-out infinite alternate; }
+  body::before { width: 460px; height: 460px; left: -160px; top: -160px; background: radial-gradient(circle, var(--glow-1), transparent 68%); opacity: .5; }
+  body::after { width: 540px; height: 540px; right: -200px; bottom: -200px; background: radial-gradient(circle, var(--glow-2), transparent 68%), radial-gradient(circle at 15% 15%, var(--glow-3), transparent 45%); opacity: .45; animation-duration: 28s; }
+  @keyframes drift { to { transform: translate(50px, 36px) scale(1.1); } }
+  .card, .choice, button, select, input[type=password], input[type=text] {
+    background-image: radial-gradient(260px circle at var(--x, -300px) var(--y, -300px), rgba(255,255,255,.12), transparent 60%);
+    -webkit-backdrop-filter: blur(18px) saturate(180%); backdrop-filter: var(--lens,) blur(18px) saturate(180%);
+    border-color: var(--edge);
+  }
+  .card { border-radius: 26px; box-shadow: var(--rim), var(--shadow); }
+  .choice { border-radius: 18px; box-shadow: var(--rim); }
+  .choice:has(input:checked) { border-color: var(--accent); background-color: var(--accent-soft); box-shadow: var(--rim), 0 0 0 1px var(--accent-soft); }
+  button { border-radius: 999px; box-shadow: var(--rim); transition: transform .4s cubic-bezier(.2,1.6,.3,1), background-color .2s, box-shadow .2s; }
+  button:active:not(:disabled) { transform: scale(.94); transition-duration: .1s; }
+  button.link { box-shadow: none; backdrop-filter: none; background-image: none; }
+  button.primary { background-image: linear-gradient(180deg, rgba(255,255,255,.45), rgba(255,255,255,0) 60%); box-shadow: inset 0 1px 0 rgba(255,255,255,.8), 0 6px 18px rgba(184,240,58,.35); }
+  button.primary:active:not(:disabled) { transform: scale(1.06, .9); }
+  input[type=checkbox]:checked { box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 0 12px rgba(184,240,58,.4); }
+  header img { filter: drop-shadow(0 6px 18px rgba(184,240,58,.25)); }
+  @media (prefers-reduced-motion: reduce) { body::before, body::after { animation: none; } button { transition: none; } }
 </style>
 </head>
 <body>
@@ -360,6 +390,76 @@ $("doUninstall").onclick = async () => {
 addEventListener("pagehide", () => fetch("/api/bye", { method: "POST", keepalive: true, headers: { "X-Syntaz-Secret": secret } }));
 refresh();
 setInterval(refresh, 2000);
+</script>
+<script data-glass=".card,.choice">
+// Syntaz liquid glass. Each .lg element gets a lens map drawn at its own size, so its edges bend what's
+// behind it (like a thick glass pebble) while the middle stays clear; the CSS uses it as var(--lens).
+// Chrome only: other browsers, and "reduce transparency", keep the plain frosted glass.
+// The same file is in website/liquid.js and chrome-extension/liquid.js (Syntaz Lite has it inline).
+(() => {
+  // Which elements are glass: <script src="liquid.js" data-glass=".panel,.card"> (default .lg).
+  const GLASS = document.currentScript?.dataset.glass || ".lg";
+  const NS = "http://www.w3.org/2000/svg";
+  const defs = document.createElementNS(NS, "svg");
+  defs.setAttribute("width", "0"); defs.setAttribute("height", "0"); defs.setAttribute("aria-hidden", "true");
+  defs.style.position = "absolute";
+  (document.body || document.documentElement).prepend(defs);
+  const made = new Map();
+  // Distance from the rounded-rect edge → how hard the glass bends there (0 in the middle).
+  function lensMap(w, h, r, edge) {
+    const c = document.createElement("canvas"); c.width = w; c.height = h;
+    const ctx = c.getContext("2d"); const img = ctx.createImageData(w, h); const d = img.data;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      // Signed distance to a rounded rectangle, and the direction to its nearest edge.
+      const qx = Math.abs(x + 0.5 - w / 2) - (w / 2 - r), qy = Math.abs(y + 0.5 - h / 2) - (h / 2 - r);
+      const ox = Math.max(qx, 0), oy = Math.max(qy, 0);
+      const dist = r - (Math.hypot(ox, oy) + Math.min(Math.max(qx, qy), 0)); // inward distance from the edge
+      const t = Math.max(0, 1 - dist / edge); const k = t * t * t; // strong at the rim, gone by `edge` px in
+      let nx, ny;
+      if (ox > 0 || oy > 0) { const l = Math.hypot(ox, oy) || 1; nx = ox / l; ny = oy / l; } else if (qx > qy) { nx = 1; ny = 0; } else { nx = 0; ny = 1; }
+      nx *= Math.sign(x + 0.5 - w / 2); ny *= Math.sign(y + 0.5 - h / 2);
+      const i = (y * w + x) * 4;
+      d[i] = 128 - nx * k * 127; d[i + 1] = 128 - ny * k * 127; d[i + 2] = 128; d[i + 3] = 255;
+    }
+    ctx.putImageData(img, 0, 0);
+    return c.toDataURL();
+  }
+  function filterFor(el) {
+    const b = el.getBoundingClientRect(); const w = Math.round(b.width), h = Math.round(b.height);
+    if (w < 8 || h < 8 || w * h > 1_500_000) return null; // tiny, or too big to draw quickly
+    const r = Math.min(parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0, w / 2, h / 2);
+    const edge = Math.min(28, Math.max(10, Math.min(w, h) * 0.32));
+    const id = `lg-${w}-${h}-${Math.round(r)}`;
+    if (!made.has(id)) {
+      const f = document.createElementNS(NS, "filter");
+      f.id = id;
+      for (const [k, v] of Object.entries({ x: 0, y: 0, width: w, height: h, filterUnits: "userSpaceOnUse", "color-interpolation-filters": "sRGB" })) f.setAttribute(k, v);
+      f.innerHTML = `<feImage href="${lensMap(w, h, r, edge)}" x="0" y="0" width="${w}" height="${h}" result="map"/>
+        <feDisplacementMap in="SourceGraphic" in2="map" scale="${Math.round(edge * 1.4)}" xChannelSelector="R" yChannelSelector="G"/>`;
+      defs.append(f);
+      made.set(id, f);
+    }
+    return id;
+  }
+  const chrome = CSS.supports("backdrop-filter", "url(#x)") && /Chrome\//.test(navigator.userAgent) && !matchMedia("(prefers-reduced-transparency: reduce)").matches;
+  function apply(el) {
+    if (!chrome) return;
+    const id = filterFor(el);
+    if (id) el.style.setProperty("--lens", `url(#${id})`);
+  }
+  const ro = new ResizeObserver((items) => items.forEach((i) => apply(i.target)));
+  const watch = (root) => root.querySelectorAll?.(GLASS).forEach((el) => { if (!el.dataset.lg) { el.dataset.lg = "1"; ro.observe(el); apply(el); } });
+  watch(document);
+  new MutationObserver((ms) => ms.forEach((m) => m.addedNodes.forEach((n) => n.nodeType === 1 && (n.matches?.(GLASS) ? watch(n.parentNode) : watch(n))))).observe(document.body, { childList: true, subtree: true });
+  // The light on the glass follows the pointer.
+  document.addEventListener("pointermove", (e) => {
+    const el = e.target.closest?.(`${GLASS},.btn`);
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    el.style.setProperty("--x", `${e.clientX - r.left}px`);
+    el.style.setProperty("--y", `${e.clientY - r.top}px`);
+  });
+})();
 </script>
 </body>
 </html>

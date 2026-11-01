@@ -72,7 +72,7 @@ function MessageBubble({ message, streaming, isLast, canRegenerate, onRegenerate
           </ul>
         )}
         {message.content && (
-          <div className="max-w-[85%] whitespace-pre-wrap break-words rounded-[20px] rounded-br-md bg-nova-600 px-4 py-2.5 text-[15px] leading-relaxed text-white shadow-sm shadow-nova-900/30 sm:max-w-[75%]">
+          <div className="max-w-[85%] whitespace-pre-wrap break-words rounded-[22px] rounded-br-md glass-tint px-4 py-2.5 text-[15px] leading-relaxed text-ink-950 sm:max-w-[75%]">
             {message.content}
           </div>
         )}
@@ -96,7 +96,7 @@ function MessageBubble({ message, streaming, isLast, canRegenerate, onRegenerate
     <div className="flex animate-fade-in-up gap-3 sm:gap-4">
       <SyntazLogo className="mt-0.5 h-8 w-8 shrink-0" />
       <div className="min-w-0 flex-1">
-        <div className="rounded-[20px] rounded-tl-md border border-ink-700/80 bg-ink-850/80 px-4 py-3 sm:px-5 sm:py-4">
+        <div className="glass rounded-[22px] rounded-tl-md border border-white/10 px-4 py-3 sm:px-5 sm:py-4">
           {message.run ? (
             <ActionRunView
               run={message.run}

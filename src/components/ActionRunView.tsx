@@ -67,7 +67,7 @@ function ApprovalCard({ call, onDecision }: { call: ToolCallView; onDecision: Pr
           type="button"
           disabled={busy}
           onClick={() => decide(true)}
-          className="rounded-lg bg-nova-600 px-3.5 py-1.5 text-sm font-medium text-white transition-colors hover:bg-nova-500 disabled:opacity-50"
+          className="rounded-lg bg-nova-600 px-3.5 py-1.5 text-sm font-medium text-ink-950 transition-colors hover:bg-nova-500 disabled:opacity-50"
         >
           Allow once
         </button>
@@ -175,7 +175,7 @@ function ActionRunView({ run, live, onDecision }: Props) {
                 <li key={i} className={`flex gap-2 text-sm ${active ? "text-zinc-50" : "text-zinc-300"}`}>
                   <span
                     className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full text-[11px] font-semibold ${
-                      active ? "bg-nova-500 text-white" : "bg-ink-700 text-zinc-300"
+                      active ? "bg-nova-500 text-ink-950" : "bg-ink-700 text-zinc-300"
                     }`}
                   >
                     {i + 1}
