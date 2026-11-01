@@ -7,5 +7,5 @@
 <key>CFBundleExecutable</key><string>syntaz-setup</string>
 <key>CFBundleIconFile</key><string>syntaz</string>
 <key>CFBundlePackageType</key><string>APPL</string>
-<key>CFBundleShortVersionString</key><string>1.6.1</string>
+<key>CFBundleShortVersionString</key><string>1.7.0</string>
 </dict></plist>

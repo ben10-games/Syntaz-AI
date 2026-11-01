@@ -1,6 +1,6 @@
 {
   "name": "syntaz-ai",
-  "version": "1.6.1",
+  "version": "1.7.0",
   "private": true,
   "scripts": {
     "dev": "next dev -H 127.0.0.1 -p 3000",
@@ -15,7 +15,9 @@
     "benchmark": "node scripts/benchmark.mjs",
     "test:installer": "node --test test/syntaz-app.test.mjs",
     "syntaz": "node setup/syntaz-app.mjs",
-    "release": "python3 scripts/make-release.py"
+    "release": "python3 scripts/make-release.py",
+    "release:lts": "python3 scripts/make-release.py --lts",
+    "site:chat": "python3 scripts/make-site-chat.py"
   },
   "engines": {
     "node": ">=18.18.0"

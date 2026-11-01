@@ -193,6 +193,10 @@
     </div>
     <div class="card">
       <div class="row spread"><div><h2>Updates</h2><div class="muted small" id="updText"></div></div><button id="update" hidden class="primary">Update now</button></div>
+      <div class="row" style="margin-top:12px" role="radiogroup" aria-label="Update channel">
+        <label class="choice small" style="flex:1;margin:0"><input type="radio" name="channel" value="latest"><b>Latest</b><div class="muted">New features as soon as they're ready.</div></label>
+        <label class="choice small" style="flex:1;margin:0"><input type="radio" name="channel" value="lts"><b>LTS</b><div class="muted">Long-term support: a stable version that only gets fixes.</div></label>
+      </div>
     </div>
     <footer><span id="ver"></span><button class="link danger" id="toUninstall">Uninstall Syntaz</button></footer>
   </section>
@@ -249,7 +253,8 @@ function render() {
   $("aiText").textContent = st.settings ? `${st.settings.provider}${st.settings.model ? ` · ${st.settings.model}` : ""}` : "Not set";
   if (st.devCopy) $("updText").textContent = `Version ${st.version} (developer copy: update with git pull)`;
   else if (st.updateAvailable) $("updText").textContent = `A new version is ready: ${st.latest} (you have ${st.version}).`;
-  else $("updText").textContent = st.latest ? `You have the newest version (${st.version}).` : `Version ${st.version}. Couldn't check for updates right now.`;
+  else $("updText").textContent = st.latest ? `You have the newest ${st.channel === "lts" ? "LTS " : ""}version (${st.version}).` : `Version ${st.version}. Couldn't check for updates right now.`;
+  for (const r of document.querySelectorAll("input[name=channel]")) r.checked = r.value === (st.channel || "latest");
   $("update").hidden = !st.updateAvailable;
 }
 
@@ -338,6 +343,8 @@ $("key").oninput = () => {
   if (/^[A-Za-z0-9_.-]{30,200}$/.test($("key").value.trim())) autoCheck = setTimeout(() => $("check").click(), 500);
 };
 $("startSetup").onclick = () => openChoose("install");
+// Latest or LTS updates: saved right away; the update check follows the chosen channel.
+document.querySelectorAll("input[name=channel]").forEach((r) => (r.onchange = async () => { const res = await call("channel", { channel: r.value }); if (res.state) { st = res.state; render(); } }));
 $("chooseBack").onclick = () => { go("loading"); refresh(); };
 $("getKey").onclick = () => call("open", { what: "key", provider: chosen() });
 async function check(model = "") {

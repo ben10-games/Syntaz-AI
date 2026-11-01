@@ -18,12 +18,16 @@ type Props = {
   onModeChange: (mode: "chat" | "actions") => void;
   actionsAvailable: boolean;
   onOpenSettings: () => void;
+  /** The AI can make pictures: the 🎨 button sends the text as a picture to make. */
+  picturesAvailable: boolean;
+  onPicture: (text: string) => void;
 };
 
 const MAX_CHARS = 32_000;
 
-export default function Composer({ streaming, disabled, onSend, onStop, focusKey, seed, modelLabel, mode, onModeChange, actionsAvailable, onOpenSettings }: Props) {
+export default function Composer({ streaming, disabled, onSend, onStop, focusKey, seed, modelLabel, mode, onModeChange, actionsAvailable, onOpenSettings, picturesAvailable, onPicture }: Props) {
   const [text, setText] = useState("");
+  const [pictureMode, setPictureMode] = useState(false);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [attachError, setAttachError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
@@ -65,7 +69,10 @@ export default function Composer({ streaming, disabled, onSend, onStop, focusKey
 
   const submit = () => {
     if (!canSend) return;
-    onSend(text.trim(), attachments);
+    if (pictureMode) {
+      onPicture(text.trim());
+      setPictureMode(false);
+    } else onSend(text.trim(), attachments);
     setText("");
     setAttachments([]);
     setAttachError(null);
@@ -137,7 +144,7 @@ export default function Composer({ streaming, disabled, onSend, onStop, focusKey
             }
           }}
           rows={1}
-          placeholder={dragging ? "Drop files to attach" : actionMode ? "Describe a goal, e.g. “Summarize the notes in my workspace”" : "Message Syntaz…"}
+          placeholder={dragging ? "Drop files to attach" : pictureMode ? "Describe the picture you want…" : actionMode ? "Describe a goal, e.g. “Summarize the notes in my workspace”" : "Message Syntaz…"}
           aria-label="Message"
           className="block max-h-[240px] min-h-[52px] w-full resize-none bg-transparent px-4 pb-1 pt-3.5 text-[15px] leading-relaxed text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus-visible:outline-none"
         />
@@ -185,6 +192,27 @@ export default function Composer({ streaming, disabled, onSend, onStop, focusKey
           >
             <PaperclipIcon />
           </button>
+          )}
+          {!actionMode && (
+            <button
+              type="button"
+              onClick={() => {
+                if (!picturesAvailable) return onPicture(""); // explains which AIs can
+                if (text.trim() && !pictureMode) {
+                  onPicture(text.trim());
+                  setText("");
+                  return;
+                }
+                setPictureMode((on) => !on);
+                ref.current?.focus();
+              }}
+              aria-label="Make a picture"
+              aria-pressed={pictureMode}
+              title={picturesAvailable ? "Make a picture: describe it and press send" : "Make a picture (your AI can't make pictures)"}
+              className={`grid h-9 w-9 place-items-center rounded-full transition-colors ${pictureMode ? "bg-syntaz-500 text-ink-950" : "text-zinc-400 hover:bg-ink-700 hover:text-zinc-100"}`}
+            >
+              <span aria-hidden className="text-[17px] leading-none">🎨</span>
+            </button>
           )}
           <button
             type="button"

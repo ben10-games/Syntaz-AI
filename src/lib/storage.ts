@@ -21,7 +21,8 @@ export function loadConversations(): Conversation[] {
 
 export function saveConversations(conversations: Conversation[]): string | null {
   try {
-    localStorage.setItem(KEY, JSON.stringify(conversations));
+    // Pictures stay out of storage (a few MB each would fill it); the message text says what was made.
+    localStorage.setItem(KEY, JSON.stringify(conversations.map((c) => ({ ...c, messages: c.messages.map(({ image: _image, ...m }) => m) }))));
     return null;
   } catch {
     return "Could not save chat history (browser storage may be full or disabled). Try deleting old conversations.";

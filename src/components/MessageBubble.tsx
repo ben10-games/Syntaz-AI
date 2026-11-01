@@ -103,6 +103,14 @@ function MessageBubble({ message, streaming, isLast, canRegenerate, onRegenerate
               live={live}
               onDecision={(callId, approved) => (onDecision ? onDecision(message.run?.runId, callId, approved) : Promise.resolve())}
             />
+          ) : message.image ? (
+            <div className="space-y-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={message.image} alt={message.content} className="max-h-[480px] max-w-full rounded-2xl border border-white/10" />
+              <a href={message.image} download={`syntaz-picture.${message.image.slice(11, message.image.indexOf(";")).replace("jpeg", "jpg")}`} className="inline-flex items-center gap-1.5 text-sm text-syntaz-300 underline underline-offset-2">
+                ⬇ Download
+              </a>
+            </div>
           ) : empty && streaming ? (
             <TypingDots />
           ) : empty && !message.error ? (

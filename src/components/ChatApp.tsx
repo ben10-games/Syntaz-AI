@@ -35,6 +35,8 @@ import MessageBubble from "./MessageBubble";
 import SettingsDialog from "./SettingsDialog";
 import Sidebar, { type Status } from "./Sidebar";
 
+const IMAGE_ASK = /^\s*(?:(?:please|pls)[,!]?\s+)?(?:(?:can|could|would) you\s+(?:please\s+)?)?(?:draw|paint|sketch|(?:generate|create|make|design)\s+(?:me\s+)?(?:an?|some|the|\d+)?\s*(?:\w+\s+){0,2}?(?:image|picture|pic|photo|drawing|painting|illustration|logo|wallpaper|artwork|art|poster|icon|sticker)s?)\b/i;
+
 const SUGGESTIONS = [
   { icon: BulbIcon, title: "Explain something simply", prompt: "Explain how volcanoes work in simple words, with an everyday example." },
   { icon: PenLineIcon, title: "Help me write", prompt: "Help me write a short, friendly message to " },
@@ -74,6 +76,7 @@ export default function ChatApp() {
   const [actionsInfo, setActionsInfo] = useState<{ enabled: boolean; workspace: boolean; writes: boolean; tools: ToolSummary[] } | null>(null);
 
   const abortRef = useRef<AbortController | null>(null);
+  const [pictures, setPictures] = useState<{ available: boolean; reason?: string; model?: string }>({ available: false });
   const scrollRef = useRef<HTMLDivElement>(null);
   const stickToBottom = useRef(true);
 
@@ -134,6 +137,7 @@ export default function ChatApp() {
         provider?: { name: string; kind: "lmstudio" | "openai-compatible" | "anthropic" };
         warning?: string | null;
         actions?: { enabled: boolean; workspace: boolean; writes: boolean; tools: ToolSummary[] };
+        images?: { available: boolean; reason?: string; model?: string };
         error?: string;
       };
       if (res.ok) {
@@ -146,6 +150,7 @@ export default function ChatApp() {
         setModels(data.models ?? []);
         setModelLocked(!!data.modelLocked);
         setActionsInfo(data.actions ?? null);
+        setPictures(data.images ?? { available: false });
         if (data.provider) setProvider(data.provider);
       } else {
         setStatus({ state: "offline", error: data.error ?? `HTTP ${res.status}` });
@@ -322,8 +327,45 @@ export default function ChatApp() {
   }, []);
 
   // ---- Actions --------------------------------------------------------
+  /** Makes a picture with the user's AI (/api/image) and shows it in the conversation. */
+  const makePicture = async (text: string) => {
+    if (streaming) return;
+    const conv = active ?? { id: newId(), title: titleFrom(text || "Picture"), messages: [], createdAt: Date.now(), updatedAt: Date.now() };
+    if (!active) {
+      setConversations((prev) => [conv, ...prev]);
+      setActiveId(conv.id);
+    }
+    const user: ChatMessage = { id: newId(), role: "user", content: text ? `🎨 ${text}` : "🎨 Make a picture", createdAt: Date.now() };
+    const reply: ChatMessage = { id: newId(), role: "assistant", content: "", createdAt: Date.now() };
+    updateConversation(conv.id, (c) => ({ ...c, title: c.messages.length ? c.title : titleFrom(text || "Picture"), messages: [...c.messages, user, reply], updatedAt: Date.now() }));
+    if (!pictures.available || !text) {
+      const why = !pictures.available
+        ? `${pictures.reason || "Your AI can't make pictures."} To make pictures, choose OpenAI, Google Gemini (with billing turned on), xAI (Grok) or Hugging Face with Change AI in the Syntaz window.`
+        : "Describe the picture you want, then press 🎨 or send.";
+      updateMessage(conv.id, reply.id, (m) => ({ ...m, error: why }));
+      return;
+    }
+    const controller = new AbortController();
+    abortRef.current = controller;
+    setStreamingId(conv.id);
+    stickToBottom.current = true;
+    try {
+      const res = await fetch("/api/image", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt: text }), signal: controller.signal });
+      const data = (await res.json().catch(() => ({}))) as { image?: string; error?: string };
+      if (!res.ok || typeof data.image !== "string" || !/^data:image\/(png|jpeg|webp|gif);base64,/.test(data.image)) throw new Error(data.error || "Syntaz didn't get a picture back.");
+      updateMessage(conv.id, reply.id, (m) => ({ ...m, content: `🖼 Picture of: ${text}`, image: data.image }));
+    } catch (err) {
+      updateMessage(conv.id, reply.id, (m) => (controller.signal.aborted ? { ...m, stopped: true } : { ...m, error: err instanceof Error ? err.message : String(err) }));
+    } finally {
+      abortRef.current = null;
+      setStreamingId(null);
+    }
+  };
+
   const send = (text: string, attachments: Attachment[] = []) => {
     if (streaming) return;
+    // "draw a cat", "make a picture of …": a picture, when the AI can make one.
+    if (mode === "chat" && !attachments.length && pictures.available && IMAGE_ASK.test(text)) return void makePicture(text);
     const asAction = mode === "actions" && !!actionsInfo?.enabled;
     const user: ChatMessage = {
       id: newId(),
@@ -628,6 +670,8 @@ export default function ChatApp() {
             mode={mode}
             onModeChange={setMode}
             actionsAvailable={!!actionsInfo?.enabled}
+            picturesAvailable={pictures.available}
+            onPicture={(t) => void makePicture(t)}
             onOpenSettings={() => {
               setSettingsOpen(true);
               refreshStatus();

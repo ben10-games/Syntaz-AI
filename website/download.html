@@ -3,7 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Syntaz AI – Download</title>
+<title>Download Syntaz AI – Windows, Mac, Linux (free)</title>
+<meta name="description" content="Download Syntaz AI for Windows, Mac or Linux, or the LTS version. Setup gets everything it needs by itself. Free with a Google Gemini key.">
+<link rel="canonical" href="https://ben10-games.github.io/Syntaz-AI/download.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Syntaz AI">
+<meta property="og:title" content="Download Syntaz AI – Windows, Mac, Linux (free)">
+<meta property="og:description" content="Download Syntaz AI for Windows, Mac or Linux, or the LTS version. Setup gets everything it needs by itself. Free with a Google Gemini key.">
+<meta property="og:url" content="https://ben10-games.github.io/Syntaz-AI/download.html">
+<meta property="og:image" content="https://ben10-games.github.io/Syntaz-AI/og.png">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <script src="site.js"></script>
 <style>
@@ -76,6 +85,9 @@ html,body{background:#0e0e10}
 .bub-u{background:var(--accent)!important;color:var(--on)!important;background-image:linear-gradient(180deg,rgba(255,255,255,.35),rgba(255,255,255,0) 55%)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 6px 20px rgba(184,240,58,.28)}
 @media (max-width: 760px){.site>header{position:relative;top:0}}
 @media (prefers-reduced-motion: reduce){.site::before,.site::after{animation:none}}
+.cmd{display:flex;gap:8px;align-items:center;padding:8px 8px 8px 14px;border-radius:14px;background:rgba(0,0,0,.35);border:1px solid var(--edge);min-width:0}
+.cmd code{flex:1;min-width:0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;overflow-x:auto;white-space:nowrap}
+:root[data-theme="light"] .cmd{background:rgba(255,255,255,.7)}
 </style>
 </head>
 <body>
@@ -105,9 +117,9 @@ html,body{background:#0e0e10}
 
 <main style="max-width: 1140px; margin: 0 auto; padding: 72px 24px 64px; display: flex; flex-direction: column; gap: 56px">
 <div style="display: flex; flex-direction: column; gap: 14px; max-width: 680px">
-<span class="pill" style="align-self: flex-start">Free · Version 1.6.1</span>
+<span class="pill" style="align-self: flex-start">Free · Version 1.7.0</span>
 <h1 style="font-size: clamp(36px, 5vw, 52px); font-weight: 800">Download Syntaz</h1>
-<p class="muted" style="font-size: 18px">Always the newest version. Pick the one for your computer.</p>
+<p class="muted" style="font-size: 18px">Always the newest version, for Windows, Mac and Linux. Setup gets everything it needs by itself: nothing else to install.</p>
 </div>
 
 <div style="display: flex; flex-wrap: wrap; gap: 20px">
@@ -130,6 +142,16 @@ html,body{background:#0e0e10}
 <span class="muted" style="font-size: 13px">Syntaz-for-Mac.zip</span>
 </div>
 <div class="card" style="flex: 1 1 300px; padding: 28px; display: flex; flex-direction: column; gap: 14px">
+<div class="ico"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M7 9l3 3-3 3M13 15h4"></path></svg></div>
+<h2 style="font-size: 24px">Linux</h2>
+<p class="muted" style="flex: 1">The full Syntaz for Linux (Ubuntu, Mint, Fedora, …). One command installs it:</p>
+<div class="cmd"><code id="linuxCmd">curl -fsSL https://ben10-games.github.io/Syntaz-AI/install.sh | bash</code><button class="btn btn-g btn-s" type="button" data-copy="linuxCmd">Copy</button></div>
+<a class="btn btn-g" href="https://github.com/ben10-games/Syntaz-AI/releases/latest/download/Syntaz-for-Linux.zip">
+<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"></path></svg>
+<span>Or download the ZIP</span></a>
+<span class="muted" style="font-size: 13px">Syntaz-for-Linux.zip</span>
+</div>
+<div class="card" style="flex: 1 1 300px; padding: 28px; display: flex; flex-direction: column; gap: 14px">
 <div class="ico"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"></path><path d="M14 3v5h5M9 14l2 2 4-4"></path></svg></div>
 <h2 style="font-size: 24px">Syntaz Lite</h2>
 <p class="muted" style="flex: 1">One file, nothing to install. Works in any browser, even on Chromebooks and school laptops. Chat only.</p>
@@ -145,6 +167,7 @@ html,body{background:#0e0e10}
 <div role="group" aria-label="Choose your computer" style="display: flex; flex-wrap: wrap; gap: 6px; padding: 6px; background: var(--raised); border-radius: 14px; align-self: flex-start">
 <button type="button" class="tab" aria-pressed="false" data-tab="win">Windows</button>
 <button type="button" class="tab" aria-pressed="false" data-tab="mac">Mac</button>
+<button type="button" class="tab" aria-pressed="false" data-tab="linux">Linux</button>
 <button type="button" class="tab" aria-pressed="false" data-tab="lite">Syntaz Lite</button>
 </div>
 
@@ -176,6 +199,19 @@ html,body{background:#0e0e10}
 </div>
 </div>
 
+<div data-panel="linux" hidden>
+<div style="display: flex; flex-direction: column; gap: 14px; max-width: 820px">
+<ol class="steps">
+<li><span class="num">1</span><span>Open a <strong>Terminal</strong> (Ctrl+Alt+T on most computers).</span></li>
+<li><span class="num">2</span><span>Paste this and press Enter: <span class="kbd">curl -fsSL https://ben10-games.github.io/Syntaz-AI/install.sh | bash</span>. It downloads Syntaz into a <strong>Syntaz AI</strong> folder in your home folder. No sudo needed.</span></li>
+<li><span class="num">3</span><span>The Syntaz window opens: click <strong>Set up Syntaz</strong>, pick your AI and paste its key (<a href="#key">how to get a free one</a>), then click <strong>Install</strong>.</span></li>
+<li><span class="num">4</span><span>Add Syntaz to Chrome: open <span class="kbd">chrome://extensions</span>, turn on <strong>Developer mode</strong>, click <strong>Load unpacked</strong> and pick the <span class="kbd">chrome-extension</span> folder inside <strong>Syntaz AI</strong>.</span></li>
+<li><span class="num">5</span><span>Done! Syntaz AI is in your apps menu, and <span class="kbd">Alt+N</span> opens it on any website.</span></li>
+</ol>
+<p class="muted" style="font-size: 14px">Prefer the ZIP? Unzip <strong>Syntaz-for-Linux.zip</strong> and run <strong>Syntaz Setup (Linux).sh</strong> (right-click → Run as program).</p>
+</div>
+</div>
+
 <div data-panel="lite" hidden>
 <div style="display: flex; flex-direction: column; gap: 14px; max-width: 820px">
 <ol class="steps">
@@ -184,6 +220,17 @@ html,body{background:#0e0e10}
 <li><span class="num">3</span><span>Paste your free Gemini key (<a href="#key">how to get one</a>) and start chatting. You can add photos and text files too.</span></li>
 </ol>
 </div>
+</div>
+</section>
+
+<section id="lts" aria-labelledby="ltsh" class="card" style="padding: 32px; display: flex; flex-direction: column; gap: 14px">
+<span class="pill" style="align-self: flex-start">LTS</span>
+<h2 id="ltsh" style="font-size: 28px">Want it to stay the same? Get the LTS version</h2>
+<p class="muted">LTS means long-term support: a stable version of Syntaz that only gets fixes, no new features, so nothing changes under you. Good for school computers and friends who just want it to work. You can switch between LTS and Latest any time in the Syntaz window.</p>
+<div style="display: flex; flex-wrap: wrap; gap: 10px">
+<a class="btn btn-g" href="https://github.com/ben10-games/Syntaz-AI/releases/download/lts/Syntaz-for-Windows.zip">LTS for Windows</a>
+<a class="btn btn-g" href="https://github.com/ben10-games/Syntaz-AI/releases/download/lts/Syntaz-for-Mac.zip">LTS for Mac</a>
+<a class="btn btn-g" href="https://github.com/ben10-games/Syntaz-AI/releases/download/lts/Syntaz-for-Linux.zip">LTS for Linux</a>
 </div>
 </section>
 
@@ -216,7 +263,7 @@ html,body{background:#0e0e10}
 <div style="max-width: 1200px; margin: 0 auto; padding: 32px 24px; display: flex; flex-wrap: wrap; gap: 16px 32px; align-items: center; justify-content: space-between">
 <div style="display: flex; align-items: center; gap: 10px; font-weight: 800">
 <svg aria-hidden="true" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><defs><linearGradient id="bf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d2a24"/><stop offset="1" stop-color="#080b0a"/></linearGradient><linearGradient id="sf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d9fb5b"/><stop offset="1" stop-color="#2ee6b0"/></linearGradient><linearGradient id="hf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".28"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><rect width="32" height="32" rx="8" fill="url(#bf)"/><rect x=".5" y=".5" width="31" height="31" rx="7.5" fill="url(#hf)" stroke="#fff" stroke-opacity=".16"/><path d="M20.6 11.2c-.9-1.5-2.6-2.4-4.7-2.4-2.8 0-4.8 1.5-4.8 3.6 0 4.6 10 2.7 10 7.6 0 2.2-2.1 3.8-5 3.8-2.3 0-4.2-1-5.1-2.6" fill="none" stroke="url(#sf)" stroke-width="3.2" stroke-linecap="round"/><path fill="#d9fb5b" d="M25 4.6l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></svg>
-<span>Syntaz AI</span><span class="muted" style="font-weight: 500; font-size: 14px">v1.6.1</span>
+<span>Syntaz AI</span><span class="muted" style="font-weight: 500; font-size: 14px">v1.7.0</span>
 </div>
 <nav aria-label="Footer" style="display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 14px">
 <a href="changelog.html">What's new</a>

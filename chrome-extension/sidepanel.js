@@ -13,6 +13,7 @@ const ui = {
   mode: "auto", // auto | chat | actions
   messages: [], // { role, content (sent to Syntaz), text, page: {title,url,hash}|null, pageText: bool }
   images: { available: false, reason: "" }, // can Syntaz's AI make pictures (from /api/status)
+  pictureMode: false, // 🎨 pressed: the next message is a picture to make
   controller: null, // AbortController of the running request
   windowId: null,
   tabId: null,
@@ -1020,7 +1021,9 @@ async function send(retryText) {
     autosize();
   }
   // Pictures: when the AI can make them; otherwise say which AIs can (instead of a confusing answer).
-  if (ui.mode !== "actions" && looksLikeImage(text)) {
+  const wantsPicture = ui.pictureMode || (ui.mode !== "actions" && looksLikeImage(text));
+  if (ui.pictureMode) setPictureMode(false);
+  if (wantsPicture) {
     if (ui.images.available) {
       addUserBubble(text, "🎨 picture");
       return sendImage(text);
@@ -1297,6 +1300,20 @@ async function takePendingAsk() {
 }
 chrome.storage.onChanged.addListener((changes, area) => area === "session" && changes.pendingAsk && changes.pendingAsk.newValue && takePendingAsk());
 
+function setPictureMode(on) {
+  ui.pictureMode = on;
+  $("pictureBtn").setAttribute("aria-pressed", String(on));
+  $("input").placeholder = on ? "Describe the picture you want…" : { auto: "Ask about this page, or tell Syntaz what to do…", chat: "Message Syntaz…", actions: "Describe a task, e.g. “search the web for…”" }[ui.mode];
+}
+// 🎨: with text in the box it makes that picture now; otherwise the next message is a picture.
+$("pictureBtn").onclick = () => {
+  if ($("input").value.trim() && !ui.pictureMode) {
+    setPictureMode(true);
+    return send();
+  }
+  setPictureMode(!ui.pictureMode);
+  $("input").focus();
+};
 $("see").onclick = () => {
   ui.see = !ui.see;
   $("see").setAttribute("aria-pressed", String(ui.see));

@@ -368,6 +368,14 @@ describe("real Chrome side panel", { timeout: 180_000, skip: !CHROME || !existsS
     assert.equal(await panel.$eval(".msg.assistant:last-child a[download]", (a) => a.getAttribute("download")), "syntaz-picture.png");
     assert.match(await lastAssistant(), /Making a picture with mock-image/);
     assert.equal(mock.seen.chatBodies.filter((b) => JSON.stringify(b).includes("draw a cat in space")).length, 0, "no chat request for a picture");
+    // The 🎨 button: the next message is a picture, even without "draw".
+    await panel.click("#pictureBtn");
+    assert.equal(await panel.$eval("#pictureBtn", (b) => b.getAttribute("aria-pressed")), "true");
+    assert.equal(await panel.$eval("#input", (i) => i.placeholder), "Describe the picture you want…");
+    await sendInPanel("a red bike by the sea");
+    await waitFor(async () => mock.seen.imageBodies.at(-1)?.prompt === "a red bike by the sea");
+    await waitFor(async () => panel.evaluate(() => document.querySelectorAll(".msg.assistant img.made").length === 2));
+    assert.equal(await panel.$eval("#pictureBtn", (b) => b.getAttribute("aria-pressed")), "false", "back to normal messages after one picture");
     // The provider refuses: said plainly, with Retry.
     await sendInPanel("make a picture of FAIL");
     await waitFor(async () => /rejected by the safety system/.test(await lastAssistant()));

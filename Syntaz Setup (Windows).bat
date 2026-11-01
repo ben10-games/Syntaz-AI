@@ -2,23 +2,18 @@
 setlocal
 cd /d "%~dp0"
 title Syntaz Setup
-set "NODE="
-where node >nul 2>nul && set "NODE=node"
-if not defined NODE if exist "%ProgramFiles%\nodejs\node.exe" set "NODE=%ProgramFiles%\nodejs\node.exe"
-if defined NODE goto run
-echo Getting Syntaz ready: installing Node.js, which Syntaz runs on.
-echo This takes a minute. Click Yes if Windows asks.
-where winget >nul 2>nul || goto manual
-winget install -e --id OpenJS.NodeJS.LTS --silent --accept-source-agreements --accept-package-agreements >nul 2>nul
-if exist "%ProgramFiles%\nodejs\node.exe" set "NODE=%ProgramFiles%\nodejs\node.exe"
-if defined NODE goto run
-:manual
-echo.
-echo Please install Node.js - the LTS button - from the page that opens now,
-echo then double-click this file again.
-start "" "https://nodejs.org/en/download"
-pause
-exit /b 1
+rem Uses Node.js if this PC has it; otherwise gets its own copy (no installer, no admin) the first time.
+where node >nul 2>nul && goto run
+if exist "%LOCALAPPDATA%\Syntaz\node\node.exe" goto run
+if exist "%ProgramFiles%\nodejs\node.exe" goto run
+echo Getting Syntaz ready (the first time only, about a minute)...
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0setup\windows\get-node.ps1" >nul
+if errorlevel 1 goto failed
 :run
 start "" powershell -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "%~dp0setup\windows\launch.ps1"
 exit /b 0
+:failed
+echo.
+echo Syntaz couldn't download what it needs. Check your internet connection and double-click this file again.
+pause
+exit /b 1

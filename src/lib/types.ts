@@ -21,6 +21,8 @@ export type ChatMessage = {
   /** Syntaz Actions: the goal (user message) / the run's progress and results (assistant message). */
   kind?: "action";
   run?: ActionRun;
+  /** A picture Syntaz made (data: URL). Shown only; not saved in browser storage (too big). */
+  image?: string;
   /** Set when generation failed or was stopped. */
   error?: string;
   stopped?: boolean;

@@ -3,278 +3,285 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data: blob:; connect-src https://generativelanguage.googleapis.com; base-uri 'none'; form-action 'none'; object-src 'none'">
-<title>Syntaz AI – Chat</title>
-<link rel="icon" href="icon.svg" type="image/svg+xml">
-<script src="site.js"></script>
+<title>Chat with Syntaz AI – free AI chat in your browser</title>
+<meta name="description" content="Chat with Syntaz AI right in your browser: answers, help with homework photos, writing, quizzes and pictures. Free with your own Gemini key, nothing to install.">
+<link rel="canonical" href="https://ben10-games.github.io/Syntaz-AI/chat.html">
+<meta property="og:title" content="Chat with Syntaz AI">
+<meta property="og:description" content="Free AI chat in your browser, with pictures. Nothing to install.">
+<meta property="og:image" content="https://ben10-games.github.io/Syntaz-AI/og.png">
+<meta property="og:url" content="https://ben10-games.github.io/Syntaz-AI/chat.html">
+<!-- Made from Syntaz Lite by scripts/make-site-chat.py: edit lite/Syntaz Lite.html, then run that script.
+     Syntaz Lite: Syntaz in one file. Open it in any browser, paste a free Gemini key, and chat (pictures too).
+     Nothing to install. Talks only to Google's Gemini API, directly from this page. The full Syntaz (with the
+     Chrome extension) can also act on websites; this file can't. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2032%2032%22%3E%3Cdefs%3E%3ClinearGradient%20id=%22b%22%20x1=%220%22%20y1=%220%22%20x2=%220%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%231d2a24%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%23080b0a%22/%3E%3C/linearGradient%3E%3ClinearGradient%20id=%22s%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%23d9fb5b%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%232ee6b0%22/%3E%3C/linearGradient%3E%3ClinearGradient%20id=%22h%22%20x1=%220%22%20y1=%220%22%20x2=%220%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%23fff%22%20stop-opacity=%22.28%22/%3E%3Cstop%20offset=%22.5%22%20stop-color=%22%23fff%22%20stop-opacity=%220%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width=%2232%22%20height=%2232%22%20rx=%228%22%20fill=%22url%28%23b%29%22/%3E%3Crect%20x=%22.5%22%20y=%22.5%22%20width=%2231%22%20height=%2231%22%20rx=%227.5%22%20fill=%22url%28%23h%29%22%20stroke=%22%23fff%22%20stroke-opacity=%22.16%22/%3E%3Cpath%20d=%22M20.6%2011.2c-.9-1.5-2.6-2.4-4.7-2.4-2.8%200-4.8%201.5-4.8%203.6%200%204.6%2010%202.7%2010%207.6%200%202.2-2.1%203.8-5%203.8-2.3%200-4.2-1-5.1-2.6%22%20fill=%22none%22%20stroke=%22url%28%23s%29%22%20stroke-width=%223.2%22%20stroke-linecap=%22round%22/%3E%3Cpath%20fill=%22%23d9fb5b%22%20d=%22M25%204.6l.7%202%202%20.7-2%20.7-.7%202-.7-2-2-.7%202-.7z%22/%3E%3C/svg%3E">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; connect-src https://generativelanguage.googleapis.com; base-uri 'none'; form-action 'none'">
 <style>
-body{margin:0}
-.site{--bg:#050807;--side:rgba(16,22,19,.55);--card:rgba(255,255,255,.055);--raised:rgba(255,255,255,.08);--hover:rgba(255,255,255,.13);--border:rgba(255,255,255,.14);--edge:rgba(255,255,255,.16);--text:#f2f6f3;--muted:rgba(242,246,243,.68);--accent:#c8f550;--accent-h:#d8fb6e;--on:#0b1006;--soft:rgba(200,245,80,.14);--atext:#d4f76a;--ok:#3ee6a8;--warn:#fbbf24;--bad:#ff6b6b;--shadow:0 14px 40px rgba(0,0,0,.42);--rim:inset 0 1.5px 0 rgba(255,255,255,.42),inset 0 -1px 0 rgba(255,255,255,.1),inset 0 0 22px rgba(255,255,255,.04);--glow-1:#b8f03a;--glow-2:#1fd6a8;--glow-3:#3a7bff;background:var(--bg);color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px;line-height:1.55;min-height:100%;overflow-x:hidden}
-:root[data-theme="light"] .site{--bg:#edf2ec;--side:rgba(255,255,255,.55);--card:rgba(255,255,255,.58);--raised:rgba(255,255,255,.72);--hover:rgba(255,255,255,.92);--border:rgba(20,40,25,.1);--edge:rgba(255,255,255,.85);--text:#0d130f;--muted:rgba(13,19,15,.66);--accent:#b9ef2f;--soft:rgba(140,200,20,.18);--atext:#3f7a00;--ok:#0f9f6e;--warn:#b45309;--bad:#dc2626;--shadow:0 14px 40px rgba(20,40,25,.12);--rim:inset 0 1.5px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(255,255,255,.5),inset 0 0 0 1px rgba(255,255,255,.35);--glow-1:#d4f75a;--glow-2:#6cf0c6;--glow-3:#9cc2ff}
-.site *{box-sizing:border-box}
-.site a{color:var(--atext)}
-.site a:hover{color:var(--text)}
-.site h1,.site h2,.site h3,.site p{margin:0}
-.site h1,.site h2,.site h3{line-height:1.12;letter-spacing:-0.02em}
-.site :focus-visible{outline:2px solid #c8f550;outline-offset:3px}
-.nav{color:var(--muted)!important;text-decoration:none;padding:8px 12px;border-radius:10px;font-size:15px;font-weight:600;min-height:44px;display:inline-flex;align-items:center}
-.nav:hover{background:var(--hover);color:var(--text)!important}
-.nav.on{color:var(--text)!important;background:var(--raised)}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 18px;border-radius:12px;font-weight:700;font-size:15px;text-decoration:none;border:1px solid transparent;cursor:pointer;font-family:inherit;line-height:1.2}
-.btn-p{background:var(--accent);color:var(--on)!important}
-.btn-p:hover{background:var(--accent-h)}
-.btn-g{background:var(--raised);color:var(--text)!important;border-color:var(--border)}
-.btn-g:hover{background:var(--hover)}
-.icon-btn{width:44px;height:44px;border-radius:12px;border:1px solid var(--border);background:var(--raised);color:var(--text);display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
-.card{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow)}
-.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;background:var(--soft);color:var(--atext);font-size:13px;font-weight:700}
-.muted{color:var(--muted)}
-.num{width:28px;height:28px;border-radius:999px;background:var(--accent);color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex:none}
-.field{width:100%;min-height:46px;border-radius:12px;border:1px solid var(--border);background:var(--bg);color:var(--text);padding:10px 14px;font-size:15px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
-.sw{width:46px;height:28px;border-radius:999px;border:none;position:relative;cursor:pointer;flex:none}
-.sw span{position:absolute;top:4px;width:20px;height:20px;border-radius:50%;background:#fff}
-.shell{display:flex;height:760px;border:1px solid var(--border);border-radius:20px;overflow:hidden;background:var(--bg);position:relative}
-.side{width:260px;flex:none;background:var(--side);border-right:1px solid var(--border);display:flex;flex-direction:column;gap:6px;padding:14px}
-.chatrow{display:flex;align-items:center;gap:6px;border-radius:10px}
-.chatrow.on{background:var(--raised)}
-.chatrow a{flex:1;min-width:0;color:var(--text)!important;text-decoration:none;padding:10px 10px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.del{width:36px;height:36px;border:none;background:transparent;color:var(--muted);border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
-.del:hover{background:var(--hover);color:var(--text)}
-.menu-btn{display:none}
-.scrim{display:none}
-.bub-u{align-self:flex-end;max-width:80%;background:var(--accent);color:#fff;padding:10px 15px;border-radius:18px 18px 4px 18px;font-size:15px}
-.ans{align-self:flex-start;max-width:min(720px,92%);display:flex;flex-direction:column;gap:10px;font-size:15px}
-.ans ol,.ans ul{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:4px}
-.code{background:var(--side);border:1px solid var(--border);border-radius:12px;overflow:hidden}
-.code pre{margin:0;padding:12px 14px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;overflow-x:auto}
-.ic{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;background:var(--raised);border-radius:6px;padding:1px 6px}
-.sugg{flex:1 1 220px;text-align:left;padding:14px 16px;border-radius:14px;border:1px solid var(--border);background:var(--card);color:var(--text);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;min-height:56px}
-.sugg:hover{background:var(--hover)}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block;animation:blink 1.2s infinite}
-.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
-@keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
-.sel{min-height:40px;border-radius:10px;border:1px solid var(--border);background:var(--raised);color:var(--text);padding:6px 10px;font-family:inherit;font-size:14px}
-@media (max-width: 760px){
-.side{position:absolute;left:0;top:0;bottom:0;z-index:5;transform:translateX(-100%);transition:transform .2s;width:84%;max-width:300px}
-.side.open{transform:none}
-.menu-btn{display:inline-flex}
-.scrim.open{display:block;position:absolute;inset:0;background:rgba(0,0,0,.45);z-index:4;border:none}
-}
-.shell{height:min(760px,calc(100vh - 150px));min-height:520px}
-.chatrow button.open{flex:1;min-width:0;text-align:left;background:none;border:none;color:var(--text);padding:10px;font:inherit;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;border-radius:10px}
-.chatrow:hover{background:var(--hover)}
-.bub-u{white-space:pre-wrap;overflow-wrap:anywhere}
-.bub-u img{display:block;max-width:220px;max-height:160px;border-radius:10px;margin-top:8px}
-.ans{overflow-wrap:anywhere}
-.ans p{margin:0}
-.ans .code pre code{font:inherit;background:none;padding:0}
-.ans code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;background:var(--raised);border-radius:6px;padding:1px 6px}
-.ans a{color:var(--atext)}
-.code-head{display:flex;align-items:center;justify-content:space-between;padding:6px 8px 6px 14px;border-bottom:1px solid var(--border)}
-.note{color:var(--muted);font-size:13px}
-.err{align-self:flex-start;max-width:560px;display:flex;flex-direction:column;gap:10px;padding:14px 16px;border-radius:14px;border:1px solid var(--bad);background:var(--card)}
-.err strong{color:var(--bad);font-size:14px}
-.thumb{display:flex;align-items:center;gap:8px;padding:6px 8px 6px 6px;border-radius:10px;background:var(--raised);border:1px solid var(--border);font-size:13px;max-width:240px}
-.thumb img{width:32px;height:32px;object-fit:cover;border-radius:6px}
-.thumb span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
-.composer{display:flex;gap:8px;align-items:flex-end;border:1px solid var(--border);background:var(--card);border-radius:16px;padding:6px;transition:border-color .15s}
-.composer:focus-within{border-color:var(--accent)}
-.composer.drag{border-style:dashed;border-color:var(--accent);background:var(--soft)}
-#msg{flex:1;min-width:0;resize:none;border:none;outline:none;background:transparent;color:var(--text);font-family:inherit;font-size:15px;padding:11px 4px;min-height:44px;max-height:40vh}
-.btn:disabled{opacity:.45;cursor:default}
-.sw[aria-checked="true"]{background:var(--accent)}.sw[aria-checked="false"]{background:var(--hover)}
-.sw[aria-checked="true"] span{left:22px}.sw[aria-checked="false"] span{left:4px}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-@media (max-width: 760px){.shell{height:calc(100vh - 190px)}#model-label{display:none}.sel{max-width:46vw}}
-@media (prefers-reduced-motion: reduce){.site *{animation:none!important;transition:none!important}}
-[hidden]{display:none!important}
-html,body{background:#0e0e10}
-:root{color-scheme:dark}
-:root[data-theme="light"]{color-scheme:light}
-:root[data-theme="light"] body{background:#ffffff}
-.when-dark{display:contents}.when-light{display:none}
-:root[data-theme="light"] .when-dark{display:none}:root[data-theme="light"] .when-light{display:contents}
+  /* Syntaz's look, "Volt liquid glass" (same as the Syntaz app and website): lime and mint on near-black, glass panels
+     over soft moving glows. Light when the computer uses light mode, or with the ☀/☾ button. */
+  :root {
+    --bg: #050807; --side: rgba(16,22,19,.5); --card: rgba(255,255,255,.055); --raise: rgba(255,255,255,.08); --hover: rgba(255,255,255,.12); --line: rgba(255,255,255,.12); --edge: rgba(255,255,255,.16);
+    --text: #f2f6f3; --muted: rgba(242,246,243,.66); --faint: rgba(242,246,243,.44); --accent: #c8f550; --accent-hover: #d8fb6e; --accent-soft: rgba(200,245,80,.14); --accent-text: #d4f76a; --on-accent: #0b1006;
+    --bad: #ff9b9b; --bad-bg: rgba(255,107,107,.13); --code: rgba(0,0,0,.38); --shadow: 0 12px 34px rgba(0,0,0,.42);
+    --rim: inset 0 1.5px 0 rgba(255,255,255,.42), inset 0 -1px 0 rgba(255,255,255,.1), inset 0 0 20px rgba(255,255,255,.04); --glow-1: #b8f03a; --glow-2: #1fd6a8; --glow-3: #3a7bff;
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) {
+    --bg: #edf2ec; --side: rgba(255,255,255,.5); --card: rgba(255,255,255,.58); --raise: rgba(255,255,255,.72); --hover: rgba(255,255,255,.9); --line: rgba(20,40,25,.1); --edge: rgba(255,255,255,.85);
+    --text: #0d130f; --muted: rgba(13,19,15,.64); --faint: rgba(13,19,15,.44); --accent: #b9ef2f; --accent-soft: rgba(140,200,20,.18); --accent-text: #3f7a00;
+    --bad: #b91c1c; --bad-bg: rgba(220,38,38,.09); --code: rgba(255,255,255,.6); --shadow: 0 12px 34px rgba(20,40,25,.12);
+    --rim: inset 0 1.5px 0 rgba(255,255,255,.95), inset 0 -1px 0 rgba(255,255,255,.5), inset 0 0 0 1px rgba(255,255,255,.35); --glow-1: #d4f75a; --glow-2: #6cf0c6; --glow-3: #9cc2ff;
+    color-scheme: light;
+  } }
+  :root[data-theme="light"] {
+    --bg: #edf2ec; --side: rgba(255,255,255,.5); --card: rgba(255,255,255,.58); --raise: rgba(255,255,255,.72); --hover: rgba(255,255,255,.9); --line: rgba(20,40,25,.1); --edge: rgba(255,255,255,.85);
+    --text: #0d130f; --muted: rgba(13,19,15,.64); --faint: rgba(13,19,15,.44); --accent: #b9ef2f; --accent-soft: rgba(140,200,20,.18); --accent-text: #3f7a00;
+    --bad: #b91c1c; --bad-bg: rgba(220,38,38,.09); --code: rgba(255,255,255,.6); --shadow: 0 12px 34px rgba(20,40,25,.12);
+    --rim: inset 0 1.5px 0 rgba(255,255,255,.95), inset 0 -1px 0 rgba(255,255,255,.5), inset 0 0 0 1px rgba(255,255,255,.35); --glow-1: #d4f75a; --glow-2: #6cf0c6; --glow-3: #9cc2ff;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; display: flex; }
+  button, select { font: inherit; color: var(--text); background: transparent; border: 1px solid transparent; border-radius: 10px; padding: 7px 12px; cursor: pointer; }
+  button:hover:not(:disabled), select:hover { background: var(--hover); }
+  button:disabled { opacity: .45; cursor: default; }
+  button.primary { background: var(--accent); color: var(--on-accent); font-weight: 600; }
+  button.primary:hover:not(:disabled) { background: var(--accent-hover); }
+  button.outline { border-color: var(--line); }
+  button.icon { padding: 7px; line-height: 0; }
+  button.link { padding: 0; border: 0; color: var(--accent-text); text-decoration: underline; background: none; }
+  svg.i { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  a { color: var(--accent-text); }
 
-/* Volt liquid glass: soft glows drift behind the page; header, cards and buttons are clear glass with bright rims that
-   bend what's behind their edges (liquid.js draws each lens, used as var(--lens)) and catch the light where the pointer is. */
-.site{position:relative;isolation:isolate}
-.site::before,.site::after{content:"";position:fixed;z-index:-1;border-radius:50%;filter:blur(80px);pointer-events:none;animation:drift 24s ease-in-out infinite alternate}
-.site::before{width:640px;height:640px;left:-220px;top:-240px;background:radial-gradient(circle,var(--glow-1),transparent 68%);opacity:.42}
-.site::after{width:760px;height:760px;right:-260px;bottom:-280px;background:radial-gradient(circle,var(--glow-2),transparent 68%),radial-gradient(circle at 15% 15%,var(--glow-3),transparent 45%);opacity:.4;animation-duration:30s}
-@keyframes drift{to{transform:translate(70px,50px) scale(1.1)}}
-.site>header{position:sticky;top:10px;z-index:20;margin:10px auto 0;max-width:1220px;width:calc(100% - 20px);border:1px solid var(--edge)!important;border-radius:26px}
-.site>header,.card,.mock,.btn-g,.icon-btn,.tab.on,.steps li,.warn,.sugg,.shell,.chip,.pill,.nav.on,.thumb,.field,.sel,.composer,.qa{
-  background-color:var(--card);background-image:radial-gradient(300px circle at var(--x,-400px) var(--y,-400px),rgba(255,255,255,.12),transparent 60%);
-  -webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:var(--lens,) blur(20px) saturate(180%);
-  box-shadow:var(--rim),var(--shadow);border-color:var(--edge)}
-.site>header{background-color:var(--side)}
-.mock,.shell{background-color:var(--side)}
-.btn-g,.icon-btn,.tab.on,.steps li,.warn,.sugg,.chip,.pill,.nav.on,.thumb,.field,.sel,.qa{box-shadow:var(--rim)}
-.card{border-radius:26px}
-.btn{border-radius:999px;transition:transform .4s cubic-bezier(.2,1.6,.3,1),background-color .2s,box-shadow .2s}
-.btn:hover{transform:translateY(-2px)}
-.btn:active,.icon-btn:active,.sugg:active,.tab:active{transform:scale(.95);transition-duration:.1s}
-.btn-p{background:var(--accent);background-image:linear-gradient(180deg,rgba(255,255,255,.45),rgba(255,255,255,0) 60%);box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 8px 24px rgba(184,240,58,.35)}
-.btn-p:hover{background-color:var(--accent-h);box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 12px 30px rgba(184,240,58,.5)}
-.btn-p:active{transform:scale(1.06,.9)}
-.icon-btn{border-radius:999px;transition:transform .4s cubic-bezier(.2,1.6,.3,1)}
-.pill{color:var(--atext)}
-.num{background:var(--accent)!important;color:var(--on)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.7)}
-.ico{background:var(--soft);box-shadow:inset 0 1px 0 rgba(255,255,255,.2)}
-.bub-u{background:var(--accent)!important;color:var(--on)!important;background-image:linear-gradient(180deg,rgba(255,255,255,.35),rgba(255,255,255,0) 55%)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 6px 20px rgba(184,240,58,.28)}
-@media (max-width: 760px){.site>header{position:relative;top:0}}
-@media (prefers-reduced-motion: reduce){.site::before,.site::after{animation:none}}
+  /* Sidebar */
+  aside { width: 264px; flex: 0 0 264px; background: var(--side); border-right: 1px solid var(--line); display: flex; flex-direction: column; padding: 12px; gap: 10px; }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 4px 4px 6px; }
+  .brand img { width: 30px; height: 30px; }
+  .brand b { font-size: 16px; flex: 1; }
+  #newChat { width: 100%; display: flex; align-items: center; gap: 8px; justify-content: center; }
+  .side-title { font-size: 12px; color: var(--faint); margin: 6px 6px 0; text-transform: uppercase; letter-spacing: .04em; }
+  #chatList { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+  .chat { display: flex; align-items: center; border-radius: 10px; }
+  .chat:hover, .chat:has(.open.on) { background: var(--hover); }
+  .chat button.open { flex: 1; text-align: left; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; background: none; }
+  .chat button.icon { opacity: 0; color: var(--faint); }
+  .chat:hover button.icon, .chat button.icon:focus-visible { opacity: 1; }
+  #noChats { color: var(--faint); font-size: 13px; margin: 6px; }
+  .side-foot { border-top: 1px solid var(--line); padding-top: 8px; display: flex; flex-direction: column; gap: 2px; }
+  .side-foot button { display: flex; align-items: center; gap: 10px; text-align: left; width: 100%; color: var(--muted); }
+
+  /* Main */
+  main { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; }
+  .topbar { display: none; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  .topbar img { width: 26px; }
+  .topbar b { flex: 1; }
+  #messages { flex: 1; overflow-y: auto; padding: 24px 20px 8px; }
+  .inner { max-width: 760px; margin: 0 auto; }
+  .msg { margin: 0 0 22px; display: flex; gap: 12px; }
+  .msg.user { justify-content: flex-end; }
+  .msg.user .b { background: var(--raise); border-radius: 18px 18px 4px 18px; padding: 10px 15px; max-width: 80%; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .msg.user img { max-width: 200px; max-height: 150px; border-radius: 10px; display: block; margin-top: 8px; }
+  .msg.ai::before { content: ""; flex: 0 0 28px; height: 28px; background: url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2032%2032%22%3E%3Cdefs%3E%3ClinearGradient%20id=%22b%22%20x1=%220%22%20y1=%220%22%20x2=%220%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%231d2a24%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%23080b0a%22/%3E%3C/linearGradient%3E%3ClinearGradient%20id=%22s%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%23d9fb5b%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%232ee6b0%22/%3E%3C/linearGradient%3E%3ClinearGradient%20id=%22h%22%20x1=%220%22%20y1=%220%22%20x2=%220%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%23fff%22%20stop-opacity=%22.28%22/%3E%3Cstop%20offset=%22.5%22%20stop-color=%22%23fff%22%20stop-opacity=%220%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width=%2232%22%20height=%2232%22%20rx=%228%22%20fill=%22url%28%23b%29%22/%3E%3Crect%20x=%22.5%22%20y=%22.5%22%20width=%2231%22%20height=%2231%22%20rx=%227.5%22%20fill=%22url%28%23h%29%22%20stroke=%22%23fff%22%20stroke-opacity=%22.16%22/%3E%3Cpath%20d=%22M20.6%2011.2c-.9-1.5-2.6-2.4-4.7-2.4-2.8%200-4.8%201.5-4.8%203.6%200%204.6%2010%202.7%2010%207.6%200%202.2-2.1%203.8-5%203.8-2.3%200-4.2-1-5.1-2.6%22%20fill=%22none%22%20stroke=%22url%28%23s%29%22%20stroke-width=%223.2%22%20stroke-linecap=%22round%22/%3E%3Cpath%20fill=%22%23d9fb5b%22%20d=%22M25%204.6l.7%202%202%20.7-2%20.7-.7%202-.7-2-2-.7%202-.7z%22/%3E%3C/svg%3E") center/contain no-repeat; margin-top: 2px; }
+  .msg.ai .col { min-width: 0; flex: 1; }
+  .msg.ai .b { overflow-wrap: anywhere; }
+  .msg.ai .b p { margin: 0 0 12px; }
+  .msg.ai .b ul, .msg.ai .b ol { margin: 0 0 12px; padding-left: 22px; }
+  .msg.ai .b li { margin: 3px 0; }
+  .msg.ai pre { position: relative; background: var(--code); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; overflow-x: auto; font-size: 13px; margin: 0 0 12px; }
+  .msg.ai pre .copycode { position: absolute; top: 6px; right: 6px; font-size: 12px; padding: 3px 8px; border: 1px solid var(--line); background: var(--card); color: var(--muted); line-height: 1.4; }
+  .msg.ai code { background: var(--raise); padding: 1px 6px; border-radius: 6px; font-size: 13px; }
+  .msg.ai pre code { background: none; padding: 0; }
+  .tools { display: flex; gap: 4px; margin-top: 2px; }
+  .tools button { font-size: 12.5px; color: var(--faint); padding: 3px 8px; display: flex; gap: 5px; align-items: center; }
+  .tools svg.i { width: 14px; height: 14px; }
+  .note { color: var(--muted); font-size: 13.5px; }
+  .err { color: var(--bad); background: var(--bad-bg); border-radius: 12px; padding: 10px 12px; font-size: 14px; }
+  .typing::after { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-left: 4px; animation: pulse 1s ease-in-out infinite; vertical-align: middle; }
+  @keyframes pulse { 50% { opacity: .25; transform: scale(.7); } }
+
+  /* Welcome */
+  .empty { text-align: center; margin: 9vh auto 0; max-width: 720px; }
+  .empty .logo { width: 56px; height: 56px; }
+  .empty h1 { font-size: 30px; margin: 16px 0 4px; letter-spacing: -.01em; }
+  .empty p { color: var(--muted); margin: 0 0 26px; }
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; text-align: left; }
+  .cards button { border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; display: flex; gap: 12px; align-items: flex-start; background: var(--card); text-align: left; }
+  .cards button:hover { background: var(--hover); border-color: var(--accent); }
+  .cards .ico { flex: 0 0 34px; height: 34px; border-radius: 10px; background: var(--accent-soft); color: var(--accent-text); display: grid; place-items: center; }
+  .cards b { display: block; font-size: 14.5px; }
+  .cards span.d { color: var(--muted); font-size: 13px; line-height: 1.45; }
+
+  /* Composer */
+  footer { padding: 8px 20px 14px; }
+  .box { max-width: 760px; margin: 0 auto; border: 1px solid var(--line); background: var(--card); border-radius: 20px; padding: 10px 12px 8px; box-shadow: var(--shadow); transition: border-color .15s; }
+  .box:focus-within { border-color: var(--accent); }
+  .box.drag { border-color: var(--accent); border-style: dashed; background: var(--accent-soft); }
+  textarea { width: 100%; resize: none; border: 0; background: none; color: var(--text); font: inherit; outline: none; min-height: 26px; max-height: 40vh; padding: 2px 4px; }
+  textarea:focus-visible { outline: none; } /* the box around it shows the focus */
+  .row { display: flex; align-items: center; gap: 6px; }
+  .row .sp { flex: 1; }
+  #model { border: 1px solid var(--line); font-size: 13px; padding: 5px 8px; color: var(--muted); background: var(--card); max-width: 60vw; }
+  #send, #stop { width: 36px; height: 36px; border-radius: 50%; padding: 0; display: grid; place-items: center; }
+  #send:disabled { background: var(--raise); color: var(--faint); opacity: 1; }
+  #stop { background: var(--text); color: var(--bg); }
+  .thumbs { display: flex; gap: 8px; flex-wrap: wrap; margin: 2px 2px 8px; }
+  .thumbs:empty { display: none; }
+  .thumb { position: relative; }
+  .thumb img { height: 60px; border-radius: 10px; display: block; border: 1px solid var(--line); }
+  .thumb span { display: inline-block; background: var(--raise); border-radius: 10px; padding: 8px 10px; font-size: 13px; }
+  .thumb button { position: absolute; top: -7px; right: -7px; width: 22px; height: 22px; padding: 0; font-size: 12px; border-radius: 50%; background: var(--text); color: var(--bg); }
+  .hint { color: var(--faint); font-size: 12px; text-align: center; margin-top: 8px; }
+
+  /* Setup */
+  .setup-wrap { flex: 1; overflow-y: auto; display: flex; align-items: flex-start; justify-content: center; padding: 6vh 16px; }
+  .setup { width: 100%; max-width: 500px; background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 28px; box-shadow: var(--shadow); }
+  .setup .logo { width: 52px; height: 52px; }
+  .setup h1 { margin: 12px 0 4px; font-size: 24px; }
+  .steps { list-style: none; padding: 0; margin: 18px 0; display: grid; gap: 12px; }
+  .steps li { display: flex; gap: 12px; align-items: flex-start; }
+  .steps .n { flex: 0 0 26px; height: 26px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-text); display: grid; place-items: center; font-size: 13px; font-weight: 700; }
+  .keyrow { display: flex; gap: 6px; margin: 4px 0 8px; }
+  .keyrow input { flex: 1; min-width: 0; font: inherit; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 12px; padding: 11px 13px; }
+  .keyrow input:focus { border-color: var(--accent); outline: none; }
+  .keyrow button { border-color: var(--line); }
+  #saveKey { width: 100%; padding: 11px; font-size: 15.5px; margin-top: 6px; }
+  #keyMsg { display: block; margin-top: 8px; min-height: 1.2em; }
+  #keyMsg.bad { color: var(--bad); }
+  .check { display: flex; gap: 8px; align-items: center; color: var(--muted); font-size: 14px; }
+  .check input { accent-color: var(--accent); width: 16px; height: 16px; }
+  .privacy { margin-top: 18px; padding: 12px 14px; border-radius: 12px; background: var(--raise); color: var(--muted); font-size: 13px; }
+  @media (max-width: 760px) {
+    aside { display: none; }
+    aside.show { display: flex; position: fixed; inset: 0 auto 0 0; z-index: 10; box-shadow: var(--shadow); }
+    .topbar { display: flex; }
+    .cards { grid-template-columns: 1fr; }
+    .empty { margin-top: 4vh; }
+    .empty h1 { font-size: 24px; }
+  }
+
+  /* Liquid glass: glows drift behind; panels are clear glass with bright rims, bending what's behind their edges
+     (the lens is drawn by the script at the end, used as var(--lens)) and lit where the pointer is. */
+  body { position: relative; isolation: isolate; }
+  body::before, body::after { content: ""; position: fixed; z-index: -1; border-radius: 50%; filter: blur(60px); pointer-events: none; animation: drift 22s ease-in-out infinite alternate; }
+  body::before { width: 520px; height: 520px; left: -160px; top: -180px; background: radial-gradient(circle, var(--glow-1), transparent 68%); opacity: .5; }
+  body::after { width: 620px; height: 620px; right: -200px; bottom: -220px; background: radial-gradient(circle, var(--glow-2), transparent 68%), radial-gradient(circle at 15% 15%, var(--glow-3), transparent 45%); opacity: .45; animation-duration: 28s; }
+  @keyframes drift { to { transform: translate(60px, 40px) scale(1.1); } }
+  aside, .box, .cards button, .setup, .topbar, .thumb span, #model {
+    background-image: radial-gradient(260px circle at var(--x, -300px) var(--y, -300px), rgba(255,255,255,.12), transparent 60%);
+    -webkit-backdrop-filter: blur(18px) saturate(180%); backdrop-filter: var(--lens,) blur(18px) saturate(180%);
+    box-shadow: var(--rim), var(--shadow); border-color: var(--edge);
+  }
+  aside { margin: 10px 0 10px 10px; border: 1px solid var(--edge); border-radius: 26px; }
+  .box { border-radius: 28px; }
+  .cards button, .thumb span, #model { box-shadow: var(--rim); }
+  .cards button:hover { border-color: var(--accent); background-color: var(--hover); }
+  .msg.user .b { background: var(--accent); color: var(--on-accent); background-image: linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,0) 55%); box-shadow: inset 0 1px 0 rgba(255,255,255,.7), 0 6px 20px rgba(184,240,58,.28); border-radius: 22px 22px 6px 22px; }
+  button { transition: transform .4s cubic-bezier(.2,1.6,.3,1), background-color .2s, box-shadow .2s; }
+  button:active:not(:disabled) { transform: scale(.94); transition-duration: .1s; }
+  button.primary, #send:not(:disabled) { background: var(--accent); color: var(--on-accent); background-image: linear-gradient(180deg, rgba(255,255,255,.45), rgba(255,255,255,0) 60%); box-shadow: inset 0 1px 0 rgba(255,255,255,.8), 0 6px 18px rgba(184,240,58,.35); }
+  button.primary:active:not(:disabled), #send:active:not(:disabled) { transform: scale(1.06, .9); }
+  button.outline, .keyrow button { border-color: var(--edge); box-shadow: var(--rim); }
+  .steps .n { background: var(--accent); color: var(--on-accent); }
+  .keyrow input { background: var(--card); border-color: var(--edge); box-shadow: inset 0 1px 2px rgba(0,0,0,.2); }
+  @media (max-width: 760px) { aside { margin: 0; border-radius: 0 26px 26px 0; } }
+  #picture[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); box-shadow: inset 0 1px 0 rgba(255,255,255,.7), 0 0 14px rgba(184,240,58,.4); }
+  .msg.ai img.made { display: block; max-width: min(100%, 460px); border-radius: 18px; border: 1px solid var(--edge); box-shadow: var(--rim), var(--shadow); margin-bottom: 8px; }
+  .made-save { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; color: var(--accent-text); }
+  @media (prefers-reduced-motion: reduce) { body::before, body::after { animation: none; } button { transition: none; } }
+  .side-foot a.site-link { display: flex; align-items: center; gap: 10px; padding: 7px 12px; border-radius: 10px; color: var(--muted); text-decoration: none; }
+  .side-foot a.site-link:hover { background: var(--hover); color: var(--text); }
 </style>
 </head>
 <body>
-<div class="site">
-<header style="border-bottom: 1px solid var(--border)">
-<div style="max-width: 1200px; margin: 0 auto; padding: 12px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px">
-<a href="index.html" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); font-weight: 800; font-size: 18px; min-height: 44px">
-<svg aria-hidden="true" width="32" height="32" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><defs><linearGradient id="bh" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d2a24"/><stop offset="1" stop-color="#080b0a"/></linearGradient><linearGradient id="sh" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d9fb5b"/><stop offset="1" stop-color="#2ee6b0"/></linearGradient><linearGradient id="hh" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".28"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><rect width="32" height="32" rx="8" fill="url(#bh)"/><rect x=".5" y=".5" width="31" height="31" rx="7.5" fill="url(#hh)" stroke="#fff" stroke-opacity=".16"/><path d="M20.6 11.2c-.9-1.5-2.6-2.4-4.7-2.4-2.8 0-4.8 1.5-4.8 3.6 0 4.6 10 2.7 10 7.6 0 2.2-2.1 3.8-5 3.8-2.3 0-4.2-1-5.1-2.6" fill="none" stroke="url(#sh)" stroke-width="3.2" stroke-linecap="round"/><path fill="#d9fb5b" d="M25 4.6l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></svg>
-<span>Syntaz AI</span>
-</a>
-<nav aria-label="Main" style="display: flex; flex-wrap: wrap; gap: 2px; flex: 1 1 auto">
-<a class="nav" href="features.html">Features</a>
-<a class="nav" href="download.html">Download</a>
-<a class="nav on" href="chat.html" aria-current="page">Chat</a>
-<a class="nav" href="safety.html">Safety</a>
-<a class="nav" href="faq.html">FAQ</a>
-</nav>
-<div style="display: flex; gap: 10px; align-items: center">
-<button class="icon-btn" type="button" data-theme-toggle aria-label="Switch light or dark theme">
-<span class="when-light"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"></path></svg></span>
-<span class="when-dark"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></span>
-</button>
-<a class="btn btn-p" href="download.html">Download</a>
-</div>
-</div>
-</header>
-
-<main style="max-width: 1240px; margin: 0 auto; padding: 24px 16px 40px; display: flex; flex-direction: column; gap: 14px">
-
-<section id="setup" aria-labelledby="keyh" style="display: flex; justify-content: center; padding: 32px 0 48px" hidden>
-<div class="card" style="width: 100%; max-width: 560px; padding: 32px; display: flex; flex-direction: column; gap: 20px">
-<div style="display: flex; flex-direction: column; gap: 8px">
-<h1 id="keyh" style="font-size: 30px; font-weight: 800">Chat with Syntaz</h1>
-<p class="muted">Hi! First, Syntaz needs a free key from Google. It takes about 2 minutes.</p>
-</div>
-<ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px">
-<li style="display: flex; gap: 12px; align-items: flex-start"><span class="num">1</span><span>Open <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">Google AI Studio</a> and sign in.</span></li>
-<li style="display: flex; gap: 12px; align-items: flex-start"><span class="num">2</span><span>Click <strong>Create API key</strong> and copy it.</span></li>
-<li style="display: flex; gap: 12px; align-items: flex-start"><span class="num">3</span><span>Paste it here.</span></li>
-</ol>
-<div style="display: flex; flex-direction: column; gap: 8px">
-<label for="k" style="font-weight: 700; font-size: 14px">Your Gemini key</label>
-<div style="display: flex; gap: 8px">
-<input id="k" class="field" type="password" placeholder="Paste your key" autocomplete="off" spellcheck="false">
-<button class="icon-btn" type="button" id="eye" aria-label="Show key"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
-<button class="btn btn-g" type="button" id="paste">Paste</button>
-</div>
-<p id="keyMsg" role="status" style="font-size: 14px; font-weight: 600" hidden></p>
-</div>
-<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
-<span id="rem" style="font-size: 14px; font-weight: 600">Remember on this device</span>
-<button class="sw" type="button" role="switch" id="remember" aria-checked="true" aria-labelledby="rem"><span></span></button>
-</div>
-<button class="btn btn-p" type="button" id="start" style="width: 100%">Start chatting</button>
-<button class="btn btn-g btn-s" type="button" id="cancelSetup" hidden>Back to my chats</button>
-<p class="muted" style="font-size: 13px">What you write and the pictures you add go to Google's Gemini AI. Your key stays in this browser.</p>
-</div>
-</section>
-
-<div id="app" hidden>
-<h1 class="sr">Chat with Syntaz</h1>
-<div class="shell">
-<button type="button" class="scrim" id="scrim" aria-label="Close chat list"></button>
-<aside class="side" id="side" aria-label="Your chats">
-<button class="btn btn-p" type="button" id="newChat" style="width: 100%">
-<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
-<span>New chat</span></button>
-<p class="muted" style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; padding: 10px 6px 2px">Chats</p>
-<div id="chatList" style="display: flex; flex-direction: column; gap: 2px; overflow-y: auto; min-height: 0"></div>
-<p id="noChats" class="muted" style="font-size: 13px; padding: 4px 6px">Your chats show up here. They're saved only in this browser.</p>
-<div style="flex: 1"></div>
-<button class="btn btn-g btn-s" type="button" id="changeKey">Change key</button>
-</aside>
-
-<section id="chat" aria-label="Conversation" style="flex: 1; min-width: 0; display: flex; flex-direction: column">
-<div style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--border)">
-<button class="icon-btn menu-btn" type="button" id="openMenu" aria-label="Open chat list"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></button>
-<button class="icon-btn menu-btn" type="button" id="newChatTop" aria-label="New chat"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></button>
-<strong id="chatTitle" style="font-size: 15px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">New chat</strong>
-<label for="model" id="model-label" class="muted" style="font-size: 13px; font-weight: 600">Model</label>
-<select id="model" class="sel">
-<option value="gemini-3.1-flash-lite">Flash-Lite · fast, most free uses</option>
-<option value="gemini-3.6-flash">Flash · smarter, ~20 a day</option>
-</select>
+<div class="setup-wrap" id="setup" hidden>
+  <section class="setup">
+    <img class="logo" alt="" src="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2032%2032%22%3E%3Cdefs%3E%3ClinearGradient%20id=%22b%22%20x1=%220%22%20y1=%220%22%20x2=%220%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%231d2a24%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%23080b0a%22/%3E%3C/linearGradient%3E%3ClinearGradient%20id=%22s%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%23d9fb5b%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%232ee6b0%22/%3E%3C/linearGradient%3E%3ClinearGradient%20id=%22h%22%20x1=%220%22%20y1=%220%22%20x2=%220%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%23fff%22%20stop-opacity=%22.28%22/%3E%3Cstop%20offset=%22.5%22%20stop-color=%22%23fff%22%20stop-opacity=%220%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width=%2232%22%20height=%2232%22%20rx=%228%22%20fill=%22url%28%23b%29%22/%3E%3Crect%20x=%22.5%22%20y=%22.5%22%20width=%2231%22%20height=%2231%22%20rx=%227.5%22%20fill=%22url%28%23h%29%22%20stroke=%22%23fff%22%20stroke-opacity=%22.16%22/%3E%3Cpath%20d=%22M20.6%2011.2c-.9-1.5-2.6-2.4-4.7-2.4-2.8%200-4.8%201.5-4.8%203.6%200%204.6%2010%202.7%2010%207.6%200%202.2-2.1%203.8-5%203.8-2.3%200-4.2-1-5.1-2.6%22%20fill=%22none%22%20stroke=%22url%28%23s%29%22%20stroke-width=%223.2%22%20stroke-linecap=%22round%22/%3E%3Cpath%20fill=%22%23d9fb5b%22%20d=%22M25%204.6l.7%202%202%20.7-2%20.7-.7%202-.7-2-2-.7%202-.7z%22/%3E%3C/svg%3E">
+    <h1>Chat with Syntaz AI</h1>
+    <p class="note">Chat with Syntaz right here — nothing to install. It runs on Google's free Gemini AI, so you need a free key once:</p>
+    <ol class="steps">
+      <li><span class="n">1</span><div><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer"><b>Open Google AI Studio</b></a> and sign in with Google.</div></li>
+      <li><span class="n">2</span><div>Click <b>Create API key</b>, then <b>Copy</b>.</div></li>
+      <li><span class="n">3</span><div>Paste it here:</div></li>
+    </ol>
+    <div class="keyrow">
+      <input type="password" id="key" placeholder="Your Gemini API key" autocomplete="off" spellcheck="false" aria-label="Gemini API key">
+      <button id="pasteKey" title="Paste from the clipboard">Paste</button>
+      <button class="icon" id="showKey" title="Show or hide the key" aria-label="Show or hide the key"><svg class="i" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
+    </div>
+    <label class="check"><input type="checkbox" id="remember" checked> Remember the key in this browser</label>
+    <button class="primary" id="saveKey">Start chatting</button>
+    <span id="keyMsg" class="note" role="status"></span>
+    <div class="privacy">What you write and the pictures you add go to Google's Gemini AI. Your key stays in this browser. On a shared computer, untick “Remember”.</div>
+    <p class="note" id="setupCancelRow" hidden style="margin-top:14px"><button class="link" id="setupCancel">← Back to the chat</button> &nbsp;·&nbsp; <button class="link" id="forget">Forget my key</button> &nbsp;·&nbsp; <button class="link" id="theme">Switch light/dark</button></p>
+  </section>
 </div>
 
-<div id="msgs" aria-live="polite" style="flex: 1; overflow-y: auto; padding: 24px 20px; display: flex; flex-direction: column; gap: 18px"></div>
+<div style="display:contents" id="app" hidden>
+  <aside id="chats">
+    <div class="brand"><img alt="" src="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2032%2032%22%3E%3Cdefs%3E%3ClinearGradient%20id=%22b%22%20x1=%220%22%20y1=%220%22%20x2=%220%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%231d2a24%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%23080b0a%22/%3E%3C/linearGradient%3E%3ClinearGradient%20id=%22s%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%23d9fb5b%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%232ee6b0%22/%3E%3C/linearGradient%3E%3ClinearGradient%20id=%22h%22%20x1=%220%22%20y1=%220%22%20x2=%220%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%23fff%22%20stop-opacity=%22.28%22/%3E%3Cstop%20offset=%22.5%22%20stop-color=%22%23fff%22%20stop-opacity=%220%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width=%2232%22%20height=%2232%22%20rx=%228%22%20fill=%22url%28%23b%29%22/%3E%3Crect%20x=%22.5%22%20y=%22.5%22%20width=%2231%22%20height=%2231%22%20rx=%227.5%22%20fill=%22url%28%23h%29%22%20stroke=%22%23fff%22%20stroke-opacity=%22.16%22/%3E%3Cpath%20d=%22M20.6%2011.2c-.9-1.5-2.6-2.4-4.7-2.4-2.8%200-4.8%201.5-4.8%203.6%200%204.6%2010%202.7%2010%207.6%200%202.2-2.1%203.8-5%203.8-2.3%200-4.2-1-5.1-2.6%22%20fill=%22none%22%20stroke=%22url%28%23s%29%22%20stroke-width=%223.2%22%20stroke-linecap=%22round%22/%3E%3Cpath%20fill=%22%23d9fb5b%22%20d=%22M25%204.6l.7%202%202%20.7-2%20.7-.7%202-.7-2-2-.7%202-.7z%22/%3E%3C/svg%3E"><b><a href="index.html" style="color:inherit;text-decoration:none" title="Syntaz AI home">Syntaz AI</a></b><button class="icon" id="closeChats" title="Close" aria-label="Close chats" hidden><svg class="i" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+    <button class="primary" id="newChat"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>New chat</button>
+    <div class="side-title">Your chats</div>
+    <div id="chatList"></div>
+    <p id="noChats">Your chats will appear here (saved only in this browser).</p>
+    <div class="side-foot">
+      <a class="site-link" href="download.html"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Get Syntaz for Chrome</a>
+      <a class="site-link" href="index.html"><svg class="i" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></svg>Syntaz AI home</a>
+      <button id="clearChats" hidden><svg class="i" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>Delete all chats</button>
+      <button id="settings"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Key &amp; settings</button>
+    </div>
+  </aside>
+  <main>
+    <div class="topbar"><button class="icon" id="toggleChats" title="Chats" aria-label="Chats"><svg class="i" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button><img alt="" src="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2032%2032%22%3E%3Cdefs%3E%3ClinearGradient%20id=%22b%22%20x1=%220%22%20y1=%220%22%20x2=%220%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%231d2a24%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%23080b0a%22/%3E%3C/linearGradient%3E%3ClinearGradient%20id=%22s%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%23d9fb5b%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%232ee6b0%22/%3E%3C/linearGradient%3E%3ClinearGradient%20id=%22h%22%20x1=%220%22%20y1=%220%22%20x2=%220%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%23fff%22%20stop-opacity=%22.28%22/%3E%3Cstop%20offset=%22.5%22%20stop-color=%22%23fff%22%20stop-opacity=%220%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width=%2232%22%20height=%2232%22%20rx=%228%22%20fill=%22url%28%23b%29%22/%3E%3Crect%20x=%22.5%22%20y=%22.5%22%20width=%2231%22%20height=%2231%22%20rx=%227.5%22%20fill=%22url%28%23h%29%22%20stroke=%22%23fff%22%20stroke-opacity=%22.16%22/%3E%3Cpath%20d=%22M20.6%2011.2c-.9-1.5-2.6-2.4-4.7-2.4-2.8%200-4.8%201.5-4.8%203.6%200%204.6%2010%202.7%2010%207.6%200%202.2-2.1%203.8-5%203.8-2.3%200-4.2-1-5.1-2.6%22%20fill=%22none%22%20stroke=%22url%28%23s%29%22%20stroke-width=%223.2%22%20stroke-linecap=%22round%22/%3E%3Cpath%20fill=%22%23d9fb5b%22%20d=%22M25%204.6l.7%202%202%20.7-2%20.7-.7%202-.7-2-2-.7%202-.7z%22/%3E%3C/svg%3E"><b><a href="index.html" style="color:inherit;text-decoration:none">Syntaz AI</a></b><button class="icon" id="newChatTop" title="New chat" aria-label="New chat"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></div>
+    <div id="messages"><div class="inner" id="list"></div></div>
+    <footer>
+      <div class="box" id="drop">
+        <div class="thumbs" id="thumbs"></div>
+        <textarea id="input" rows="1" placeholder="Ask Syntaz anything…" aria-label="Message"></textarea>
+        <div class="row">
+          <button class="icon" id="attach" title="Add a picture or text file" aria-label="Add a picture or text file"><svg class="i" viewBox="0 0 24 24"><path d="M21.44 11.05 12.25 20.24a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
+          <button class="icon" id="picture" title="Make a picture" aria-label="Make a picture" aria-pressed="false"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-4.5-4.5L6 21"/><path d="M18 2v4M16 4h4"/></svg></button>
+          <input type="file" id="file" multiple accept="image/*,.txt,.md,.csv,.json,.html,.css,.js,.py,.java,.c,.cpp,.ts" hidden>
+          <select id="model" title="Which Gemini model" aria-label="Model">
+            <option value="gemini-3.1-flash-lite">Flash-Lite · fast, most free uses</option>
+            <option value="gemini-3.6-flash">Flash · smarter, ~20 a day</option>
+          </select>
+          <span class="sp"></span>
+          <button class="primary" id="send" title="Send (Enter)" aria-label="Send"><svg class="i" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+          <button id="stop" title="Stop" aria-label="Stop" hidden><svg class="i" viewBox="0 0 24 24" style="fill:currentColor;stroke:none"><rect x="6" y="6" width="12" height="12" rx="2"/></svg></button>
+        </div>
+      </div>
+      <div class="hint">Syntaz can make mistakes — check important answers. Drop or paste pictures into the box, or press 🎨 to make one.</div>
+    </footer>
+  </main>
+</div>
 
-<div style="padding: 12px 16px 14px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px">
-<div id="thumbs" style="display: flex; gap: 8px; flex-wrap: wrap"></div>
-<div class="composer" id="drop">
-<button class="icon-btn" type="button" id="attach" aria-label="Add pictures or text files" style="border: none; background: transparent"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5l-8.5 8.5a5 5 0 0 1-7-7L14 4.5a3.5 3.5 0 0 1 5 5L10.5 18a2 2 0 0 1-3-3L15 7.5"></path></svg></button>
-<input type="file" id="file" multiple accept="image/*,.txt,.md,.csv,.json,.html,.css,.js,.py,.java,.c,.cpp" hidden>
-<label for="msg" class="sr">Message Syntaz</label>
-<textarea id="msg" rows="1" placeholder="Message Syntaz… (paste or drop pictures here)"></textarea>
-<button class="btn btn-g" type="button" id="stop" hidden>Stop</button>
-<button class="btn btn-p" type="button" id="send" aria-label="Send" disabled><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"></path></svg></button>
-</div>
-<p class="muted" style="font-size: 12px">What you write and the pictures you add go to Google's Gemini AI. Your key stays in this browser.</p>
-</div>
-</section>
-</div>
-</div>
-
-<div class="card" style="padding: 18px 22px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; box-shadow: none">
-<p style="font-weight: 600">Want Syntaz to do things on websites for you? Download the full Syntaz.</p>
-<a class="btn btn-p" href="download.html">Download Syntaz</a>
-</div>
-</main>
-
-<footer style="border-top: 1px solid var(--border); background: var(--side)">
-<div style="max-width: 1200px; margin: 0 auto; padding: 32px 24px; display: flex; flex-wrap: wrap; gap: 16px 32px; align-items: center; justify-content: space-between">
-<div style="display: flex; align-items: center; gap: 10px; font-weight: 800">
-<svg aria-hidden="true" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><defs><linearGradient id="bf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d2a24"/><stop offset="1" stop-color="#080b0a"/></linearGradient><linearGradient id="sf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d9fb5b"/><stop offset="1" stop-color="#2ee6b0"/></linearGradient><linearGradient id="hf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".28"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><rect width="32" height="32" rx="8" fill="url(#bf)"/><rect x=".5" y=".5" width="31" height="31" rx="7.5" fill="url(#hf)" stroke="#fff" stroke-opacity=".16"/><path d="M20.6 11.2c-.9-1.5-2.6-2.4-4.7-2.4-2.8 0-4.8 1.5-4.8 3.6 0 4.6 10 2.7 10 7.6 0 2.2-2.1 3.8-5 3.8-2.3 0-4.2-1-5.1-2.6" fill="none" stroke="url(#sf)" stroke-width="3.2" stroke-linecap="round"/><path fill="#d9fb5b" d="M25 4.6l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></svg>
-<span>Syntaz AI</span><span class="muted" style="font-weight: 500; font-size: 14px">v1.6.1</span>
-</div>
-<nav aria-label="Footer" style="display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 14px">
-<a href="changelog.html">What's new</a>
-<a href="safety.html">Safety &amp; privacy</a>
-<a href="https://github.com/ben10-games/Syntaz-AI">GitHub</a>
-</nav>
-<p class="muted" style="font-size: 14px; flex-basis: 100%">Made by Novaryn.</p>
-</div>
-</footer>
-</div>
 <script>
-// The website chat: the same Gemini chat as Syntaz Lite, in the website's design. Everything runs in this
-// browser: the visitor's own key goes only to Google (see the page's Content-Security-Policy).
 "use strict";
 const API = "https://generativelanguage.googleapis.com/v1beta/models";
 const SYSTEM = "You are Syntaz, a friendly, helpful assistant. Answer clearly and briefly unless the user asks for detail. Use Markdown for lists and code. If you are not sure, say so.";
 const $ = (id) => document.getElementById(id);
 const store = {
-  get(k, d) { try { const v = localStorage.getItem(`syntaz-site:${k}`) ?? sessionStorage.getItem(`syntaz-site:${k}`); return v === null ? d : JSON.parse(v); } catch { return d; } },
-  set(k, v, session = false) { try { (session ? sessionStorage : localStorage).setItem(`syntaz-site:${k}`, JSON.stringify(v)); } catch {} },
-  del(k) { try { localStorage.removeItem(`syntaz-site:${k}`); sessionStorage.removeItem(`syntaz-site:${k}`); } catch {} },
+  get(k, d) { try { const v = localStorage.getItem(`syntaz-site-chat:${k}`) ?? sessionStorage.getItem(`syntaz-site-chat:${k}`); return v === null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v, session = false) { try { (session ? sessionStorage : localStorage).setItem(`syntaz-site-chat:${k}`, JSON.stringify(v)); } catch {} },
+  del(k) { try { localStorage.removeItem(`syntaz-site-chat:${k}`); sessionStorage.removeItem(`syntaz-site-chat:${k}`); } catch {} },
 };
 
 let key = store.get("key", "");
-let chats = store.get("chats", []); // [{ id, title, messages: [{ role, text, shown?, pictures? }] }]  (pictures are not saved)
-let chat = null; // the open chat; its messages may carry images: [{ mime, data }]
+let chats = store.get("chats", []); // [{ id, title, messages: [{ role, text }] }]  (pictures are not saved)
+let chat = null; // the open chat: { id, title, messages: [{ role, text, images?: [{ mime, data }] }] }
 let pending = []; // attachments for the next message: { kind: "image"|"text", name, mime, data|text, url }
 let controller = null;
 
-// ---------------- Markdown (the AI's text is untrusted: everything is escaped) ----------------
+// ---------------- Markdown (model output is untrusted: everything is escaped) ----------------
 const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 function inline(s) {
   return esc(s)
     .replace(/`([^`]+)`/g, "<code>$1</code>")
-    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
-    .replace(/(^|[^*])\*([^*\s][^*]*)\*/g, "$1<em>$2</em>")
+    .replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")
+    .replace(/(^|[^*])\*([^*\s][^*]*)\*/g, "$1<i>$2</i>")
     .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
 }
 function markdown(src) {
@@ -292,14 +299,14 @@ function markdown(src) {
       i++;
       while (i < lines.length && !/^```/.test(lines[i])) code.push(lines[i++]);
       i++;
-      out.push(`<div class="code"><div class="code-head"><span class="muted" style="font-size:12px;font-weight:600">${esc(fence[1] || "text")}</span><button class="btn btn-g btn-s copycode" type="button">Copy code</button></div><pre><code>${esc(code.join("\n"))}</code></pre></div>`);
+      out.push(`<pre><code>${esc(code.join("\n"))}</code></pre>`);
       continue;
     }
     const h = /^(#{1,4})\s+(.*)/.exec(l);
     // List items need some text: a line like "391." on its own is an answer, not an empty list item.
     const ul = /^\s*[-*•]\s+(\S.*)/.exec(l);
     const ol = /^\s*(\d+)[.)]\s+(\S.*)/.exec(l);
-    if (h) { flush(); endList(); out.push(`<p><strong>${inline(h[2])}</strong></p>`); }
+    if (h) { flush(); endList(); out.push(`<p><b>${inline(h[2])}</b></p>`); }
     else if (ul || ol) {
       flush();
       const kind = ul ? "ul" : "ol";
@@ -314,71 +321,66 @@ function markdown(src) {
 }
 
 // ---------------- Screens ----------------
-function keyMsg(text, bad) {
-  $("keyMsg").hidden = !text;
-  $("keyMsg").textContent = text;
-  $("keyMsg").style.color = bad ? "var(--bad)" : "var(--muted)";
-}
 function showSetup(cancellable) {
   $("setup").hidden = false;
   $("app").hidden = true;
-  $("cancelSetup").hidden = !cancellable;
-  $("k").value = "";
-  keyMsg("");
-  $("k").focus();
+  $("setupCancelRow").hidden = !cancellable;
+  $("key").value = "";
+  $("keyMsg").textContent = "";
+  $("key").focus();
 }
 function showApp() {
   $("setup").hidden = true;
   $("app").hidden = false;
   renderChats();
   if (!chat) newChat();
-  $("msg").focus();
+  $("input").focus();
 }
+
 async function checkKey(k) {
   try {
     const r = await fetch(`${API}?pageSize=1`, { headers: { "x-goog-api-key": k } });
     if (r.ok) return "";
-    return r.status === 400 || r.status === 403 ? "This key doesn't work. Copy the whole key again." : `Google answered with an error (HTTP ${r.status}). Try again.`;
+    return r.status === 400 || r.status === 403 ? "Google says this key doesn't work. Copy the whole key again." : `Google answered with an error (HTTP ${r.status}). Try again.`;
   } catch {
     return "Can't reach Google. Check your internet connection.";
   }
 }
-$("start").onclick = async () => {
-  const k = $("k").value.replace(/\s+/g, "");
-  if (!/^[A-Za-z0-9_.-]{20,200}$/.test(k)) return keyMsg("That doesn't look like a Gemini key. Copy the whole key again.", true);
-  $("start").disabled = true;
-  keyMsg("Checking the key…");
+$("saveKey").onclick = async () => {
+  const k = $("key").value.replace(/\s+/g, "");
+  if (!/^[A-Za-z0-9_.-]{20,200}$/.test(k)) { $("keyMsg").textContent = "That doesn't look like an API key."; $("keyMsg").className = "note bad"; return; }
+  $("keyMsg").className = "note";
+  $("saveKey").disabled = true;
+  $("keyMsg").textContent = "Checking…";
   const problem = await checkKey(k);
-  $("start").disabled = false;
-  if (problem) return keyMsg(problem, true);
+  $("saveKey").disabled = false;
+  if (problem) { $("keyMsg").textContent = problem; $("keyMsg").className = "note bad"; return; }
   key = k;
   store.del("key");
-  store.set("key", k, $("remember").getAttribute("aria-checked") !== "true");
+  store.set("key", k, !$("remember").checked);
   showApp();
 };
-$("k").addEventListener("keydown", (e) => { if (e.key === "Enter") $("start").click(); });
-$("k").addEventListener("input", () => keyMsg(""));
-$("eye").onclick = () => {
-  const show = $("k").type === "password";
-  $("k").type = show ? "text" : "password";
-  $("eye").setAttribute("aria-label", show ? "Hide key" : "Show key");
-};
-$("paste").onclick = async () => {
+$("key").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") $("saveKey").click();
+});
+$("settings").onclick = () => showSetup(true);
+$("pasteKey").onclick = async () => {
   try {
-    $("k").value = (await navigator.clipboard.readText()).trim();
-    $("k").focus();
+    $("key").value = (await navigator.clipboard.readText()).trim();
+    $("key").focus();
   } catch {
-    keyMsg("Your browser didn't let Syntaz paste. Click the box and press Ctrl+V (or Cmd+V).");
+    $("keyMsg").textContent = "Your browser didn't allow pasting from here: click the box and press Ctrl+V (Mac: ⌘V).";
   }
 };
-$("remember").onclick = () => $("remember").setAttribute("aria-checked", String($("remember").getAttribute("aria-checked") !== "true"));
-$("cancelSetup").onclick = () => (key ? showApp() : null);
-$("changeKey").onclick = () => { if (controller) controller.abort(); store.del("key"); key = ""; showSetup(false); };
+$("showKey").onclick = () => ($("key").type = $("key").type === "password" ? "text" : "password");
+// Light/dark: follows the computer, unless you switch it here.
+const applyTheme = () => { const t = store.get("theme", ""); if (t) document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme; };
+$("theme").onclick = () => { const dark = matchMedia("(prefers-color-scheme: dark)").matches; const now = store.get("theme", "") || (dark ? "dark" : "light"); store.set("theme", now === "dark" ? "light" : "dark"); applyTheme(); };
+applyTheme();
+$("setupCancel").onclick = () => (key ? showApp() : null);
+$("forget").onclick = () => { store.del("key"); key = ""; showSetup(false); };
 
 // ---------------- Chats ----------------
-const menu = (open) => { $("side").classList.toggle("open", open); $("scrim").classList.toggle("open", open); };
-$("openMenu").onclick = () => menu(true);
-$("scrim").onclick = () => menu(false);
 function newChat() {
   chat = { id: String(Date.now()), title: "New chat", messages: [] };
   renderMessages();
@@ -386,7 +388,7 @@ function newChat() {
 }
 function saveChat() {
   if (!chat.messages.length) return;
-  chat.title = (chat.messages.find((m) => m.role === "user")?.shown || chat.messages.find((m) => m.role === "user")?.text || "Chat").slice(0, 60);
+  chat.title = (chat.messages.find((m) => m.role === "user")?.text || "Chat").slice(0, 60);
   // Pictures aren't saved (they'd fill the browser's storage); the chat remembers how many there were.
   const plain = { id: chat.id, title: chat.title, messages: chat.messages.map((m) => ({ role: m.role, text: m.text, ...(m.shown !== undefined ? { shown: m.shown } : {}), ...(m.images?.length ? { pictures: m.images.length } : {}) })) };
   chats = [plain, ...chats.filter((c) => c.id !== chat.id)].slice(0, 50);
@@ -396,104 +398,107 @@ function saveChat() {
 function renderChats() {
   $("chatList").replaceChildren(...chats.map((c) => {
     const row = document.createElement("div");
-    row.className = `chatrow${chat && c.id === chat.id ? " on" : ""}`;
+    row.className = "chat";
     const open = document.createElement("button");
-    open.type = "button";
-    open.className = "open";
+    open.className = `open ${chat && c.id === chat.id ? "on" : ""}`;
     open.textContent = c.title;
-    open.onclick = () => { if (controller) controller.abort(); chat = JSON.parse(JSON.stringify(c)); renderMessages(); renderChats(); menu(false); };
+    open.onclick = () => { chat = JSON.parse(JSON.stringify(c)); renderMessages(); renderChats(); $("closeChats").click(); };
     const del = document.createElement("button");
-    del.type = "button";
-    del.className = "del";
-    del.setAttribute("aria-label", `Delete chat: ${c.title}`);
-    del.innerHTML = '<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg>';
-    del.onclick = () => { chats = chats.filter((x) => x.id !== c.id); store.set("chats", chats); if (chat && chat.id === c.id) newChat(); else renderChats(); };
+    del.className = "icon";
+    del.title = "Delete this chat";
+    del.textContent = "✕";
+    del.onclick = () => { chats = chats.filter((x) => x.id !== c.id); store.set("chats", chats); if (chat && chat.id === c.id) newChat(); renderChats(); };
     row.append(open, del);
     return row;
   }));
   $("noChats").hidden = chats.length > 0;
-  $("chatTitle").textContent = chat && chat.messages.length ? chat.title : "New chat";
+  $("clearChats").hidden = chats.length === 0;
 }
-$("newChat").onclick = () => { if (controller) controller.abort(); newChat(); menu(false); $("msg").focus(); };
+$("clearChats").onclick = () => { if (confirm("Delete all saved chats?")) { chats = []; store.set("chats", []); newChat(); } };
+$("newChat").onclick = () => { if (controller) controller.abort(); newChat(); $("input").focus(); };
 $("newChatTop").onclick = () => $("newChat").click();
+// Small screens: the chat list slides in over the chat.
+$("toggleChats").onclick = () => { $("chats").classList.add("show"); $("closeChats").hidden = false; };
+$("closeChats").onclick = () => { $("chats").classList.remove("show"); $("closeChats").hidden = true; };
 
-// Suggestions fill the box (you can still change them); the photo one also opens the picture picker.
+// Tap a suggestion: it fills the box (you can still change it) — and for photos opens the picture picker.
 const IDEAS = [
-  { label: "Explain a question from a photo", prompt: "Explain this step by step, like a patient tutor:", pick: true },
-  { label: "Summarize something", prompt: "Summarize this in 5 short bullet points:\n\n" },
-  { label: "Help me write", prompt: "Help me write a short, friendly message to " },
-  { label: "Quiz me", prompt: "Quiz me with 5 questions, one at a time, about " },
+  { icon: '<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>', title: "Explain a question from a photo", text: "Add a photo or screenshot and get it explained step by step.", prompt: "Explain this step by step, like a patient tutor:", pick: true },
+  { icon: '<path d="M4 6h16M4 12h16M4 18h10"/>', title: "Summarize something", text: "Paste an article or notes and get the key points.", prompt: "Summarize this in 5 short bullet points:\n\n" },
+  { icon: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>', title: "Help me write", text: "A message, an email, or a paragraph for school.", prompt: "Help me write a short, friendly message to " },
+  { icon: '<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/>', title: "Quiz me", text: "Practice for a test with questions on any topic.", prompt: "Quiz me with 5 questions, one at a time, about " },
 ];
-const LOGO = '<svg aria-hidden="true" width="56" height="56" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><defs><linearGradient id="b-w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d2a24"/><stop offset="1" stop-color="#080b0a"/></linearGradient><linearGradient id="s-w" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d9fb5b"/><stop offset="1" stop-color="#2ee6b0"/></linearGradient><linearGradient id="h-w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".28"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><rect width="32" height="32" rx="8" fill="url(#b-w)"/><rect x=".5" y=".5" width="31" height="31" rx="7.5" fill="url(#h-w)" stroke="#fff" stroke-opacity=".16"/><path d="M20.6 11.2c-.9-1.5-2.6-2.4-4.7-2.4-2.8 0-4.8 1.5-4.8 3.6 0 4.6 10 2.7 10 7.6 0 2.2-2.1 3.8-5 3.8-2.3 0-4.2-1-5.1-2.6" fill="none" stroke="url(#s-w)" stroke-width="3.2" stroke-linecap="round"/><path fill="#d9fb5b" d="M25 4.6l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></svg>';
 function renderMessages() {
-  const list = $("msgs");
+  const list = $("list");
   list.replaceChildren();
-  $("chatTitle").textContent = chat.messages.length ? chat.title : "New chat";
   if (!chat.messages.length) {
-    const w = document.createElement("div");
-    w.className = "welcome";
-    w.style.cssText = "margin:auto;max-width:640px;width:100%;display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center";
-    w.innerHTML = `${LOGO}<h2 style="font-size:28px;font-weight:800">Hi! What should Syntaz do?</h2><p class="muted">Tap a suggestion, or just type what you want.</p><div class="ideas" style="display:flex;flex-wrap:wrap;gap:10px;width:100%"></div>`;
+    const empty = document.createElement("div");
+    empty.className = "empty";
+    empty.innerHTML = `<img class="logo" alt="" src="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2032%2032%22%3E%3Cdefs%3E%3ClinearGradient%20id=%22b%22%20x1=%220%22%20y1=%220%22%20x2=%220%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%231d2a24%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%23080b0a%22/%3E%3C/linearGradient%3E%3ClinearGradient%20id=%22s%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%23d9fb5b%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%232ee6b0%22/%3E%3C/linearGradient%3E%3ClinearGradient%20id=%22h%22%20x1=%220%22%20y1=%220%22%20x2=%220%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%23fff%22%20stop-opacity=%22.28%22/%3E%3Cstop%20offset=%22.5%22%20stop-color=%22%23fff%22%20stop-opacity=%220%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width=%2232%22%20height=%2232%22%20rx=%228%22%20fill=%22url%28%23b%29%22/%3E%3Crect%20x=%22.5%22%20y=%22.5%22%20width=%2231%22%20height=%2231%22%20rx=%227.5%22%20fill=%22url%28%23h%29%22%20stroke=%22%23fff%22%20stroke-opacity=%22.16%22/%3E%3Cpath%20d=%22M20.6%2011.2c-.9-1.5-2.6-2.4-4.7-2.4-2.8%200-4.8%201.5-4.8%203.6%200%204.6%2010%202.7%2010%207.6%200%202.2-2.1%203.8-5%203.8-2.3%200-4.2-1-5.1-2.6%22%20fill=%22none%22%20stroke=%22url%28%23s%29%22%20stroke-width=%223.2%22%20stroke-linecap=%22round%22/%3E%3Cpath%20fill=%22%23d9fb5b%22%20d=%22M25%204.6l.7%202%202%20.7-2%20.7-.7%202-.7-2-2-.7%202-.7z%22/%3E%3C/svg%3E"><h1>What can I help you with?</h1><p>Ask anything, or start with one of these:</p><div class="cards"></div>`;
     for (const idea of IDEAS) {
-      const b = document.createElement("button");
-      b.type = "button";
-      b.className = "sugg";
-      b.textContent = idea.label;
-      b.onclick = () => {
-        $("msg").value = idea.prompt;
+      const card = document.createElement("button");
+      card.innerHTML = `<span class="ico"><svg class="i" viewBox="0 0 24 24">${idea.icon}</svg></span><span><b></b><span class="d"></span></span>`;
+      card.querySelector("b").textContent = idea.title;
+      card.querySelector(".d").textContent = idea.text;
+      card.onclick = () => {
+        $("input").value = idea.prompt;
         autosize();
         updateSend();
-        $("msg").focus();
-        $("msg").setSelectionRange(idea.prompt.length, idea.prompt.length);
+        $("input").focus();
+        $("input").setSelectionRange(idea.prompt.length, idea.prompt.length);
         if (idea.pick) $("file").click();
       };
-      w.querySelector(".ideas").append(b);
+      empty.querySelector(".cards").append(card);
     }
-    list.append(w);
+    list.append(empty);
     return;
   }
   chat.messages.forEach((m) => addMessage(m));
 }
 function addMessage(m) {
-  const list = $("msgs");
-  list.querySelector(".welcome")?.remove();
-  let body;
+  if ($("list").querySelector(".empty")) $("list").replaceChildren();
+  const el = document.createElement("div");
+  el.className = `msg ${m.role === "user" ? "user" : "ai"}`;
+  const b = document.createElement("div");
+  b.className = "b";
   if (m.role === "user") {
-    body = document.createElement("div");
-    body.className = "bub-u";
-    body.textContent = m.shown ?? m.text;
-    if (m.pictures && !m.images) body.append(Object.assign(document.createElement("div"), { style: "font-size:13px;opacity:.85;margin-top:4px", textContent: `🖼 ${m.pictures} picture(s) (not saved)` }));
-    (m.images || []).forEach((img) => { const i = document.createElement("img"); i.src = `data:${img.mime};base64,${img.data}`; i.alt = "Picture you added"; body.append(i); });
-    list.append(body);
+    b.textContent = m.shown ?? m.text;
+    if (m.pictures && !m.images) b.append(Object.assign(document.createElement("div"), { className: "note", textContent: `🖼 ${m.pictures} picture(s) (not saved)` }));
+    (m.images || []).forEach((img) => { const i = document.createElement("img"); i.src = `data:${img.mime};base64,${img.data}`; i.alt = "Picture you added"; b.append(i); });
+    el.append(b);
   } else {
-    const wrap = document.createElement("div");
-    wrap.className = "ans";
-    body = document.createElement("div");
-    body.style.cssText = "display:flex;flex-direction:column;gap:10px";
-    wrap.append(body);
-    if (m.text) { setAnswer(body, m.text); addTools(wrap, m.text); }
-    list.append(wrap);
+    setAnswer(b, m.text || "");
+    const col = document.createElement("div");
+    col.className = "col";
+    col.append(b);
+    el.append(col);
+    if (m.text) addTools(col, m.text);
   }
-  list.scrollTop = list.scrollHeight;
-  return body;
+  $("list").append(el);
+  $("messages").scrollTop = $("messages").scrollHeight;
+  return b;
 }
-/** Shows an answer (Markdown); each code block has its own Copy button. */
+/** Shows an answer (Markdown) with a Copy button on each code block. */
 function setAnswer(b, text) {
   b.innerHTML = markdown(text);
-  b.querySelectorAll(".copycode").forEach((c) => {
-    c.onclick = () => navigator.clipboard.writeText(c.closest(".code").querySelector("code").textContent).then(() => (c.textContent = "Copied ✓"));
+  b.querySelectorAll("pre").forEach((pre) => {
+    const c = document.createElement("button");
+    c.className = "copycode";
+    c.textContent = "Copy";
+    c.onclick = () => navigator.clipboard.writeText(pre.querySelector("code").textContent).then(() => (c.textContent = "Copied ✓"));
+    pre.append(c);
   });
 }
-function addTools(wrap, text) {
-  const row = document.createElement("div");
-  row.style.cssText = "display:flex;gap:6px";
+const COPY_ICON = '<svg class="i" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+function addTools(col, text) {
+  const t = document.createElement("div");
+  t.className = "tools";
   const copy = document.createElement("button");
-  copy.type = "button";
-  copy.className = "btn btn-g btn-s";
-  copy.textContent = "Copy";
-  copy.onclick = () => navigator.clipboard.writeText(text).then(() => (copy.textContent = "Copied ✓"));
-  row.append(copy);
-  wrap.append(row);
+  copy.innerHTML = `${COPY_ICON}<span>Copy</span>`;
+  copy.title = "Copy the answer";
+  copy.onclick = () => navigator.clipboard.writeText(text).then(() => (copy.querySelector("span").textContent = "Copied ✓"));
+  t.append(copy);
+  col.append(t);
 }
 
 // ---------------- Attachments ----------------
@@ -501,13 +506,9 @@ const MAX_FILES = 4;
 async function addFiles(files) {
   for (const f of files) {
     if (pending.length >= MAX_FILES) break;
-    try {
-      if (f.type.startsWith("image/")) pending.push(await shrinkImage(f));
-      else if (f.size <= 200_000) pending.push({ kind: "text", name: f.name, text: await f.text() });
-      else alert(`${f.name} is too big (text files up to 200 KB).`);
-    } catch (err) {
-      alert(err.message);
-    }
+    if (f.type.startsWith("image/")) pending.push(await shrinkImage(f));
+    else if (f.size <= 200_000) pending.push({ kind: "text", name: f.name, text: await f.text() });
+    else alert(`${f.name} is too big (text files up to 200 KB).`);
   }
   renderThumbs();
 }
@@ -526,7 +527,7 @@ function shrinkImage(file) {
       URL.revokeObjectURL(url);
       resolve({ kind: "image", name: file.name, mime: "image/jpeg", data: dataUrl.split(",")[1], url: dataUrl });
     };
-    img.onerror = () => reject(new Error(`${file.name}: that picture couldn't be read.`));
+    img.onerror = () => reject(new Error("That picture couldn't be read."));
     img.src = url;
   });
 }
@@ -535,23 +536,19 @@ function renderThumbs() {
   $("thumbs").replaceChildren(...pending.map((p, i) => {
     const t = document.createElement("div");
     t.className = "thumb";
-    if (p.kind === "image") { const im = document.createElement("img"); im.src = p.url; im.alt = ""; t.append(im); }
-    const s = document.createElement("span");
-    s.textContent = p.kind === "image" ? p.name : `📄 ${p.name}`;
+    if (p.kind === "image") { const im = document.createElement("img"); im.src = p.url; im.alt = p.name; t.append(im); }
+    else { const s = document.createElement("span"); s.textContent = `📄 ${p.name}`; t.append(s); }
     const x = document.createElement("button");
-    x.type = "button";
-    x.className = "del";
-    x.style.cssText = "width:28px;height:28px";
-    x.textContent = "×";
-    x.setAttribute("aria-label", `Remove ${p.name}`);
+    x.textContent = "✕";
+    x.title = "Remove";
     x.onclick = () => { pending.splice(i, 1); renderThumbs(); };
-    t.append(s, x);
+    t.append(x);
     return t;
   }));
 }
 $("attach").onclick = () => $("file").click();
 $("file").onchange = () => { addFiles([...$("file").files]); $("file").value = ""; };
-$("msg").addEventListener("paste", (e) => { const files = [...e.clipboardData.files]; if (files.length) { e.preventDefault(); addFiles(files); } });
+$("input").addEventListener("paste", (e) => { const files = [...e.clipboardData.files]; if (files.length) { e.preventDefault(); addFiles(files); } });
 $("drop").addEventListener("dragover", (e) => { e.preventDefault(); $("drop").classList.add("drag"); });
 $("drop").addEventListener("dragleave", () => $("drop").classList.remove("drag"));
 $("drop").addEventListener("drop", (e) => { e.preventDefault(); $("drop").classList.remove("drag"); addFiles([...e.dataTransfer.files]); });
@@ -564,33 +561,31 @@ function toContents(messages) {
   }));
 }
 function explain(status, body) {
-  if (status === 400 && /API key/i.test(body)) return { msg: "Your Gemini key doesn't work anymore. Add a new one.", key: true };
-  if (status === 403) return { msg: "Google refused the key. Add a new one.", key: true };
+  if (status === 400 && /API key/i.test(body)) return { msg: "Your Gemini key doesn't work anymore. Click ⚙ to add a new one.", key: true };
+  if (status === 403) return { msg: "Google refused the key. Click ⚙ to add a new one.", key: true };
   if (status === 429 && /PerDay|per day/i.test(body)) return { msg: "Today's free limit for this model is used up. Try the other model (top right) or come back tomorrow." };
   if (status === 429) return { msg: "Google says: too many requests right now.", wait: Number((/"retryDelay":\s*"(\d+)/.exec(body) || [])[1] || 20) };
   if (status >= 500) return { msg: "Google's AI is having trouble right now. Try again in a moment." };
   return { msg: `Something went wrong (HTTP ${status}).` };
 }
-const TYPING = '<div role="status" aria-label="Syntaz is typing" style="display:flex;gap:5px;padding:12px 16px;border-radius:16px;background:var(--card);border:1px solid var(--border);align-self:flex-start"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>';
 async function ask(bubble, attempt = 0) {
   controller = new AbortController();
   let text = "";
-  const model = $("model").value;
-  const res = await fetch(`${API}/${model}:streamGenerateContent?alt=sse`, {
+  const res = await fetch(`${API}/${$("model").value}:streamGenerateContent?alt=sse`, {
     method: "POST",
     signal: controller.signal,
     headers: { "Content-Type": "application/json", "x-goog-api-key": key },
     body: JSON.stringify({
       systemInstruction: { parts: [{ text: SYSTEM }] },
       contents: toContents(chat.messages),
-      generationConfig: { maxOutputTokens: 4096, ...(model.includes("lite") ? { thinkingConfig: { thinkingBudget: 0 } } : {}) },
+      generationConfig: { maxOutputTokens: 4096, ...($("model").value.includes("lite") ? { thinkingConfig: { thinkingBudget: 0 } } : {}) },
     }),
   });
   if (!res.ok) {
     const body = await res.text();
     const why = explain(res.status, body);
     if (why.wait && attempt === 0 && why.wait <= 60) {
-      bubble.innerHTML = `<p class="note">Google asked Syntaz to wait ${why.wait} seconds (free tier limit)… trying again then.</p>`;
+      bubble.innerHTML = `<span class="note">Google asked Syntaz to wait ${why.wait} seconds (free tier limit)… trying again then.</span>`;
       await new Promise((r, j) => { const t = setTimeout(r, why.wait * 1000); controller.signal.addEventListener("abort", () => { clearTimeout(t); j(new DOMException("aborted", "AbortError")); }); });
       return ask(bubble, 1);
     }
@@ -599,6 +594,7 @@ async function ask(bubble, attempt = 0) {
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
   let buf = "";
+  bubble.classList.add("typing");
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
@@ -614,87 +610,215 @@ async function ask(bubble, attempt = 0) {
         if (d.candidates?.[0]?.finishReason === "SAFETY") text += "\n\n_(Google stopped this answer for safety reasons.)_";
       } catch {}
     }
-    if (text) bubble.innerHTML = markdown(text);
-    $("msgs").scrollTop = $("msgs").scrollHeight;
+    bubble.innerHTML = markdown(text);
+    $("messages").scrollTop = $("messages").scrollHeight;
   }
+  bubble.classList.remove("typing");
   setAnswer(bubble, text);
   return text;
 }
 
+// ---------------- Pictures ----------------
+// 🎨 (or "draw …", "make a picture of …"): Gemini's image models, newest first. Google's free tier makes no
+// pictures ("limit: 0"), so that answer says what to do instead of showing a raw error.
+const PICTURE_MODELS = ["gemini-3.1-flash-image", "gemini-2.5-flash-image"];
+const IMAGE_ASK = /^\s*(?:(?:please|pls)[,!]?\s+)?(?:(?:can|could|would) you\s+(?:please\s+)?)?(?:draw|paint|sketch|(?:generate|create|make|design)\s+(?:me\s+)?(?:an?|some|the|\d+)?\s*(?:\w+\s+){0,2}?(?:image|picture|pic|photo|drawing|painting|illustration|logo|wallpaper|artwork|art|poster|icon|sticker)s?)\b/i;
+let pictureMode = false;
+function setPictureMode(on) {
+  pictureMode = on;
+  $("picture").setAttribute("aria-pressed", String(on));
+  $("input").placeholder = on ? "Describe the picture you want…" : "Ask Syntaz anything…";
+}
+$("picture").onclick = () => {
+  if ($("input").value.trim() && !pictureMode) { setPictureMode(true); return send(); }
+  setPictureMode(!pictureMode);
+  $("input").focus();
+};
+function pictureProblem(status, body) {
+  if (status === 429 && /free_tier|FreeTier|limit: 0/i.test(body)) return "Google Gemini only makes pictures on a paid plan: the free tier allows none. Turn on billing for your key in Google AI Studio (aistudio.google.com → Billing), then try again.";
+  return explain(status, body).msg;
+}
+async function makePicture(prompt) {
+  const userMsg = { role: "user", text: prompt, shown: `🎨 ${prompt}` };
+  chat.messages.push(userMsg);
+  addMessage(userMsg);
+  $("input").value = "";
+  autosize();
+  updateSend();
+  setPictureMode(false);
+  const holder = addMessage({ role: "model", text: "" });
+  holder.innerHTML = '<span class="note">Making your picture… (this can take a few seconds)</span>';
+  $("send").hidden = true;
+  $("stop").hidden = false;
+  controller = new AbortController();
+  try {
+    let image = null, problem = "Gemini didn't return a picture. Try describing it differently.";
+    for (const model of PICTURE_MODELS) {
+      const res = await fetch(`${API}/${model}:generateContent`, {
+        method: "POST", signal: controller.signal,
+        headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+        body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { responseModalities: ["IMAGE", "TEXT"] } }),
+      });
+      const body = await res.text();
+      if (res.status === 404) continue; // this model isn't available to the key: try the next
+      if (!res.ok) { problem = pictureProblem(res.status, body); break; }
+      const part = (JSON.parse(body).candidates?.[0]?.content?.parts || []).find((x) => x.inlineData?.data);
+      if (part) { image = `data:${part.inlineData.mimeType || "image/png"};base64,${part.inlineData.data}`; break; }
+    }
+    if (!image) throw new Error(problem);
+    holder.innerHTML = "";
+    const img = Object.assign(document.createElement("img"), { className: "made", src: image, alt: `Picture: ${prompt.slice(0, 120)}` });
+    const save = Object.assign(document.createElement("a"), { className: "made-save", href: image, download: `syntaz-picture.${image.slice(11, image.indexOf(";")).replace("jpeg", "jpg")}`, textContent: "⬇ Download" });
+    holder.append(img, save);
+    chat.messages.push({ role: "model", text: `🖼 (Made a picture of: ${prompt.slice(0, 200)})` });
+    saveChat();
+  } catch (err) {
+    chat.messages.pop();
+    holder.innerHTML = "";
+    const e = document.createElement("div");
+    e.className = "err";
+    e.textContent = err.name === "AbortError" ? "Stopped." : err.message === "Failed to fetch" ? "Can't reach Google. Check your internet connection." : err.message;
+    holder.append(e);
+  } finally {
+    controller = null;
+    $("send").hidden = false;
+    $("stop").hidden = true;
+    $("input").focus();
+  }
+}
+
 async function send() {
-  const typed = $("msg").value.trim();
+  const typed = $("input").value.trim();
   if ((!typed && !pending.length) || controller) return;
+  if (typed && !pending.length && (pictureMode || IMAGE_ASK.test(typed))) return makePicture(typed);
   const files = pending.filter((p) => p.kind === "text");
   const images = pending.filter((p) => p.kind === "image").map((p) => ({ mime: p.mime, data: p.data }));
   const text = [typed || (images.length ? "What is in this picture?" : ""), ...files.map((f) => `\n\nFile "${f.name}":\n\`\`\`\n${f.text}\n\`\`\``)].join("");
   // `shown`: what you typed and the file names (the file contents go to Syntaz, not on screen).
   const shown = [typed, files.length ? `📄 ${files.map((f) => f.name).join(", ")}` : ""].filter(Boolean).join("\n");
   const userMsg = { role: "user", text, shown, ...(images.length ? { images } : {}) };
-  const sent = [...pending];
   chat.messages.push(userMsg);
   addMessage(userMsg);
-  if (chat.messages.length === 1) { chat.title = (shown || "Chat").slice(0, 60); $("chatTitle").textContent = chat.title; }
-  $("msg").value = "";
+  $("input").value = "";
   pending = [];
   renderThumbs();
   autosize();
   const holder = addMessage({ role: "model", text: "" });
-  holder.innerHTML = TYPING;
+  holder.innerHTML = '<span class="note">Thinking…</span>';
   $("send").hidden = true;
   $("stop").hidden = false;
-  const open = chat;
   try {
     const answer = await ask(holder);
-    open.messages.push({ role: "model", text: answer || "(No answer.)" });
-    if (!answer) holder.innerHTML = '<p class="note">(No answer.)</p>';
+    chat.messages.push({ role: "model", text: answer || "(No answer.)" });
+    if (!answer) holder.innerHTML = '<span class="note">(No answer.)</span>';
     addTools(holder.parentElement, answer);
-    if (open === chat) saveChat();
+    saveChat();
   } catch (err) {
-    open.messages.pop(); // the question isn't kept, so Retry sends it again
+    holder.classList.remove("typing");
     if (err.name === "AbortError") {
-      holder.innerHTML = '<p class="note">Stopped.</p>';
+      holder.insertAdjacentHTML("beforeend", '<div class="note">Stopped.</div>');
+      chat.messages.pop();
     } else {
+      chat.messages.pop(); // the failed question isn't kept, so Retry sends it again
       holder.innerHTML = "";
-      const box = document.createElement("div");
-      box.className = "err";
-      box.setAttribute("role", "alert");
-      const s = document.createElement("strong");
-      s.textContent = err.message === "Failed to fetch" ? "Can't reach Google. Check your internet connection." : err.message;
+      const e = document.createElement("div");
+      e.className = "err";
+      e.textContent = err.message === "Failed to fetch" ? "Can't reach Google. Check your internet connection." : err.message;
+      holder.append(e);
       const retry = document.createElement("button");
-      retry.type = "button";
-      retry.className = "btn btn-g btn-s";
-      retry.style.alignSelf = "flex-start";
       retry.textContent = err.key ? "Add a new key" : "Retry";
-      retry.onclick = () => {
-        if (err.key) return $("changeKey").click();
-        holder.parentElement.remove();
-        $("msgs").lastElementChild?.remove(); // the question bubble
-        $("msg").value = typed;
-        pending = sent;
-        renderThumbs();
-        send();
-      };
-      box.append(s, retry);
-      holder.append(box);
+      retry.style.marginTop = "6px";
+      retry.onclick = () => { if (err.key) return showSetup(true); holder.closest(".msg").remove(); $("list").lastElementChild?.remove(); $("input").value = typed; images.forEach((i) => pending.push({ kind: "image", name: "picture", mime: i.mime, data: i.data, url: `data:${i.mime};base64,${i.data}` })); files.forEach((f) => pending.push(f)); renderThumbs(); send(); };
+      holder.append(retry);
     }
   } finally {
     controller = null;
     $("send").hidden = false;
     $("stop").hidden = true;
-    $("msg").focus();
+    $("input").focus();
   }
 }
 $("send").onclick = send;
 $("stop").onclick = () => controller && controller.abort();
-$("msg").addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); send(); } });
-function autosize() { const t = $("msg"); t.style.height = "auto"; t.style.height = `${Math.min(t.scrollHeight, innerHeight * 0.4)}px`; }
-function updateSend() { $("send").disabled = !$("msg").value.trim() && !pending.length; }
-$("msg").addEventListener("input", () => { autosize(); updateSend(); });
+$("input").addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); send(); } });
+function autosize() { const t = $("input"); t.style.height = "auto"; t.style.height = `${Math.min(t.scrollHeight, innerHeight * 0.4)}px`; }
+function updateSend() { $("send").disabled = !$("input").value.trim() && !pending.length; }
+$("input").addEventListener("input", () => { autosize(); updateSend(); });
 $("model").value = store.get("model", "gemini-3.1-flash-lite");
 $("model").onchange = () => store.set("model", $("model").value);
 
+updateSend();
 if (key) showApp(); else showSetup(false);
 </script>
-<script src="liquid.js" data-glass=".site>header,.card,.mock,.shell,.sugg,.qa"></script>
+<script data-glass="aside,.box,.cards button,.setup,.topbar">
+// Syntaz liquid glass. Each .lg element gets a lens map drawn at its own size, so its edges bend what's
+// behind it (like a thick glass pebble) while the middle stays clear; the CSS uses it as var(--lens).
+// Chrome only: other browsers, and "reduce transparency", keep the plain frosted glass.
+// The same file is in website/liquid.js and chrome-extension/liquid.js (Syntaz Lite has it inline).
+(() => {
+  // Which elements are glass: <script src="liquid.js" data-glass=".panel,.card"> (default .lg).
+  const GLASS = document.currentScript?.dataset.glass || ".lg";
+  const NS = "http://www.w3.org/2000/svg";
+  const defs = document.createElementNS(NS, "svg");
+  defs.setAttribute("width", "0"); defs.setAttribute("height", "0"); defs.setAttribute("aria-hidden", "true");
+  defs.style.position = "absolute";
+  (document.body || document.documentElement).prepend(defs);
+  const made = new Map();
+  // Distance from the rounded-rect edge → how hard the glass bends there (0 in the middle).
+  function lensMap(w, h, r, edge) {
+    const c = document.createElement("canvas"); c.width = w; c.height = h;
+    const ctx = c.getContext("2d"); const img = ctx.createImageData(w, h); const d = img.data;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      // Signed distance to a rounded rectangle, and the direction to its nearest edge.
+      const qx = Math.abs(x + 0.5 - w / 2) - (w / 2 - r), qy = Math.abs(y + 0.5 - h / 2) - (h / 2 - r);
+      const ox = Math.max(qx, 0), oy = Math.max(qy, 0);
+      const dist = r - (Math.hypot(ox, oy) + Math.min(Math.max(qx, qy), 0)); // inward distance from the edge
+      const t = Math.max(0, 1 - dist / edge); const k = t * t * t; // strong at the rim, gone by `edge` px in
+      let nx, ny;
+      if (ox > 0 || oy > 0) { const l = Math.hypot(ox, oy) || 1; nx = ox / l; ny = oy / l; } else if (qx > qy) { nx = 1; ny = 0; } else { nx = 0; ny = 1; }
+      nx *= Math.sign(x + 0.5 - w / 2); ny *= Math.sign(y + 0.5 - h / 2);
+      const i = (y * w + x) * 4;
+      d[i] = 128 - nx * k * 127; d[i + 1] = 128 - ny * k * 127; d[i + 2] = 128; d[i + 3] = 255;
+    }
+    ctx.putImageData(img, 0, 0);
+    return c.toDataURL();
+  }
+  function filterFor(el) {
+    const b = el.getBoundingClientRect(); const w = Math.round(b.width), h = Math.round(b.height);
+    if (w < 8 || h < 8 || w * h > 1_500_000) return null; // tiny, or too big to draw quickly
+    const r = Math.min(parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0, w / 2, h / 2);
+    const edge = Math.min(28, Math.max(10, Math.min(w, h) * 0.32));
+    const id = `lg-${w}-${h}-${Math.round(r)}`;
+    if (!made.has(id)) {
+      const f = document.createElementNS(NS, "filter");
+      f.id = id;
+      for (const [k, v] of Object.entries({ x: 0, y: 0, width: w, height: h, filterUnits: "userSpaceOnUse", "color-interpolation-filters": "sRGB" })) f.setAttribute(k, v);
+      f.innerHTML = `<feImage href="${lensMap(w, h, r, edge)}" x="0" y="0" width="${w}" height="${h}" result="map"/>
+        <feDisplacementMap in="SourceGraphic" in2="map" scale="${Math.round(edge * 1.4)}" xChannelSelector="R" yChannelSelector="G"/>`;
+      defs.append(f);
+      made.set(id, f);
+    }
+    return id;
+  }
+  const chrome = CSS.supports("backdrop-filter", "url(#x)") && /Chrome\//.test(navigator.userAgent) && !matchMedia("(prefers-reduced-transparency: reduce)").matches;
+  function apply(el) {
+    if (!chrome) return;
+    const id = filterFor(el);
+    if (id) el.style.setProperty("--lens", `url(#${id})`);
+  }
+  const ro = new ResizeObserver((items) => items.forEach((i) => apply(i.target)));
+  const watch = (root) => root.querySelectorAll?.(GLASS).forEach((el) => { if (!el.dataset.lg) { el.dataset.lg = "1"; ro.observe(el); apply(el); } });
+  watch(document);
+  new MutationObserver((ms) => ms.forEach((m) => m.addedNodes.forEach((n) => n.nodeType === 1 && (n.matches?.(GLASS) ? watch(n.parentNode) : watch(n))))).observe(document.body, { childList: true, subtree: true });
+  // The light on the glass follows the pointer.
+  document.addEventListener("pointermove", (e) => {
+    const el = e.target.closest?.(`${GLASS},.btn`);
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    el.style.setProperty("--x", `${e.clientX - r.left}px`);
+    el.style.setProperty("--y", `${e.clientY - r.top}px`);
+  });
+})();
+</script>
 </body>
 </html>

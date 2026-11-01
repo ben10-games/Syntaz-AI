@@ -6,7 +6,7 @@ import { spawn } from "node:child_process";
 import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync, existsSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const GOOD = "AQ.Ab8GoodTestKey_1234567890abcdefghij"; // the new key style has a dot
@@ -108,5 +108,38 @@ test("the update check asks GitHub at most once per 15 minutes (it allows 60 che
   } finally {
     delete process.env.SYNTAZ_UPDATE_VERSION_URL;
     server.close();
+  }
+});
+
+test("update channels: Latest follows the newest release, LTS the release tagged \"lts\" (version from its name)", async () => {
+  const server = http.createServer((req, res) => {
+    const asset = (v) => ["Syntaz-for-Windows.zip", "Syntaz-for-Mac.zip", "Syntaz-for-Linux.zip"].map((name) => ({ name, browser_download_url: `https://example.invalid/${v}/${name}` }));
+    res.writeHead(200, { "Content-Type": "application/json" });
+    if (req.url === "/releases/latest") return res.end(JSON.stringify({ tag_name: "v1.9.0", name: "Syntaz 1.9", assets: asset("1.9.0") }));
+    if (req.url === "/releases/tags/lts") return res.end(JSON.stringify({ tag_name: "lts", name: "Syntaz 1.7.2 LTS", assets: asset("lts") }));
+    res.end("{}");
+  });
+  await new Promise((r) => server.listen(0, "127.0.0.1", r));
+  const dir = mkdtempSync(path.join(os.tmpdir(), "syntaz-channel-"));
+  process.env.SYNTAZ_RELEASES_API = `http://127.0.0.1:${server.address().port}/releases`;
+  try {
+    mkdirSync(path.join(dir, "setup"));
+    copyFileSync(path.join(root, "setup", "lib.mjs"), path.join(dir, "setup", "lib.mjs"));
+    const lib = await import(`${pathToFileURL(path.join(dir, "setup", "lib.mjs")).href}?channel=${Date.now()}`);
+    assert.equal(lib.channel(), "latest", "a normal download follows Latest");
+    assert.equal((await lib.latestRelease({ fresh: true })).version, "1.9.0");
+    writeFileSync(path.join(dir, "setup", "channel.txt"), "lts\n");
+    assert.equal(lib.channel(), "lts", "an LTS download follows LTS");
+    const lts = await lib.latestRelease({ fresh: true });
+    assert.equal(lts.version, "1.7.2");
+    assert.match(lts.zip, /\/lts\/Syntaz-for-/);
+    assert.equal(lib.setChannel("latest"), true, "the choice in the Syntaz window wins");
+    assert.equal(lib.channel(), "latest");
+    assert.equal((await lib.latestVersion()), "1.9.0");
+    assert.equal(lib.setChannel("beta"), false);
+  } finally {
+    delete process.env.SYNTAZ_RELEASES_API;
+    server.close();
+    rmSync(dir, { recursive: true, force: true });
   }
 });

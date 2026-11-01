@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ben10-games.github.io/Syntaz-AI/sitemap.xml

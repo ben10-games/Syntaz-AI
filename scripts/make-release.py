@@ -6,7 +6,8 @@
   dist/Syntaz-Lite.html        Syntaz Lite: chat in one file, nothing to install
 Each unzips to a "Syntaz AI" folder. The names never change, so the Syntaz window's Update button and the
 README link (releases/latest/download/...) always find the newest one.
-Run from the project folder: python3 scripts/make-release.py [--out DIR]"""
+Run from the project folder: python3 scripts/make-release.py [--out DIR] [--lts]
+  --lts: the same downloads for the LTS channel (into dist/lts), for the GitHub release tagged lts"""
 import io
 import json
 import os
@@ -21,9 +22,11 @@ TOP = "Syntaz AI"
 EVERYWHERE = ("test/", "website/", ".github/")  # not needed to run Syntaz
 ONLY_WINDOWS = ("Syntaz Setup (Windows).bat", "setup/windows/")
 ONLY_MAC = ("Syntaz Setup.app/",)
+ONLY_LINUX = ("Syntaz Setup (Linux).sh",)
+NOT_WINDOWS = ("setup/get-node.sh",)  # Mac and Linux get Node.js with it; Windows has setup/windows/get-node.ps1
 TARGETS = {
-    "Syntaz-for-Mac.zip": EVERYWHERE + ONLY_WINDOWS,
-    "Syntaz-for-Windows.zip": EVERYWHERE + ONLY_MAC,
+    "Syntaz-for-Mac.zip": EVERYWHERE + ONLY_WINDOWS + ONLY_LINUX,
+    "Syntaz-for-Windows.zip": EVERYWHERE + ONLY_MAC + ONLY_LINUX + NOT_WINDOWS,
     "Syntaz-for-Linux.zip": EVERYWHERE + ONLY_WINDOWS + ONLY_MAC,
 }
 
@@ -33,7 +36,8 @@ def excluded(name, prefixes):
 
 
 def main():
-    out = sys.argv[sys.argv.index("--out") + 1] if "--out" in sys.argv else os.path.join(ROOT, "dist")
+    lts = "--lts" in sys.argv  # LTS downloads: marked with setup/channel.txt, so they only update to LTS releases
+    out = sys.argv[sys.argv.index("--out") + 1] if "--out" in sys.argv else os.path.join(ROOT, "dist", "lts" if lts else "")
     os.makedirs(out, exist_ok=True)
     dirty = subprocess.run(["git", "status", "--porcelain"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
     if dirty:
@@ -57,13 +61,21 @@ def main():
                 info.external_attr = (stat.S_IFREG | (mode & 0o777)) << 16
                 info.compress_type = zipfile.ZIP_DEFLATED
                 z.writestr(info, data)
+            if lts:
+                info = zipfile.ZipInfo(f"{TOP}/setup/channel.txt", date_time=(2026, 1, 1, 0, 0, 0))
+                info.create_system = 3
+                info.external_attr = (stat.S_IFREG | 0o644) << 16
+                z.writestr(info, "lts\n")
         print(f"{zip_name}: {os.path.getsize(path) // 1024} KB")
     # Syntaz Lite on its own: one file, nothing to install.
     lite = next(d for n, _, d in members if n == "lite/Syntaz Lite.html")
     with open(os.path.join(out, "Syntaz-Lite.html"), "wb") as f:
         f.write(lite)
     print(f"Syntaz-Lite.html: {len(lite) // 1024} KB")
-    print(f"Version {version}. Upload these as a GitHub release tagged v{version}.")
+    if lts:
+        print(f"LTS {version}. Put these on the GitHub release tagged \"lts\", named \"Syntaz {version} LTS\" (replace its old files).")
+    else:
+        print(f"Version {version}. Upload these as a GitHub release tagged v{version}.")
 
 
 if __name__ == "__main__":

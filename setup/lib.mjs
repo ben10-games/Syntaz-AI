@@ -20,7 +20,38 @@ export const REPO = "ben10-games/Syntaz-AI";
 // Updates come from GitHub Releases: each release has one download per system (see scripts/make-release.mjs),
 // so a Mac update never brings Windows files and the other way round.
 export const RELEASE_ASSET = mac ? "Syntaz-for-Mac.zip" : win ? "Syntaz-for-Windows.zip" : "Syntaz-for-Linux.zip";
-const RELEASES_API = `https://api.github.com/repos/${REPO}/releases/latest`;
+// Two update channels. "latest": the newest release (new features). "lts": long-term support, a stable line that
+// only gets fixes; its newest release is the GitHub release tagged "lts" (named e.g. "Syntaz 1.7.2 LTS").
+const RELEASES_BASE = process.env.SYNTAZ_RELEASES_API || `https://api.github.com/repos/${REPO}/releases`; // tests
+const RELEASE_URL = { latest: `${RELEASES_BASE}/latest`, lts: `${RELEASES_BASE}/tags/lts` };
+const settingsFile = () => path.join(dataDir, "settings.json");
+/** The update channel: chosen in the Syntaz window, otherwise the one this download came with (setup/channel.txt). */
+export function channel() {
+  try {
+    const c = JSON.parse(readFileSync(settingsFile(), "utf8")).channel;
+    if (c === "lts" || c === "latest") return c;
+  } catch {
+    /* not chosen yet */
+  }
+  try {
+    return readFileSync(path.join(root, "setup", "channel.txt"), "utf8").trim() === "lts" ? "lts" : "latest";
+  } catch {
+    return "latest";
+  }
+}
+export function setChannel(c) {
+  if (c !== "lts" && c !== "latest") return false;
+  mkdirSync(dataDir, { recursive: true });
+  let s = {};
+  try {
+    s = JSON.parse(readFileSync(settingsFile(), "utf8"));
+  } catch {
+    /* new */
+  }
+  writeFileSync(settingsFile(), JSON.stringify({ ...s, channel: c }));
+  releaseCache = null;
+  return true;
+}
 const UPDATE_ZIP = process.env.SYNTAZ_UPDATE_ZIP || null; // tests
 const UPDATE_VERSION_URL = process.env.SYNTAZ_UPDATE_VERSION_URL || null; // tests
 export const SYNTAZ_PORT = Number(process.env.SYNTAZ_APP_SYNTAZ_PORT || 3000);
@@ -110,9 +141,10 @@ const released = (m) => (typeof m.created === "number" ? m.created : Date.parse(
 const NOT_CHAT = /embed|whisper|tts|dall-e|moderation|rerank|transcribe|image|imagine|audio|realtime|search|vision-preview|computer-use|guard|playai|orpheus|distil/i;
 // Picture models in a key's model list, best first (OpenAI GPT Image, Gemini / Grok image models, Imagen, DALL·E).
 const IMAGE_MODEL = /(^|[/-])(gpt-image|dall-e|imagen|image)(-|$|\d)/i;
-const IMAGE_FIRST = [/^gpt-image/i, /image/i, /imagen/i, /^dall-e-3/i];
+const IMAGE_FIRST = [/^gpt-image/i, /^gemini-[\d.]+-flash-image$/i, /image/i, /imagen/i, /^dall-e-3/i];
+const modelVersion = (id) => Number(/(\d+(?:\.\d+)?)/.exec(String(id))?.[1] ?? 0);
 function pickImageModel(entries) {
-  const ids = entries.filter((m) => typeof m?.id === "string").sort((a, b) => released(b) - released(a)).map((m) => m.id.replace(/^models\//, "")).filter((id) => IMAGE_MODEL.test(id) && !/vision|understand/i.test(id));
+  const ids = entries.filter((m) => typeof m?.id === "string").sort((a, b) => released(b) - released(a) || modelVersion(b.id) - modelVersion(a.id)).map((m) => m.id.replace(/^models\//, "")).filter((id) => IMAGE_MODEL.test(id) && !/vision|understand|preview/i.test(id));
   for (const p of IMAGE_FIRST) {
     const hit = ids.find((id) => p.test(id));
     if (hit) return hit;
@@ -311,19 +343,21 @@ const RELEASE_RETRY = 2 * 60_000;
 /** The newest release: { version, zip } (zip = this system's download), or null if none can be found. */
 export async function latestRelease({ fresh = false } = {}) {
   const now = Date.now();
-  if (!fresh && releaseCache && now - releaseCache.at < (releaseCache.value ? RELEASE_TTL : RELEASE_RETRY)) return releaseCache.value;
-  const value = await fetchLatestRelease();
-  releaseCache = { at: now, value };
+  const ch = channel();
+  if (!fresh && releaseCache && releaseCache.channel === ch && now - releaseCache.at < (releaseCache.value ? RELEASE_TTL : RELEASE_RETRY)) return releaseCache.value;
+  const value = await fetchLatestRelease(ch);
+  releaseCache = { at: now, channel: ch, value };
   return value;
 }
 
-async function fetchLatestRelease() {
+async function fetchLatestRelease(ch = "latest") {
   if (UPDATE_VERSION_URL) {
     const r = await http(UPDATE_VERSION_URL, { timeoutMs: 10_000 });
     return r.status === 200 && typeof r.json?.version === "string" ? { version: r.json.version, zip: UPDATE_ZIP } : null;
   }
-  const r = await http(RELEASES_API, { timeoutMs: 10_000 });
-  const tag = typeof r.json?.tag_name === "string" ? r.json.tag_name.replace(/^v/i, "") : null;
+  const r = await http(RELEASE_URL[ch], { timeoutMs: 10_000 });
+  // The version: the tag (v1.7.0), or for the "lts" tag the number in the release name ("Syntaz 1.7.2 LTS").
+  const tag = typeof r.json?.tag_name === "string" && /^v?\d+\.\d+\.\d+$/.test(r.json.tag_name) ? r.json.tag_name.replace(/^v/i, "") : (/(\d+\.\d+\.\d+)/.exec(String(r.json?.name ?? "")) ?? [])[1] ?? null;
   const asset = Array.isArray(r.json?.assets) ? r.json.assets.find((a) => a && a.name === RELEASE_ASSET) : null;
   return r.status === 200 && tag && /^\d+\.\d+\.\d+$/.test(tag) && asset?.browser_download_url ? { version: tag, zip: asset.browser_download_url } : null;
 }

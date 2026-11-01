@@ -38,6 +38,11 @@ test("release ZIPs: Mac gets the Mac app (executable), Windows the .bat (CRLF), 
     assert.ok(windows.find(([n]) => n === "Syntaz AI/setup/windows/launch.ps1")[2]);
     assert.ok(!windows.some(([n]) => n.includes("Syntaz Setup.app/")), "no Mac app for Windows");
     assert.ok(!linux.some(([n]) => n.endsWith(".bat") || n.includes(".app/")));
+    const linuxSetup = linux.find(([n]) => n === "Syntaz AI/Syntaz Setup (Linux).sh");
+    assert.ok(linuxSetup && linuxSetup[1] & 0o100 && !linuxSetup[2], "Linux gets its setup script, executable, with Unix line endings");
+    assert.ok(linux.find(([n]) => n === "Syntaz AI/setup/get-node.sh")[1] & 0o100);
+    assert.ok(mac.find(([n]) => n === "Syntaz AI/setup/get-node.sh"), "the Mac app gets Node.js with it too");
+    assert.ok(!windows.some(([n]) => n.endsWith(".sh")) && !mac.some(([n]) => n.endsWith("(Linux).sh")), "each system gets only its own setup");
     assert.deepEqual(readdirSync(out).sort(), ["Syntaz-Lite.html", "Syntaz-for-Linux.zip", "Syntaz-for-Mac.zip", "Syntaz-for-Windows.zip"], "only the four Syntaz downloads");
     const lite = readFileSync(path.join(out, "Syntaz-Lite.html"), "utf8");
     assert.match(lite, /<title>Syntaz Lite<\/title>/, "Syntaz Lite as its own download");

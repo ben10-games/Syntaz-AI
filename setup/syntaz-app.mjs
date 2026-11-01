@@ -54,6 +54,7 @@ async function state() {
     running: await lib.isRunning(),
     version: lib.version(),
     latest,
+    channel: lib.channel(),
     updateAvailable: !!latest && lib.newer(latest, lib.version()),
     devCopy: lib.isDevCopy(),
     platform: process.platform,
@@ -67,6 +68,8 @@ async function api(route, body) {
   switch (route) {
     case "state":
       return state();
+    case "channel":
+      return { ok: lib.setChannel(body.channel), state: await state() };
     case "check": {
       const r =
         body.provider === "lmstudio" ? await lib.checkLmStudio()

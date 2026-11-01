@@ -10,24 +10,28 @@ Download **[Syntaz-Lite.html](https://github.com/ben10-games/Syntaz-AI/releases/
 
 Syntaz Lite can only chat: it can't read or click on other websites. For that, install the full Syntaz below.
 
-## Get Syntaz (Windows or Mac) — about 5 minutes, once
+## Get Syntaz (Windows, Mac or Linux) — about 5 minutes, once
 
 You need **Google Chrome** and a **Google account**.
 
 1. **Download** the version for your computer:
    - **Windows:** [Syntaz-for-Windows.zip](https://github.com/ben10-games/Syntaz-AI/releases/latest/download/Syntaz-for-Windows.zip)
    - **Mac:** [Syntaz-for-Mac.zip](https://github.com/ben10-games/Syntaz-AI/releases/latest/download/Syntaz-for-Mac.zip)
+   - **Linux:** open a terminal and run `curl -fsSL https://ben10-games.github.io/Syntaz-AI/install.sh | bash` — it downloads Syntaz into `~/Syntaz AI` and opens the Syntaz window (skip to step 3). Or download [Syntaz-for-Linux.zip](https://github.com/ben10-games/Syntaz-AI/releases/latest/download/Syntaz-for-Linux.zip) and run `Syntaz Setup (Linux).sh`.
+   - **LTS (stays the same, only fixes):** the same downloads from the [LTS release](https://github.com/ben10-games/Syntaz-AI/releases/tag/lts).
 
    Unzip it (Windows: right-click → *Extract All*; Mac: double-click) and put the **Syntaz AI** folder where you'll keep it, e.g. *Documents* — Syntaz runs from there.
 2. **Open Syntaz Setup** in that folder:
-   - **Windows:** double-click **`Syntaz Setup (Windows).bat`**. If Windows warns, click *More info* → *Run anyway*. The first time it installs Node.js (what Syntaz runs on) — click *Yes* if Windows asks.
-   - **Mac:** double-click **`Syntaz Setup`**. The first time, macOS says it can't check the app: open **System Settings → Privacy & Security**, scroll down and click **Open Anyway** (Syntaz isn't from the App Store, so Apple hasn't checked it). If Syntaz needs Node.js, it tells you and opens the download page.
+   - **Windows:** double-click **`Syntaz Setup (Windows).bat`**. If Windows warns, click *More info* → *Run anyway*.
+   - **Mac:** double-click **`Syntaz Setup`**. The first time, macOS says it can't check the app: open **System Settings → Privacy & Security**, scroll down and click **Open Anyway** (Syntaz isn't from the App Store, so Apple hasn't checked it). 
 3. **The Syntaz window opens:** click **Set up Syntaz** → **Get a free key from Google** (sign in, click *Create API key*, copy it) → paste it → **Check the key** → **Install Syntaz**. It takes a few minutes; a progress bar shows each step.
 4. **Add Syntaz to Chrome** (the window shows these steps with buttons): open `chrome://extensions`, switch on **Developer mode**, click **Load unpacked** and choose the **`chrome-extension`** folder inside the Syntaz folder. Click the puzzle icon → pin **Syntaz AI**.
 
 **Use it:** click the Syntaz icon in Chrome → the panel opens on the right and connects by itself. Type what you want, or tap **✨ Do it for me**. In the panel's ⚙, turn on **Let Syntaz see the page** so it works on every site.
 
-**The Syntaz AI app** (desktop, Start menu / Applications — with the Syntaz logo) shows whether Syntaz is running (**Start / Stop**), lets you **change the AI or key**, **update** Syntaz when a new version is out, and **uninstall** it. Syntaz starts by itself when your computer starts (you can turn that off during setup). On Windows you can also uninstall from *Settings → Apps → Syntaz AI*.
+Nothing else to install: if the computer has no Node.js (what Syntaz runs on), setup downloads its own copy the first time — the current LTS from nodejs.org, checked against nodejs.org's checksums, into Syntaz's own folder (`%LOCALAPPDATA%\Syntaz\node`, `~/Library/Application Support/Syntaz/node` or `~/.local/share/syntaz/node`). No installer, no admin password.
+
+**The Syntaz AI app** (desktop, Start menu / Applications — with the Syntaz logo) shows whether Syntaz is running (**Start / Stop**), lets you **change the AI or key**, **update** Syntaz when a new version is out, and **uninstall** it. Under **Updates** you choose **Latest** (new features) or **LTS** (long-term support: a stable version that only gets fixes). Syntaz starts by itself when your computer starts (you can turn that off during setup). On Windows you can also uninstall from *Settings → Apps → Syntaz AI*.
 
 **If something's wrong:** "Syntaz isn't running" → open the **Syntaz AI** app and click **Start Syntaz**. "Daily limit used up" → Google's free tier allows a limited number of requests per day (with the model setup picks, Gemini 3.1 Flash-Lite, roughly 100 tasks a day; one task uses about 3–6 requests); it resets the next day. If Syntaz seems to pause for up to a minute, it is waiting for Google's per-minute limit (about 15 requests a minute) and then carries on. After an update, press ↻ on Syntaz AI in `chrome://extensions`.
 
@@ -35,7 +39,7 @@ You need **Google Chrome** and a **Google account**.
 
 **Hugging Face token, step by step** (its token page has many options; Syntaz needs exactly one): in setup click **Open Hugging Face's token page** — it opens the right page with the setting already ticked. Check that **Token type** is **Fine-grained**, and that under **Inference** only **Make calls to Inference Providers** is ticked. Leave every other box off (no repositories, no write access). Name it *Syntaz*, click **Create token** at the bottom, copy it (it starts with `hf_`; Hugging Face shows it only once) and paste it into setup. Inference Providers is pay-as-you-go (PRO accounts get monthly credits).
 
-**Pictures:** ask "draw a cat in space", "make a picture of …" or "generate an image of …" and Syntaz makes it with your own AI, with a **Download** button — when that AI can make pictures: OpenAI (GPT Image), Google Gemini (its image models), xAI (Grok's image model) and Hugging Face (Stable Diffusion through HF Inference). Setup finds the picture model your key can use (`AI_IMAGE_MODEL`, and `AI_IMAGE_API=huggingface` for Hugging Face). Claude, Groq and LM Studio can't make pictures; Syntaz then says so. Pictures usually cost more than messages.
+**Pictures:** ask "draw a cat in space", "make a picture of …" or "generate an image of …" and Syntaz makes it with your own AI, with a **Download** button — when that AI can make pictures: OpenAI (GPT Image), Google Gemini (its image models), xAI (Grok's image model) and Hugging Face (Stable Diffusion through HF Inference). Setup finds the picture model your key can use (`AI_IMAGE_MODEL`, and `AI_IMAGE_API=huggingface` for Hugging Face). Claude, Groq and LM Studio can't make pictures; Syntaz then says so. Pictures usually cost more than messages. **Google Gemini makes pictures only with billing turned on** (its free tier allows none — tested November 2026): turn on billing for your key in Google AI Studio, or use OpenAI, xAI or Hugging Face. The 🎨 button (side panel, web app, Syntaz Lite, website chat) makes the next message a picture.
 
 **Privacy:** with Gemini, what you ask and the page you're on (text, and screenshots when Syntaz looks at the page) go to Google's AI. Syntaz never reads passwords or payment fields. Don't use it on pages with private information you don't want to share with Google. Your key is saved only on your computer (in `.env.local`).
 
@@ -209,15 +213,17 @@ Clicking the Syntaz icon opens a side panel that stays open while you switch tab
 
 ### Publishing a release (for the downloads above)
 
-1. Raise `"version"` in `package.json` (e.g. 1.0.0 → 1.0.1), commit and push.
-2. `npm run release` — makes `dist/Syntaz-for-Windows.zip`, `dist/Syntaz-for-Mac.zip` and `dist/Syntaz-for-Linux.zip` from the committed project (Windows gets only the Windows setup, Mac only the Mac app).
-3. On GitHub: **Releases → Draft a new release** → tag `v1.0.1` (the same number) → drag in the four files in `dist` (`Syntaz-for-Windows.zip`, `Syntaz-for-Mac.zip`, `Syntaz-for-Linux.zip`, `Syntaz-Lite.html`) → **Publish release**.
+1. Raise `"version"` in `package.json` (e.g. 1.7.0 → 1.7.1), commit and push.
+2. `npm run release` — makes `dist/Syntaz-for-Windows.zip`, `dist/Syntaz-for-Mac.zip`, `dist/Syntaz-for-Linux.zip` and `dist/Syntaz-Lite.html` from the committed project (each system gets only its own setup).
+3. On GitHub: **Releases → Draft a new release** → tag `v1.7.1` (the same number) → drag in the four files → **Publish release**.
+
+**LTS** (long-term support): the GitHub release tagged **`lts`** is the LTS line — installs on the LTS channel update only to it. To publish an LTS version (only for fixes to the LTS line): `npm run release:lts` (the same downloads, marked LTS, in `dist/lts`), then edit the release tagged `lts` (create it the first time: tag `lts`), rename it to e.g. **Syntaz 1.7.1 LTS** (the number is read from the name), replace its four files with the ones in `dist/lts`, and save. The website's LTS buttons always point at it.
 
 The README links (`releases/latest/download/...`) always give the newest release, and the **Update** button in friends' Syntaz window finds it by the same names.
 
 ### The website
 
-`website/` is the Syntaz AI website (Home, Features, Download, Chat, Safety, FAQ, What's new): plain HTML, no build step. Its Chat works like Syntaz Lite, in the browser with the visitor's own Gemini key. On every push to `main` that changes it, `.github/workflows/website.yml` publishes it to GitHub Pages (one-time setup: repo **Settings → Pages → Source: GitHub Actions**). Test it with `node --test test/website.test.mjs` (`SYNTAZ_SITE_SHOTS=<folder>` saves screenshots). It isn't part of the release downloads.
+`website/` is the Syntaz AI website (Home, Features, Download, Chat, Safety, FAQ, What's new): plain HTML, no build step. Its Chat is made from Syntaz Lite — edit `lite/Syntaz Lite.html`, then run `npm run site:chat` — and runs in the browser with the visitor's own Gemini key. `website/install.sh` is the one-line Linux installer; `sitemap.xml`, `robots.txt` and each page's description help search engines find the site. On every push to `main` that changes it, `.github/workflows/website.yml` publishes it to GitHub Pages (one-time setup: repo **Settings → Pages → Source: GitHub Actions**). Test it with `node --test test/website.test.mjs` (`SYNTAZ_SITE_SHOTS=<folder>` saves screenshots). It isn't part of the release downloads.
 
 ### Comparing models (benchmark)
 
