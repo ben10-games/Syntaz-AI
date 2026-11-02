@@ -394,13 +394,17 @@
       const first = (JSON.parse(text).data || [])[0] || {};
       if (first.b64_json) return `data:${first.mime_type || "image/png"};base64,${first.b64_json}`;
       if (first.url) {
-        const img = await fetch(first.url, { signal });
-        const blob = await img.blob();
-        return await new Promise((resolve) => {
-          const r = new FileReader();
-          r.onload = () => resolve(r.result);
-          r.readAsDataURL(blob);
-        });
+        try {
+          const blob = await (await fetch(first.url, { signal })).blob();
+          return await new Promise((resolve) => {
+            const r = new FileReader();
+            r.onload = () => resolve(r.result);
+            r.readAsDataURL(blob);
+          });
+        } catch (err) {
+          if (signal && signal.aborted) throw err;
+          return first.url; // the picture's host doesn't allow reading it here: show it from there
+        }
       }
       break;
     }

@@ -1,6 +1,6 @@
-// Syntaz Lite (lite/Syntaz Lite.html) in real Chrome, opened as a local file. Google's Gemini API is a local
-// stand-in: Chrome maps generativelanguage.googleapis.com to it (HTTPS with a throwaway certificate), so the
-// page's real request code, CORS and its Content-Security-Policy all apply.
+// Syntaz Lite (lite/Syntaz Lite.html) in real Chrome, opened as a local file. The AIs are local stand-ins: Chrome maps
+// generativelanguage.googleapis.com (Gemini) and api.groq.com (Groq) to them (HTTPS with a throwaway certificate),
+// so the page's real request code, CORS and its Content-Security-Policy all apply.
 import { after, before, test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -13,38 +13,50 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const CHROME = process.env.SYNTAZ_TEST_CHROME_BIN;
 const GOOD = "AQ.LiteTestKey_abcdefghijklmnopqrstuvwxyz0123";
+const GROQ = "gsk_LiteTestGroqKey_0123456789abcdef";
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 let tmp, server, browser, page;
 const seen = [];
-let next = []; // scripted answers for streamGenerateContent: { status, body } or { chunks: [...] }
+let next = []; // scripted answers for chat: { status, body } or { chunks: [...] }, and for pictures: { image } or { status, body }
 
-const sse = (chunks) => chunks.map((t) => `data: ${JSON.stringify({ candidates: [{ content: { role: "model", parts: [{ text: t }] } }] })}\r\n\r\n`).join("");
+const sse = (chunks) => chunks.map((t) => `data: ${JSON.stringify({ choices: [{ index: 0, delta: { content: t } }] })}\n\n`).join("") + "data: [DONE]\n\n";
+const MODELS = { gemini: [{ id: "models/gemini-3.6-flash" }, { id: "models/gemini-3.1-flash-lite" }, { id: "models/text-embedding-004" }], groq: [{ id: "openai/gpt-oss-120b" }, { id: "llama-3.3-70b-versatile" }] };
 
 before(async () => {
   tmp = mkdtempSync(path.join(os.tmpdir(), "syntaz-lite-test-"));
-  spawnSync("openssl", ["req", "-x509", "-newkey", "rsa:2048", "-nodes", "-keyout", path.join(tmp, "k.pem"), "-out", path.join(tmp, "c.pem"), "-days", "1", "-subj", "/CN=generativelanguage.googleapis.com"], { stdio: "ignore" });
+  spawnSync("openssl", ["req", "-x509", "-newkey", "rsa:2048", "-nodes", "-keyout", path.join(tmp, "k.pem"), "-out", path.join(tmp, "c.pem"), "-days", "1", "-subj", "/CN=stand-in"], { stdio: "ignore" });
   server = https.createServer({ key: readFileSync(path.join(tmp, "k.pem")), cert: readFileSync(path.join(tmp, "c.pem")) }, (req, res) => {
-    const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "content-type,x-goog-api-key", "Access-Control-Allow-Methods": "GET,POST" };
+    const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "content-type,authorization,x-goog-api-key", "Access-Control-Allow-Methods": "GET,POST" };
     if (req.method === "OPTIONS") return res.writeHead(204, cors).end();
     let body = "";
     req.on("data", (d) => (body += d));
     req.on("end", () => {
-      seen.push({ url: req.url, key: req.headers["x-goog-api-key"], body });
-      if (req.headers["x-goog-api-key"] !== GOOD) return res.writeHead(400, { ...cors, "Content-Type": "application/json" }).end(JSON.stringify({ error: { message: "API key not valid. Please pass a valid API key." } }));
-      if (req.method === "GET") return res.writeHead(200, { ...cors, "Content-Type": "application/json" }).end(JSON.stringify({ models: [] }));
+      const host = req.headers.host.split(":")[0];
+      const who = host === "api.groq.com" ? "groq" : "gemini";
+      const auth = req.headers.authorization?.replace(/^Bearer /, "") || req.headers["x-goog-api-key"];
+      seen.push({ host, url: req.url, auth, body });
+      const reply = (status, data, type = "application/json") => res.writeHead(status, { ...cors, "Content-Type": type }).end(typeof data === "string" ? data : JSON.stringify(data));
+      if (auth !== (who === "groq" ? GROQ : GOOD)) return reply(who === "groq" ? 401 : 400, { error: { message: "API key not valid. Please pass a valid API key." } });
+      if (req.url.endsWith("/models")) return reply(200, { data: MODELS[who] });
+      if (req.url.includes(":generateContent")) {
+        const n = next.shift() ?? {};
+        if (n.status) return reply(n.status, n.body);
+        return reply(200, { candidates: [{ content: { parts: [{ inlineData: { mimeType: "image/png", data: n.image } }] } }] });
+      }
+      if (/Reply with: OK/.test(body)) return reply(200, sse(["OK"]), "text/event-stream");
       const n = next.shift() ?? { chunks: ["Hello from the stand-in."] };
-      if (n.status) return res.writeHead(n.status, { ...cors, "Content-Type": "application/json" }).end(n.body);
-      res.writeHead(200, { ...cors, "Content-Type": "text/event-stream" });
-      res.end(sse(n.chunks));
+      if (n.status) return reply(n.status, n.body);
+      reply(200, sse(n.chunks), "text/event-stream");
     });
   });
   await new Promise((r) => server.listen(0, "127.0.0.1", r));
   const { default: puppeteer } = await import("puppeteer-core");
+  const port = server.address().port;
   browser = await puppeteer.launch({
     executablePath: CHROME,
     headless: true,
-    args: ["--no-first-run", `--host-resolver-rules=MAP generativelanguage.googleapis.com 127.0.0.1:${server.address().port}`, "--ignore-certificate-errors", `--user-data-dir=${path.join(tmp, "profile")}`],
+    args: ["--no-first-run", `--host-resolver-rules=MAP generativelanguage.googleapis.com 127.0.0.1:${port},MAP api.groq.com 127.0.0.1:${port}`, "--ignore-certificate-errors", `--user-data-dir=${path.join(tmp, "profile")}`],
   });
   page = await browser.newPage();
   await page.setViewport({ width: 1000, height: 800 });
@@ -78,9 +90,13 @@ async function say(text) {
 }
 const idle = () => waitFor(() => page.$eval("#stop", (b) => b.hidden));
 
-test("first open: asks for a key, checks it with Google, remembers it", async () => {
+const chatBodies = (host = "generativelanguage.googleapis.com") => seen.filter((x) => x.host === host && x.url.endsWith("/chat/completions") && !/Reply with: OK/.test(x.body)).map((x) => JSON.parse(x.body));
+
+test("first open: choose an AI (Gemini first, it's free), paste the key, it's checked and remembered", async () => {
   await page.goto(lite());
   assert.equal(await visible("#setup"), true);
+  assert.deepEqual(await page.$$eval("#provider option", (o) => o.map((x) => x.value)), ["gemini", "openai", "anthropic", "xai", "groq", "huggingface", "custom"]);
+  assert.match(await page.$eval("#keyLink", (a) => a.href), /aistudio\.google\.com/);
   await page.type("#key", "nope");
   await page.click("#saveKey");
   await waitFor(async () => /doesn't look like an API key/.test(await page.$eval("#keyMsg", (e) => e.textContent)));
@@ -92,8 +108,12 @@ test("first open: asks for a key, checks it with Google, remembers it", async ()
   await page.type("#key", GOOD);
   await page.click("#saveKey");
   await waitFor(() => visible("#app"));
+  await waitFor(async () => (await page.$$eval("#model option", (o) => o.length)) === 2);
+  assert.deepEqual(await page.$$eval("#model option", (o) => o.map((x) => x.textContent)), ["Flash-Lite · fast, most free uses", "Flash · smarter, ~20 a day"], "chat models only (the free-friendly one first), with friendly names");
+  await page.select("#model", "gemini-3.1-flash-lite");
   await page.reload();
   await waitFor(() => visible("#app")); // remembered
+  assert.equal(await page.$eval("#model", (s) => s.value), "gemini-3.1-flash-lite");
 });
 
 test("answers stream in, Markdown is shown, and the AI's text can't run code in the page", async () => {
@@ -107,14 +127,15 @@ test("answers stream in, Markdown is shown, and the AI's text can't run code in 
   assert.match(html, /<ol><li value="5">fifth<\/li><li value="6">sixth<\/li><\/ol>/, "numbered lists keep their numbers");
   assert.match(html, /&lt;img src=x onerror=/, "HTML from the AI is shown as text");
   assert.equal(await page.evaluate(() => window.hacked), undefined);
-  const req = JSON.parse(seen.filter((s) => s.url.includes("streamGenerateContent")).at(-1).body);
-  assert.equal(req.contents.at(-1).parts[0].text, "hi");
-  assert.match(req.systemInstruction.parts[0].text, /You are Syntaz/);
-  assert.deepEqual(req.generationConfig.thinkingConfig, { thinkingBudget: 0 }, "Flash-Lite: thinking off (fast)");
-  assert.match(seen.at(-1).url, /gemini-3\.1-flash-lite:streamGenerateContent\?alt=sse/);
+  const req = chatBodies().at(-1);
+  assert.equal(req.model, "gemini-3.1-flash-lite");
+  assert.equal(req.messages.at(-1).content, "hi");
+  assert.match(req.messages[0].content, /You are Syntaz/);
+  assert.equal(req.reasoning_effort, "none", "Flash-Lite: thinking off (fast)");
+  assert.equal(seen.at(-1).auth, GOOD);
 });
 
-test("a picture goes to Gemini (made smaller, JPEG) and shows in the chat", async () => {
+test("a picture goes to the AI (made smaller, JPEG) and shows in the chat", async () => {
   const png = path.join(tmp, "pic.png");
   // A real 2000x1000 PNG, made by Chrome itself.
   const dataUrl = await page.evaluate(() => { const c = document.createElement("canvas"); c.width = 2000; c.height = 1000; c.getContext("2d").fillRect(0, 0, 50, 50); return c.toDataURL("image/png"); });
@@ -125,22 +146,34 @@ test("a picture goes to Gemini (made smaller, JPEG) and shows in the chat", asyn
   next.push({ chunks: ["A black square."] });
   await page.click("#send");
   await idle();
-  const req = JSON.parse(seen.filter((s) => s.url.includes("streamGenerateContent")).at(-1).body);
-  const parts = req.contents.at(-1).parts;
+  const parts = chatBodies().at(-1).messages.at(-1).content;
   assert.equal(parts[0].text, "What is in this picture?");
-  assert.equal(parts[1].inline_data.mime_type, "image/jpeg");
-  const size = await page.evaluate((d) => new Promise((r) => { const i = new Image(); i.onload = () => r([i.width, i.height]); i.src = `data:image/jpeg;base64,${d}`; }), parts[1].inline_data.data);
+  assert.match(parts[1].image_url.url, /^data:image\/jpeg;base64,/);
+  const size = await page.evaluate((u) => new Promise((r) => { const i = new Image(); i.onload = () => r([i.width, i.height]); i.src = u; }), parts[1].image_url.url);
   assert.deepEqual(size, [1600, 800]);
   assert.equal(await page.$$eval(".msg.user img", (i) => i.length), 1);
 });
 
-test("free-tier limits: Syntaz waits when Google asks, and says plainly when today's limit is used up", async () => {
-  next.push({ status: 429, body: JSON.stringify({ error: { message: "Resource exhausted", details: [{ retryDelay: "1s" }] } }) }, { chunks: ["After waiting."] });
+test("making pictures with 🎨, and a plain answer when Gemini's free tier makes none", async () => {
+  const dot = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+  next.push({ image: dot });
+  await page.click("#picture");
+  await say("a green dot");
+  await idle();
+  assert.equal(await page.$eval(".msg.ai:last-child img.made", (i) => i.src), `data:image/png;base64,${dot}`);
+  assert.match(seen.at(-1).url, /gemini-3\.1-flash-image:generateContent/);
+  next.push({ status: 429, body: JSON.stringify({ error: { message: "Quota exceeded for metric generate_content_free_tier_requests, limit: 0" } }) });
+  await say("draw a cat");
+  await idle();
+  assert.match(await lastAnswer(), /free tier/i);
+});
+
+test("free-tier limits: Syntaz waits when the AI asks, and says plainly when today's limit is used up", async () => {
+  next.push({ status: 429, body: JSON.stringify([{ error: { message: "Resource exhausted", details: [{ retryDelay: "1s" }] } }]) }, { chunks: ["After waiting."] });
   await say("again");
-  await waitFor(async () => /wait 1 seconds/.test(await lastAnswer()));
   await idle();
   assert.match(await lastAnswer(), /After waiting\./);
-  next.push({ status: 429, body: JSON.stringify({ error: { message: "Quota exceeded, GenerateRequestsPerDayPerProjectPerModel-FreeTier" } }) });
+  next.push({ status: 429, body: JSON.stringify([{ error: { message: "Quota exceeded, GenerateRequestsPerDayPerProjectPerModel-FreeTier" } }]) });
   await say("and again");
   await idle();
   assert.match(await lastAnswer(), /Today's free limit for this model is used up/);
@@ -163,7 +196,34 @@ test("chats are saved in the browser (without the pictures) and can be reopened 
   assert.equal(await page.$$eval("#chatList .open", (b) => b.length), 0);
 });
 
-test("the page talks to no one but Google (Content-Security-Policy)", async () => {
+test("another AI: switch to Groq in Key & settings, and the chat goes to Groq with its key", async () => {
+  await page.click("#settings");
+  await waitFor(() => visible("#setup"));
+  await page.select("#provider", "groq");
+  assert.match(await page.$eval("#keyLink", (a) => a.href), /console\.groq\.com/);
+  await page.type("#key", GROQ);
+  await page.click("#saveKey");
+  await waitFor(() => visible("#app"));
+  assert.equal(await page.$eval("#model", (s) => s.value), "openai/gpt-oss-120b", "Syntaz picks the best model for Groq");
+  next.push({ chunks: ["Hi from Groq."] });
+  await say("hello groq");
+  await idle();
+  assert.match(await lastAnswer(), /Hi from Groq\./);
+  const last = seen.filter((x) => x.host === "api.groq.com").at(-1);
+  assert.equal(last.auth, GROQ);
+  assert.equal(JSON.parse(last.body).model, "openai/gpt-oss-120b");
+  assert.match(await page.evaluate(() => localStorage.getItem("syntaz-lite:ai")), /"provider":"groq"/);
+});
+
+test("an older Syntaz Lite's saved Gemini key keeps working", async () => {
+  await page.evaluate((k) => { localStorage.clear(); localStorage.setItem("syntaz-lite:key", JSON.stringify(k)); }, GOOD);
+  await page.reload();
+  await waitFor(() => visible("#app"));
+  assert.match(await page.evaluate(() => localStorage.getItem("syntaz-lite:ai")), /"provider":"gemini"/);
+  assert.equal(await page.evaluate(() => localStorage.getItem("syntaz-lite:key")), null);
+});
+
+test("the page talks to no one but the AIs (Content-Security-Policy)", async () => {
   const blocked = await page.evaluate(() => fetch("https://example.com/").then(() => "sent", () => "blocked"));
   assert.equal(blocked, "blocked");
 });

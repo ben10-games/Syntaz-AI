@@ -4,18 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Chat with Syntaz AI – free AI chat in your browser</title>
-<meta name="description" content="Chat with Syntaz AI right in your browser: answers, help with homework photos, writing, quizzes and pictures. Free with your own Gemini key, nothing to install.">
+<meta name="description" content="Chat with Syntaz AI right in your browser: answers, help with homework photos, writing, quizzes and pictures. Free with a Google Gemini key (or use OpenAI, Claude, Grok, Groq or Hugging Face), nothing to install.">
 <link rel="canonical" href="https://ben10-games.github.io/Syntaz-AI/chat.html">
 <meta property="og:title" content="Chat with Syntaz AI">
 <meta property="og:description" content="Free AI chat in your browser, with pictures. Nothing to install.">
 <meta property="og:image" content="https://ben10-games.github.io/Syntaz-AI/og.png">
 <meta property="og:url" content="https://ben10-games.github.io/Syntaz-AI/chat.html">
 <!-- Made from Syntaz Lite by scripts/make-site-chat.py: edit lite/Syntaz Lite.html, then run that script.
-     Syntaz Lite: Syntaz in one file. Open it in any browser, paste a free Gemini key, and chat (pictures too).
-     Nothing to install. Talks only to Google's Gemini API, directly from this page. The full Syntaz (with the
-     Chrome extension) can also act on websites; this file can't. -->
+     Syntaz Lite: Syntaz in one file. Open it in any browser, choose an AI (Google Gemini is free; also OpenAI,
+     Claude, Grok, Groq, Hugging Face or your own AI server), paste its key, and chat (pictures too). Nothing to
+     install. Talks only to the AI you chose, directly from this page. The Syntaz Chrome extension can also act on
+     websites; this file can't. -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2032%2032%22%3E%3Cdefs%3E%3ClinearGradient%20id=%22b%22%20x1=%220%22%20y1=%220%22%20x2=%220%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%231d2a24%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%23080b0a%22/%3E%3C/linearGradient%3E%3ClinearGradient%20id=%22s%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%23d9fb5b%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%232ee6b0%22/%3E%3C/linearGradient%3E%3ClinearGradient%20id=%22h%22%20x1=%220%22%20y1=%220%22%20x2=%220%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%23fff%22%20stop-opacity=%22.28%22/%3E%3Cstop%20offset=%22.5%22%20stop-color=%22%23fff%22%20stop-opacity=%220%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width=%2232%22%20height=%2232%22%20rx=%228%22%20fill=%22url%28%23b%29%22/%3E%3Crect%20x=%22.5%22%20y=%22.5%22%20width=%2231%22%20height=%2231%22%20rx=%227.5%22%20fill=%22url%28%23h%29%22%20stroke=%22%23fff%22%20stroke-opacity=%22.16%22/%3E%3Cpath%20d=%22M20.6%2011.2c-.9-1.5-2.6-2.4-4.7-2.4-2.8%200-4.8%201.5-4.8%203.6%200%204.6%2010%202.7%2010%207.6%200%202.2-2.1%203.8-5%203.8-2.3%200-4.2-1-5.1-2.6%22%20fill=%22none%22%20stroke=%22url%28%23s%29%22%20stroke-width=%223.2%22%20stroke-linecap=%22round%22/%3E%3Cpath%20fill=%22%23d9fb5b%22%20d=%22M25%204.6l.7%202%202%20.7-2%20.7-.7%202-.7-2-2-.7%202-.7z%22/%3E%3C/svg%3E">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; connect-src https://generativelanguage.googleapis.com; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob: https:; connect-src https://generativelanguage.googleapis.com https://api.openai.com https://api.anthropic.com https://api.x.ai https://api.groq.com https://router.huggingface.co http://127.0.0.1:* http://localhost:*; base-uri 'none'; form-action 'none'">
 <style>
   /* Syntaz's look, "Volt liquid glass" (same as the Syntaz app and website): lime and mint on near-black, glass panels
      over soft moving glows. Light when the computer uses light mode, or with the ☀/☾ button. */
@@ -150,6 +151,9 @@
   #saveKey { width: 100%; padding: 11px; font-size: 15.5px; margin-top: 6px; }
   #keyMsg { display: block; margin-top: 8px; min-height: 1.2em; }
   #keyMsg.bad { color: var(--bad); }
+  .pick { display: grid; gap: 6px; margin: 16px 0 0; font-size: 14px; color: var(--muted); }
+  .pick select, #baseRow input { font: inherit; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; width: 100%; }
+  #baseRow { margin: 4px 0 8px; }
   .check { display: flex; gap: 8px; align-items: center; color: var(--muted); font-size: 14px; }
   .check input { accent-color: var(--accent); width: 16px; height: 16px; }
   .privacy { margin-top: 18px; padding: 12px 14px; border-radius: 12px; background: var(--raise); color: var(--muted); font-size: 13px; }
@@ -200,21 +204,23 @@
   <section class="setup">
     <img class="logo" alt="" src="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2032%2032%22%3E%3Cdefs%3E%3ClinearGradient%20id=%22b%22%20x1=%220%22%20y1=%220%22%20x2=%220%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%231d2a24%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%23080b0a%22/%3E%3C/linearGradient%3E%3ClinearGradient%20id=%22s%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%23d9fb5b%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%232ee6b0%22/%3E%3C/linearGradient%3E%3ClinearGradient%20id=%22h%22%20x1=%220%22%20y1=%220%22%20x2=%220%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%23fff%22%20stop-opacity=%22.28%22/%3E%3Cstop%20offset=%22.5%22%20stop-color=%22%23fff%22%20stop-opacity=%220%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width=%2232%22%20height=%2232%22%20rx=%228%22%20fill=%22url%28%23b%29%22/%3E%3Crect%20x=%22.5%22%20y=%22.5%22%20width=%2231%22%20height=%2231%22%20rx=%227.5%22%20fill=%22url%28%23h%29%22%20stroke=%22%23fff%22%20stroke-opacity=%22.16%22/%3E%3Cpath%20d=%22M20.6%2011.2c-.9-1.5-2.6-2.4-4.7-2.4-2.8%200-4.8%201.5-4.8%203.6%200%204.6%2010%202.7%2010%207.6%200%202.2-2.1%203.8-5%203.8-2.3%200-4.2-1-5.1-2.6%22%20fill=%22none%22%20stroke=%22url%28%23s%29%22%20stroke-width=%223.2%22%20stroke-linecap=%22round%22/%3E%3Cpath%20fill=%22%23d9fb5b%22%20d=%22M25%204.6l.7%202%202%20.7-2%20.7-.7%202-.7-2-2-.7%202-.7z%22/%3E%3C/svg%3E">
     <h1>Chat with Syntaz AI</h1>
-    <p class="note">Chat with Syntaz right here — nothing to install. It runs on Google's free Gemini AI, so you need a free key once:</p>
-    <ol class="steps">
-      <li><span class="n">1</span><div><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer"><b>Open Google AI Studio</b></a> and sign in with Google.</div></li>
-      <li><span class="n">2</span><div>Click <b>Create API key</b>, then <b>Copy</b>.</div></li>
+    <p class="note">Chat with Syntaz right here — nothing to install. Choose an AI and paste its key once. Google Gemini is free; the others bill your own account.</p>
+    <label class="pick">AI <select id="provider"></select></label>
+    <ol class="steps" id="keySteps">
+      <li><span class="n">1</span><div><a id="keyLink" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer"><b id="keyLinkText">Open Google AI Studio</b></a> and sign in.</div></li>
+      <li><span class="n">2</span><div><span id="keyMake">Click <b>Create API key</b>, then <b>Copy</b>.</span></div></li>
       <li><span class="n">3</span><div>Paste it here:</div></li>
     </ol>
+    <div id="baseRow" hidden><input type="url" id="base" placeholder="http://127.0.0.1:1234/v1" spellcheck="false" aria-label="Address of your AI server"></div>
     <div class="keyrow">
-      <input type="password" id="key" placeholder="Your Gemini API key" autocomplete="off" spellcheck="false" aria-label="Gemini API key">
+      <input type="password" id="key" placeholder="Your API key" autocomplete="off" spellcheck="false" aria-label="API key">
       <button id="pasteKey" title="Paste from the clipboard">Paste</button>
       <button class="icon" id="showKey" title="Show or hide the key" aria-label="Show or hide the key"><svg class="i" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
     </div>
     <label class="check"><input type="checkbox" id="remember" checked> Remember the key in this browser</label>
     <button class="primary" id="saveKey">Start chatting</button>
     <span id="keyMsg" class="note" role="status"></span>
-    <div class="privacy">What you write and the pictures you add go to Google's Gemini AI. Your key stays in this browser. On a shared computer, untick “Remember”.</div>
+    <div class="privacy">What you write and the pictures you add go to the AI you chose, straight from this page. Your key stays in this browser. On a shared computer, untick “Remember”.</div>
     <p class="note" id="setupCancelRow" hidden style="margin-top:14px"><button class="link" id="setupCancel">← Back to the chat</button> &nbsp;·&nbsp; <button class="link" id="forget">Forget my key</button> &nbsp;·&nbsp; <button class="link" id="theme">Switch light/dark</button></p>
   </section>
 </div>
@@ -244,10 +250,7 @@
           <button class="icon" id="attach" title="Add a picture or text file" aria-label="Add a picture or text file"><svg class="i" viewBox="0 0 24 24"><path d="M21.44 11.05 12.25 20.24a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
           <button class="icon" id="picture" title="Make a picture" aria-label="Make a picture" aria-pressed="false"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-4.5-4.5L6 21"/><path d="M18 2v4M16 4h4"/></svg></button>
           <input type="file" id="file" multiple accept="image/*,.txt,.md,.csv,.json,.html,.css,.js,.py,.java,.c,.cpp,.ts" hidden>
-          <select id="model" title="Which Gemini model" aria-label="Model">
-            <option value="gemini-3.1-flash-lite">Flash-Lite · fast, most free uses</option>
-            <option value="gemini-3.6-flash">Flash · smarter, ~20 a day</option>
-          </select>
+          <select id="model" title="Which model" aria-label="Model"></select>
           <span class="sp"></span>
           <button class="primary" id="send" title="Send (Enter)" aria-label="Send"><svg class="i" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
           <button id="stop" title="Stop" aria-label="Stop" hidden><svg class="i" viewBox="0 0 24 24" style="fill:currentColor;stroke:none"><rect x="6" y="6" width="12" height="12" rx="2"/></svg></button>
@@ -258,9 +261,428 @@
   </main>
 </div>
 
+<script>/* ai.js: copied from chrome-extension/ai.js by scripts/sync-ai.py (edit it there) */
+// Syntaz's AI connector: talks to the user's chosen AI straight from the browser (no server), with the user's own
+// key. Used by the Chrome extension, Syntaz Lite, the website chat and the desktop app (the same file; Lite and the
+// website chat get a copy inside them, made by scripts/sync-ai.py).
+//
+// Messages use one neutral shape: { role: "system"|"user"|"assistant"|"tool", content: string | parts,
+// toolCalls?: [{ id, name, args }], toolCallId? } with parts [{ type: "text", text } | { type: "image", url: "data:…" }].
+// Most providers speak the OpenAI chat format; Anthropic (Claude) uses its Messages API (browser access is allowed
+// with the "anthropic-dangerous-direct-browser-access" header; the key is the user's own and stays in this browser).
+"use strict";
+(function (root) {
+  const PROVIDERS = {
+    gemini: { name: "Google Gemini", free: true, base: "https://generativelanguage.googleapis.com/v1beta/openai", keyPage: "https://aistudio.google.com/apikey", keyHint: "AIza… or AQ.…", pictures: "gemini", models: ["gemini-3.1-flash-lite", "gemini-3.6-flash"] },
+    openai: { name: "OpenAI", base: "https://api.openai.com/v1", keyPage: "https://platform.openai.com/api-keys", keyHint: "sk-…", pictures: "openai" },
+    anthropic: { name: "Anthropic (Claude)", base: "https://api.anthropic.com/v1", keyPage: "https://platform.claude.com/settings/keys", keyHint: "sk-ant-…", pictures: null, models: ["claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5"] },
+    xai: { name: "xAI (Grok)", base: "https://api.x.ai/v1", keyPage: "https://console.x.ai/", keyHint: "xai-…", pictures: "openai" },
+    groq: { name: "Groq", base: "https://api.groq.com/openai/v1", keyPage: "https://console.groq.com/keys", keyHint: "gsk_…", pictures: null, prefer: ["openai/gpt-oss-120b"] },
+    huggingface: { name: "Hugging Face", base: "https://router.huggingface.co/v1", keyPage: "https://huggingface.co/settings/tokens/new?ownUserPermissions=inference.serverless.write&tokenType=fineGrained", keyHint: "hf_…", pictures: "huggingface", prefer: ["openai/gpt-oss-120b"] },
+    custom: { name: "My own AI server (LM Studio, Ollama, …)", base: "http://127.0.0.1:1234/v1", keyPage: "", keyHint: "(usually none)", pictures: null, custom: true },
+  };
+  const NOT_CHAT = /embed|whisper|tts|dall-e|moderation|rerank|transcribe|image|imagine|imagen|audio|realtime|search|vision-preview|computer-use|guard|playai|orpheus|distil|veo|lyria|aqa|learnlm|gemma-3n/i;
+  // Claude models that accept server-side refusal fallbacks ("default" picks the fallback by refusal category).
+  const CLAUDE_FALLBACK = new Set(["claude-fable-5-1", "claude-opus-5-5", "claude-opus-5", "claude-sonnet-5-5"]);
+  const HF_IMAGE_MODEL = "stabilityai/stable-diffusion-3-medium-diffusers";
+  const GEMINI_PICTURE_MODELS = ["gemini-3.1-flash-image", "gemini-2.5-flash-image"];
+
+  class AiError extends Error {
+    constructor(message, { status = 0, key = false, retryAfter = 0 } = {}) {
+      super(message);
+      this.status = status;
+      this.key = key;
+      this.retryAfter = retryAfter;
+    }
+  }
+
+  const providerOf = (cfg) => PROVIDERS[cfg.provider] || PROVIDERS.gemini;
+  const baseOf = (cfg) => String(cfg.base || providerOf(cfg).base).replace(/\/+$/, "");
+  const isOpenAiCom = (cfg) => /\/\/api\.openai\.com\//.test(baseOf(cfg) + "/");
+
+  function headers(cfg, json = true) {
+    const h = json ? { "Content-Type": "application/json" } : {};
+    if (cfg.provider === "anthropic") {
+      return { ...h, "x-api-key": cfg.key, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" };
+    }
+    if (cfg.key) h.Authorization = `Bearer ${cfg.key}`;
+    return h;
+  }
+
+  /** A provider's error as plain words the user can act on. */
+  function explain(cfg, status, body) {
+    const name = providerOf(cfg).name;
+    let detail = "";
+    try {
+      const j = JSON.parse(body);
+      detail = (j.error && (j.error.message || j.error)) || j.message || "";
+      if (Array.isArray(j) && j[0] && j[0].error) detail = j[0].error.message;
+    } catch {
+      detail = String(body || "").slice(0, 200);
+    }
+    detail = String(detail);
+    if (status === 0) return new AiError(cfg.provider === "custom" ? `Can't reach your AI server at ${baseOf(cfg)}. Is it running (LM Studio → Developer → Start Server)?` : `Can't reach ${name}. Check your internet connection.`);
+    if (status === 401 || status === 403 || (status === 400 && /api.?key|invalid.*(key|token|credentials)|incorrect api key/i.test(detail))) return new AiError(`${name} says your key doesn't work. Paste the whole key again in Settings (⚙).`, { status, key: true });
+    if (status === 402 || /insufficient_quota|credit balance|exceeded your current quota|billing|spending limit|payment required/i.test(detail)) {
+      if (/free_tier|FreeTier|limit: 0/.test(detail)) return new AiError(`${name}'s free tier doesn't include this. Turn on billing for your key, or choose another model or AI.`, { status });
+      return new AiError(`Your ${name} account has no credit left. Add credit or a payment method in your ${name} account, then try again.`, { status });
+    }
+    if (status === 429 && /per ?day|PerDay|daily/i.test(detail)) return new AiError(`Today's free limit for this model is used up. Choose another model (⚙) or try again tomorrow.`, { status });
+    if (status === 429) {
+      const wait = Number((/"retryDelay"\s*:\s*"(\d+)/.exec(body) || [])[1] || 0);
+      return new AiError(`${name} says: too many requests right now. Wait a moment and try again.`, { status, retryAfter: wait });
+    }
+    if (status === 404) return new AiError(`${name} doesn't know this model. Choose another one in Settings (⚙).`, { status });
+    if (status === 413 || /context|too long|maximum.*tokens/i.test(detail)) return new AiError(`The conversation is too long for this model. Start a new chat.`, { status });
+    if (status >= 500) return new AiError(`${name} is having problems right now (HTTP ${status}). Try again in a moment.`, { status });
+    return new AiError(`${name}: ${detail || `HTTP ${status}`}`.slice(0, 300), { status });
+  }
+
+  async function request(cfg, path, { method = "POST", body, signal, raw = false } = {}) {
+    let res;
+    try {
+      res = await fetch(`${baseOf(cfg)}${path}`, { method, headers: headers(cfg, body !== undefined), body: body === undefined ? undefined : JSON.stringify(body), signal });
+    } catch (err) {
+      if (signal && signal.aborted) throw err;
+      throw explain(cfg, 0, "");
+    }
+    if (raw) return res;
+    const text = await res.text();
+    if (!res.ok) throw explain(cfg, res.status, text);
+    try {
+      return JSON.parse(text);
+    } catch {
+      throw new AiError(`${providerOf(cfg).name} sent an answer Syntaz couldn't read.`);
+    }
+  }
+
+  // ---------------------------------------------------------------------------------------------------------------
+  // Models and keys
+  // ---------------------------------------------------------------------------------------------------------------
+  const released = (m) => (typeof m.created === "number" ? m.created : Date.parse(m.created_at || "") / 1000 || 0);
+  const version = (id) => Number((/(\d+(?:\.\d+)?)/.exec(id) || [])[1] || 0);
+
+  /** Chat models this key may use, best first. */
+  async function listModels(cfg, signal) {
+    const p = providerOf(cfg);
+    const data = await request(cfg, cfg.provider === "anthropic" ? "/models?limit=100" : "/models", { method: "GET", signal });
+    let ids = (data.data || [])
+      .filter((m) => m && typeof m.id === "string" && !m.deprecated_at)
+      .sort((a, b) => released(b) - released(a) || version(b.id) - version(a.id))
+      .map((m) => m.id.replace(/^models\//, ""))
+      .filter((id) => !NOT_CHAT.test(id) && !(cfg.provider === "gemini" && !/^gemini-/.test(id)) && !(cfg.provider === "openai" && !/^(gpt-|o\d|chatgpt-)/.test(id)));
+    const first = (p.models || p.prefer || []).filter((m) => ids.includes(m));
+    ids = [...first, ...ids.filter((m) => !first.includes(m))];
+    return ids;
+  }
+
+  /** Checks a key by listing its models and asking the first one a tiny question. */
+  async function checkKey(cfg, signal) {
+    const models = await listModels(cfg, signal);
+    if (!models.length) throw new AiError(`${providerOf(cfg).name} offers no chat models for this key.`);
+    const model = models.includes(cfg.model) ? cfg.model : models[0];
+    await chat({ ...cfg, model }, { messages: [{ role: "user", content: "Reply with: OK" }], maxTokens: 1024, signal });
+    return { models: models.slice(0, 30), model };
+  }
+
+  // ---------------------------------------------------------------------------------------------------------------
+  // Chat (streamed), with tools (for Syntaz's browser actions)
+  // ---------------------------------------------------------------------------------------------------------------
+  const asText = (content) => (typeof content === "string" ? content : (content || []).filter((p) => p.type === "text").map((p) => p.text).join("\n"));
+
+  function toOpenAi(messages) {
+    return messages.map((m) => {
+      if (m.role === "tool") return { role: "tool", tool_call_id: m.toolCallId, content: asText(m.content) || " " };
+      if (m.role === "assistant") {
+        return { role: "assistant", content: asText(m.content) || (m.toolCalls && m.toolCalls.length ? null : " "), ...(m.toolCalls && m.toolCalls.length ? { tool_calls: m.toolCalls.map((c) => ({ id: c.id, type: "function", function: { name: c.name, arguments: JSON.stringify(c.args || {}) } })) } : {}) };
+      }
+      if (typeof m.content === "string") return { role: m.role, content: m.content };
+      return { role: m.role, content: m.content.map((p) => (p.type === "image" ? { type: "image_url", image_url: { url: p.url } } : { type: "text", text: p.text })) };
+    });
+  }
+
+  function toAnthropic(messages) {
+    const system = messages.filter((m) => m.role === "system").map((m) => asText(m.content)).join("\n\n");
+    const out = [];
+    const push = (role, blocks) => {
+      const last = out[out.length - 1];
+      if (last && last.role === role) last.content.push(...blocks);
+      else out.push({ role, content: blocks });
+    };
+    for (const m of messages) {
+      if (m.role === "system") continue;
+      if (m.role === "tool") {
+        const parts = typeof m.content === "string" ? [{ type: "text", text: m.content || " " }] : m.content.map(imageOrText);
+        push("user", [{ type: "tool_result", tool_use_id: m.toolCallId, content: parts }]);
+      } else if (m.role === "assistant") {
+        const blocks = [];
+        const t = asText(m.content);
+        if (t) blocks.push({ type: "text", text: t });
+        for (const c of m.toolCalls || []) blocks.push({ type: "tool_use", id: c.id, name: c.name, input: c.args || {} });
+        push("assistant", blocks.length ? blocks : [{ type: "text", text: " " }]);
+      } else {
+        push("user", typeof m.content === "string" ? [{ type: "text", text: m.content || " " }] : m.content.map(imageOrText));
+      }
+    }
+    return { system, messages: out };
+  }
+  function imageOrText(p) {
+    if (p.type !== "image") return { type: "text", text: p.text || " " };
+    const m = /^data:(image\/(?:png|jpeg|gif|webp));base64,(.+)$/.exec(p.url);
+    return m ? { type: "image", source: { type: "base64", media_type: m[1], data: m[2] } } : { type: "image", source: { type: "url", url: p.url } };
+  }
+
+  // Settings some models reject (OpenAI's reasoning models: temperature; max_tokens is max_completion_tokens there).
+  const rejected = new Map();
+  const UNSUPPORTED = /unsupported|not supported|does not support|isn't supported|only the default|unrecognized|unknown (?:parameter|field)|not allowed/i;
+
+  async function* sse(res) {
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = "";
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const events = buf.split(/\r?\n\r?\n/);
+      buf = events.pop();
+      for (const ev of events) {
+        const data = ev.split(/\r?\n/).filter((l) => l.startsWith("data:")).map((l) => l.slice(5).trim()).join("");
+        if (!data || data === "[DONE]") continue;
+        try {
+          yield JSON.parse(data);
+        } catch {
+          /* a broken line: skip */
+        }
+      }
+    }
+  }
+
+  /**
+   * One answer from the model. Streams text to onText; returns { text, toolCalls, stop }.
+   * tools: [{ name, description, parameters (JSON Schema) }].
+   */
+  async function chat(cfg, { messages, tools = null, onText = null, signal, maxTokens = 4096 }) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        return cfg.provider === "anthropic" ? await chatAnthropic(cfg, { messages, tools, onText, signal, maxTokens }) : await chatOpenAi(cfg, { messages, tools, onText, signal, maxTokens });
+      } catch (err) {
+        // Free tiers allow a few requests a minute: wait as long as the provider asks (up to a minute), once.
+        if (attempt === 0 && err instanceof AiError && err.status === 429 && err.retryAfter > 0 && err.retryAfter <= 60) {
+          await new Promise((resolve, reject) => {
+            const t = setTimeout(resolve, err.retryAfter * 1000 + 500);
+            if (signal) signal.addEventListener("abort", () => (clearTimeout(t), reject(signal.reason || new DOMException("Aborted", "AbortError"))), { once: true });
+          });
+          continue;
+        }
+        throw err;
+      }
+    }
+  }
+
+  async function chatOpenAi(cfg, { messages, tools, onText, signal, maxTokens }) {
+    const key = `${baseOf(cfg)}|${cfg.model}`;
+    for (let attempt = 0; ; attempt++) {
+      const skip = rejected.get(key) || new Set();
+      const body = { model: cfg.model, messages: toOpenAi(messages), stream: true };
+      if (!skip.has("max_tokens")) body[isOpenAiCom(cfg) ? "max_completion_tokens" : "max_tokens"] = maxTokens;
+      if (tools && tools.length) body.tools = tools.map((t) => ({ type: "function", function: { name: t.name, description: t.description, parameters: t.parameters } }));
+      if (cfg.provider === "gemini" && /lite/.test(cfg.model) && !skip.has("reasoning_effort")) body.reasoning_effort = "none"; // faster answers
+      const res = await request(cfg, "/chat/completions", { body, signal, raw: true });
+      if (!res.ok) {
+        const text = await res.text();
+        const bad = ["max_tokens", "max_completion_tokens", "reasoning_effort"].find((p) => body[p] !== undefined && text.includes(p) && UNSUPPORTED.test(text));
+        if (res.status === 400 && bad && attempt < 3) {
+          rejected.set(key, new Set([...skip, bad === "max_completion_tokens" ? "max_tokens" : bad]));
+          continue;
+        }
+        if (res.status === 400 && tools && /tool|function/i.test(text) && UNSUPPORTED.test(text)) throw new AiError(`This model can't do actions on web pages. Choose another model in Settings (⚙).`, { status: 400 });
+        throw explain(cfg, res.status, text);
+      }
+      let text = "";
+      const calls = [];
+      let stop = null;
+      for await (const chunk of sse(res)) {
+        if (chunk.error) throw explain(cfg, 500, JSON.stringify(chunk));
+        const choice = chunk.choices && chunk.choices[0];
+        if (!choice) continue;
+        const d = choice.delta || {};
+        if (d.content) {
+          text += d.content;
+          if (onText) onText(d.content, text);
+        }
+        for (const tc of d.tool_calls || []) {
+          const i = tc.index ?? calls.length;
+          calls[i] = calls[i] || { id: "", name: "", argsText: "" };
+          if (tc.id) calls[i].id = tc.id;
+          if (tc.function && tc.function.name) calls[i].name += tc.function.name;
+          if (tc.function && tc.function.arguments) calls[i].argsText += tc.function.arguments;
+        }
+        if (choice.finish_reason) stop = choice.finish_reason;
+      }
+      const toolCalls = calls.filter(Boolean).map((c, i) => {
+        let args = {};
+        let argsError = "";
+        try {
+          args = c.argsText ? JSON.parse(c.argsText) : {};
+        } catch {
+          argsError = "The arguments were not valid JSON.";
+        }
+        return { id: c.id || `call_${Date.now()}_${i}`, name: c.name, args, argsError };
+      });
+      return { text, toolCalls, stop };
+    }
+  }
+
+  async function chatAnthropic(cfg, { messages, tools, onText, signal, maxTokens }) {
+    const { system, messages: msgs } = toAnthropic(messages);
+    const body = { model: cfg.model, max_tokens: Math.max(maxTokens, 2048), messages: msgs, stream: true };
+    if (system) body.system = system;
+    if (tools && tools.length) body.tools = tools.map((t) => ({ name: t.name, description: t.description, input_schema: t.parameters }));
+    const h = headers(cfg);
+    if (CLAUDE_FALLBACK.has(cfg.model)) {
+      body.fallbacks = "default";
+      h["anthropic-beta"] = "server-side-fallback-2026-07-01";
+    }
+    let res;
+    try {
+      res = await fetch(`${baseOf(cfg)}/messages`, { method: "POST", headers: h, body: JSON.stringify(body), signal });
+    } catch (err) {
+      if (signal && signal.aborted) throw err;
+      throw explain(cfg, 0, "");
+    }
+    if (!res.ok) throw explain(cfg, res.status, await res.text());
+    let text = "";
+    let stop = null;
+    const blocks = [];
+    for await (const e of sse(res)) {
+      if (e.type === "error") throw explain(cfg, 500, JSON.stringify(e));
+      if (e.type === "content_block_start") blocks[e.index] = e.content_block.type === "tool_use" ? { id: e.content_block.id, name: e.content_block.name, json: "" } : null;
+      else if (e.type === "content_block_delta" && e.delta.type === "text_delta") {
+        text += e.delta.text;
+        if (onText) onText(e.delta.text, text);
+      } else if (e.type === "content_block_delta" && e.delta.type === "input_json_delta" && blocks[e.index]) blocks[e.index].json += e.delta.partial_json;
+      else if (e.type === "message_delta") stop = e.delta.stop_reason || stop;
+    }
+    if (!text && stop === "refusal") {
+      text = "(Claude declined this request.)";
+      if (onText) onText(text, text);
+    }
+    const toolCalls = blocks.filter(Boolean).map((b) => {
+      let args = {};
+      let argsError = "";
+      try {
+        args = b.json ? JSON.parse(b.json) : {};
+      } catch {
+        argsError = "The arguments were not valid JSON.";
+      }
+      return { id: b.id, name: b.name, args, argsError };
+    });
+    return { text, toolCalls, stop };
+  }
+
+  // ---------------------------------------------------------------------------------------------------------------
+  // Pictures
+  // ---------------------------------------------------------------------------------------------------------------
+  /** Whether this AI can make pictures, and why not. */
+  function pictureSupport(cfg) {
+    const p = providerOf(cfg);
+    if (p.pictures) return { available: true };
+    return { available: false, reason: cfg.provider === "custom" ? "Your own AI server can't make pictures." : `${p.name} can't make pictures.` };
+  }
+
+  /** Makes one picture; returns a data: URL. */
+  async function makePicture(cfg, prompt, signal) {
+    const kind = providerOf(cfg).pictures;
+    if (!kind) throw new AiError(`${pictureSupport(cfg).reason} To make pictures, choose OpenAI, Google Gemini (with billing on), xAI (Grok) or Hugging Face in Settings (⚙).`);
+    if (kind === "gemini") {
+      // Gemini's own API (its newer image models only work there). Its free tier allows no pictures at all.
+      let problem = new AiError("Google Gemini didn't return a picture. Try describing it differently.");
+      for (const model of GEMINI_PICTURE_MODELS) {
+        let res;
+        try {
+          res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-goog-api-key": cfg.key },
+            body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { responseModalities: ["IMAGE", "TEXT"] } }),
+            signal,
+          });
+        } catch (err) {
+          if (signal && signal.aborted) throw err;
+          throw explain(cfg, 0, "");
+        }
+        const body = await res.text();
+        if (res.status === 404) continue;
+        if (res.status === 429 && /free_tier|FreeTier|limit: 0/.test(body)) throw new AiError("Google Gemini only makes pictures on a paid plan: the free tier allows none. Turn on billing for your key in Google AI Studio (aistudio.google.com → Billing), or choose OpenAI, xAI or Hugging Face.");
+        if (!res.ok) throw explain(cfg, res.status, body);
+        const part = ((JSON.parse(body).candidates || [])[0]?.content?.parts || []).find((x) => x.inlineData && x.inlineData.data);
+        if (part) return `data:${part.inlineData.mimeType || "image/png"};base64,${part.inlineData.data}`;
+        break;
+      }
+      throw problem;
+    }
+    if (kind === "huggingface") {
+      let res;
+      try {
+        res = await fetch(`${new URL(baseOf(cfg)).origin}/hf-inference/models/${HF_IMAGE_MODEL}`, { method: "POST", headers: { ...headers(cfg), Accept: "image/png" }, body: JSON.stringify({ inputs: prompt }), signal });
+      } catch (err) {
+        if (signal && signal.aborted) throw err;
+        throw explain(cfg, 0, "");
+      }
+      const type = res.headers.get("content-type") || "";
+      if (!res.ok || !type.startsWith("image/")) throw explain(cfg, res.ok ? 502 : res.status, await res.text());
+      const blob = await res.blob();
+      return await new Promise((resolve) => {
+        const r = new FileReader();
+        r.onload = () => resolve(r.result);
+        r.readAsDataURL(blob);
+      });
+    }
+    // OpenAI-style image API (OpenAI, xAI): the newest image model the key lists.
+    const data = await request(cfg, "/models", { method: "GET", signal });
+    const ids = (data.data || []).filter((m) => typeof m.id === "string").sort((a, b) => released(b) - released(a) || version(b.id) - version(a.id)).map((m) => m.id);
+    const model = ids.find((id) => /^gpt-image/.test(id)) || ids.find((id) => /image/.test(id) && !/vision/.test(id)) || ids.find((id) => /^dall-e-3/.test(id));
+    if (!model) throw new AiError(`${providerOf(cfg).name} doesn't offer a picture model with this key.`);
+    const body = { model, prompt, n: 1, size: "1024x1024", ...(/^gpt-image/.test(model) ? {} : { response_format: "b64_json" }) };
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const res = await request(cfg, "/images/generations", { body, signal, raw: true });
+      const text = await res.text();
+      if (res.status === 400) {
+        const bad = ["size", "response_format", "n"].find((p) => body[p] !== undefined && text.includes(p) && UNSUPPORTED.test(text));
+        if (bad) {
+          delete body[bad];
+          continue;
+        }
+      }
+      if (!res.ok) throw explain(cfg, res.status, text);
+      const first = (JSON.parse(text).data || [])[0] || {};
+      if (first.b64_json) return `data:${first.mime_type || "image/png"};base64,${first.b64_json}`;
+      if (first.url) {
+        try {
+          const blob = await (await fetch(first.url, { signal })).blob();
+          return await new Promise((resolve) => {
+            const r = new FileReader();
+            r.onload = () => resolve(r.result);
+            r.readAsDataURL(blob);
+          });
+        } catch (err) {
+          if (signal && signal.aborted) throw err;
+          return first.url; // the picture's host doesn't allow reading it here: show it from there
+        }
+      }
+      break;
+    }
+    throw new AiError(`${providerOf(cfg).name} didn't return a picture.`);
+  }
+
+  root.SyntazAI = { PROVIDERS, AiError, listModels, checkKey, chat, makePicture, pictureSupport, providerOf, baseOf };
+})(typeof self !== "undefined" ? self : globalThis);
+</script><!-- /ai.js -->
 <script>
 "use strict";
-const API = "https://generativelanguage.googleapis.com/v1beta/models";
+const PROVIDERS = SyntazAI.PROVIDERS;
+// Friendlier names for Gemini's free models (the others show their own names).
+const MODEL_NAMES = { "gemini-3.1-flash-lite": "Flash-Lite · fast, most free uses", "gemini-3.6-flash": "Flash · smarter, ~20 a day" };
 const SYSTEM = "You are Syntaz, a friendly, helpful assistant. Answer clearly and briefly unless the user asks for detail. Use Markdown for lists and code. If you are not sure, say so.";
 const $ = (id) => document.getElementById(id);
 const store = {
@@ -269,7 +691,15 @@ const store = {
   del(k) { try { localStorage.removeItem(`syntaz-site-chat:${k}`); sessionStorage.removeItem(`syntaz-site-chat:${k}`); } catch {} },
 };
 
-let key = store.get("key", "");
+// Your AI: { provider, key, model, base }. (Older Syntaz Lite saved only a Gemini key: that becomes Gemini here.)
+let ai = store.get("ai", null);
+if (!ai && store.get("key", "")) {
+  ai = { provider: "gemini", key: store.get("key", ""), model: store.get("model", "gemini-3.1-flash-lite"), base: "" };
+  store.set("ai", ai);
+  store.del("key");
+}
+let aiSession = false; // the key is kept only until the browser closes ("Remember" unticked)
+const providerName = () => PROVIDERS[(ai && ai.provider) || "gemini"].name;
 let chats = store.get("chats", []); // [{ id, title, messages: [{ role, text }] }]  (pictures are not saved)
 let chat = null; // the open chat: { id, title, messages: [{ role, text, images?: [{ mime, data }] }] }
 let pending = []; // attachments for the next message: { kind: "image"|"text", name, mime, data|text, url }
@@ -321,43 +751,70 @@ function markdown(src) {
 }
 
 // ---------------- Screens ----------------
+function showProvider(id) {
+  const p = PROVIDERS[id];
+  $("keySteps").hidden = !!p.custom;
+  $("baseRow").hidden = !p.custom;
+  if (p.keyPage) $("keyLink").href = p.keyPage;
+  $("keyLinkText").textContent = `Open ${p.name}'s key page`;
+  $("keyMake").innerHTML = id === "gemini" ? "Click <b>Create API key</b>, then <b>Copy</b>." : id === "huggingface" ? "Name the token, keep the ticked permission, click <b>Create token</b>, then <b>Copy</b>." : "Create a new key, then <b>Copy</b> it.";
+  $("key").placeholder = p.custom ? "Key (usually none needed)" : `Your ${p.name} key (${p.keyHint})`;
+  $("base").placeholder = p.base;
+}
 function showSetup(cancellable) {
   $("setup").hidden = false;
   $("app").hidden = true;
   $("setupCancelRow").hidden = !cancellable;
+  if (!$("provider").options.length) for (const [id, p] of Object.entries(PROVIDERS)) $("provider").append(new Option(`${p.name}${p.free ? " — free" : ""}`, id));
+  $("provider").value = (ai && ai.provider) || "gemini";
+  $("base").value = (ai && ai.base) || "";
+  showProvider($("provider").value);
   $("key").value = "";
   $("keyMsg").textContent = "";
   $("key").focus();
 }
+$("provider").onchange = () => { showProvider($("provider").value); $("keyMsg").textContent = ""; };
 function showApp() {
   $("setup").hidden = true;
   $("app").hidden = false;
   renderChats();
   if (!chat) newChat();
+  fillModels();
   $("input").focus();
 }
-
-async function checkKey(k) {
-  try {
-    const r = await fetch(`${API}?pageSize=1`, { headers: { "x-goog-api-key": k } });
-    if (r.ok) return "";
-    return r.status === 400 || r.status === 403 ? "Google says this key doesn't work. Copy the whole key again." : `Google answered with an error (HTTP ${r.status}). Try again.`;
-  } catch {
-    return "Can't reach Google. Check your internet connection.";
-  }
+function saveAi() { store.del("ai"); store.set("ai", ai, aiSession); }
+/** The model list: the one in use right away, then everything the key offers. */
+async function fillModels(list) {
+  const sel = $("model");
+  const names = list || [ai.model];
+  sel.replaceChildren(...names.map((id) => new Option(MODEL_NAMES[id] || id, id)));
+  sel.value = ai.model;
+  if (list) return;
+  try { const all = await SyntazAI.listModels(ai); if (all.length) fillModels(all.includes(ai.model) ? all.slice(0, 40) : [ai.model, ...all.slice(0, 39)]); } catch {}
 }
+
 $("saveKey").onclick = async () => {
+  const provider = $("provider").value;
+  const p = PROVIDERS[provider];
   const k = $("key").value.replace(/\s+/g, "");
-  if (!/^[A-Za-z0-9_.-]{20,200}$/.test(k)) { $("keyMsg").textContent = "That doesn't look like an API key."; $("keyMsg").className = "note bad"; return; }
+  const base = $("base").value.trim();
+  const bad = (m) => { $("keyMsg").textContent = m; $("keyMsg").className = "note bad"; };
+  if (!p.custom && !/^[A-Za-z0-9_.:-]{12,300}$/.test(k)) return bad("That doesn't look like an API key.");
+  if (p.custom && base && !/^https?:\/\/[^\s/]+/i.test(base)) return bad("The address should look like http://127.0.0.1:1234/v1");
   $("keyMsg").className = "note";
   $("saveKey").disabled = true;
   $("keyMsg").textContent = "Checking…";
-  const problem = await checkKey(k);
+  const cfg = { provider, key: k, base: p.custom ? base : "", model: ai && ai.provider === provider ? ai.model : "" };
+  try {
+    const r = await SyntazAI.checkKey(cfg);
+    ai = { ...cfg, model: r.model };
+  } catch (err) {
+    $("saveKey").disabled = false;
+    return bad(err.message === "Failed to fetch" ? `Can't reach ${p.name}. Check your internet connection${p.custom ? " and that your AI server is running" : ""}.` : err.message);
+  }
   $("saveKey").disabled = false;
-  if (problem) { $("keyMsg").textContent = problem; $("keyMsg").className = "note bad"; return; }
-  key = k;
-  store.del("key");
-  store.set("key", k, !$("remember").checked);
+  aiSession = !$("remember").checked;
+  saveAi();
   showApp();
 };
 $("key").addEventListener("keydown", (e) => {
@@ -377,8 +834,8 @@ $("showKey").onclick = () => ($("key").type = $("key").type === "password" ? "te
 const applyTheme = () => { const t = store.get("theme", ""); if (t) document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme; };
 $("theme").onclick = () => { const dark = matchMedia("(prefers-color-scheme: dark)").matches; const now = store.get("theme", "") || (dark ? "dark" : "light"); store.set("theme", now === "dark" ? "light" : "dark"); applyTheme(); };
 applyTheme();
-$("setupCancel").onclick = () => (key ? showApp() : null);
-$("forget").onclick = () => { store.del("key"); key = ""; showSetup(false); };
+$("setupCancel").onclick = () => (ai ? showApp() : null);
+$("forget").onclick = () => { store.del("ai"); ai = null; showSetup(false); };
 
 // ---------------- Chats ----------------
 function newChat() {
@@ -553,75 +1010,37 @@ $("drop").addEventListener("dragover", (e) => { e.preventDefault(); $("drop").cl
 $("drop").addEventListener("dragleave", () => $("drop").classList.remove("drag"));
 $("drop").addEventListener("drop", (e) => { e.preventDefault(); $("drop").classList.remove("drag"); addFiles([...e.dataTransfer.files]); });
 
-// ---------------- Talking to Gemini ----------------
-function toContents(messages) {
-  return messages.slice(-30).map((m) => ({
-    role: m.role === "user" ? "user" : "model",
-    parts: [{ text: m.text || " " }, ...(m.images || []).map((i) => ({ inline_data: { mime_type: i.mime, data: i.data } }))],
-  }));
+// ---------------- Talking to the AI (SyntazAI, above) ----------------
+function toMessages(messages) {
+  return [
+    { role: "system", content: SYSTEM },
+    ...messages.slice(-30).map((m) => ({
+      role: m.role === "user" ? "user" : "assistant",
+      content: m.images && m.images.length ? [{ type: "text", text: m.text || " " }, ...m.images.map((i) => ({ type: "image", url: `data:${i.mime};base64,${i.data}` }))] : m.text || " ",
+    })),
+  ];
 }
-function explain(status, body) {
-  if (status === 400 && /API key/i.test(body)) return { msg: "Your Gemini key doesn't work anymore. Click ⚙ to add a new one.", key: true };
-  if (status === 403) return { msg: "Google refused the key. Click ⚙ to add a new one.", key: true };
-  if (status === 429 && /PerDay|per day/i.test(body)) return { msg: "Today's free limit for this model is used up. Try the other model (top right) or come back tomorrow." };
-  if (status === 429) return { msg: "Google says: too many requests right now.", wait: Number((/"retryDelay":\s*"(\d+)/.exec(body) || [])[1] || 20) };
-  if (status >= 500) return { msg: "Google's AI is having trouble right now. Try again in a moment." };
-  return { msg: `Something went wrong (HTTP ${status}).` };
-}
-async function ask(bubble, attempt = 0) {
+async function ask(bubble) {
   controller = new AbortController();
   let text = "";
-  const res = await fetch(`${API}/${$("model").value}:streamGenerateContent?alt=sse`, {
-    method: "POST",
-    signal: controller.signal,
-    headers: { "Content-Type": "application/json", "x-goog-api-key": key },
-    body: JSON.stringify({
-      systemInstruction: { parts: [{ text: SYSTEM }] },
-      contents: toContents(chat.messages),
-      generationConfig: { maxOutputTokens: 4096, ...($("model").value.includes("lite") ? { thinkingConfig: { thinkingBudget: 0 } } : {}) },
-    }),
-  });
-  if (!res.ok) {
-    const body = await res.text();
-    const why = explain(res.status, body);
-    if (why.wait && attempt === 0 && why.wait <= 60) {
-      bubble.innerHTML = `<span class="note">Google asked Syntaz to wait ${why.wait} seconds (free tier limit)… trying again then.</span>`;
-      await new Promise((r, j) => { const t = setTimeout(r, why.wait * 1000); controller.signal.addEventListener("abort", () => { clearTimeout(t); j(new DOMException("aborted", "AbortError")); }); });
-      return ask(bubble, 1);
-    }
-    throw Object.assign(new Error(why.msg), { key: why.key });
-  }
-  const reader = res.body.getReader();
-  const decoder = new TextDecoder();
-  let buf = "";
   bubble.classList.add("typing");
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buf += decoder.decode(value, { stream: true });
-    const events = buf.split(/\r?\n\r?\n/);
-    buf = events.pop();
-    for (const ev of events) {
-      const line = ev.split(/\r?\n/).find((l) => l.startsWith("data:"));
-      if (!line) continue;
-      try {
-        const d = JSON.parse(line.slice(5));
-        for (const part of d.candidates?.[0]?.content?.parts || []) if (part.text && !part.thought) text += part.text;
-        if (d.candidates?.[0]?.finishReason === "SAFETY") text += "\n\n_(Google stopped this answer for safety reasons.)_";
-      } catch {}
-    }
-    bubble.innerHTML = markdown(text);
-    $("messages").scrollTop = $("messages").scrollHeight;
-  }
+  await SyntazAI.chat(ai, {
+    messages: toMessages(chat.messages),
+    signal: controller.signal,
+    onText: (t) => {
+      text += t;
+      bubble.innerHTML = markdown(text);
+      $("messages").scrollTop = $("messages").scrollHeight;
+    },
+  });
   bubble.classList.remove("typing");
   setAnswer(bubble, text);
   return text;
 }
 
 // ---------------- Pictures ----------------
-// 🎨 (or "draw …", "make a picture of …"): Gemini's image models, newest first. Google's free tier makes no
-// pictures ("limit: 0"), so that answer says what to do instead of showing a raw error.
-const PICTURE_MODELS = ["gemini-3.1-flash-image", "gemini-2.5-flash-image"];
+// 🎨 (or "draw …", "make a picture of …"): with the AI's own picture model (Gemini, OpenAI, Grok, Hugging Face).
+// When it can't (or Gemini's free tier, which makes none), the answer says what to do instead of a raw error.
 const IMAGE_ASK = /^\s*(?:(?:please|pls)[,!]?\s+)?(?:(?:can|could|would) you\s+(?:please\s+)?)?(?:draw|paint|sketch|(?:generate|create|make|design)\s+(?:me\s+)?(?:an?|some|the|\d+)?\s*(?:\w+\s+){0,2}?(?:image|picture|pic|photo|drawing|painting|illustration|logo|wallpaper|artwork|art|poster|icon|sticker)s?)\b/i;
 let pictureMode = false;
 function setPictureMode(on) {
@@ -634,10 +1053,6 @@ $("picture").onclick = () => {
   setPictureMode(!pictureMode);
   $("input").focus();
 };
-function pictureProblem(status, body) {
-  if (status === 429 && /free_tier|FreeTier|limit: 0/i.test(body)) return "Google Gemini only makes pictures on a paid plan: the free tier allows none. Turn on billing for your key in Google AI Studio (aistudio.google.com → Billing), then try again.";
-  return explain(status, body).msg;
-}
 async function makePicture(prompt) {
   const userMsg = { role: "user", text: prompt, shown: `🎨 ${prompt}` };
   chat.messages.push(userMsg);
@@ -652,23 +1067,10 @@ async function makePicture(prompt) {
   $("stop").hidden = false;
   controller = new AbortController();
   try {
-    let image = null, problem = "Gemini didn't return a picture. Try describing it differently.";
-    for (const model of PICTURE_MODELS) {
-      const res = await fetch(`${API}/${model}:generateContent`, {
-        method: "POST", signal: controller.signal,
-        headers: { "Content-Type": "application/json", "x-goog-api-key": key },
-        body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { responseModalities: ["IMAGE", "TEXT"] } }),
-      });
-      const body = await res.text();
-      if (res.status === 404) continue; // this model isn't available to the key: try the next
-      if (!res.ok) { problem = pictureProblem(res.status, body); break; }
-      const part = (JSON.parse(body).candidates?.[0]?.content?.parts || []).find((x) => x.inlineData?.data);
-      if (part) { image = `data:${part.inlineData.mimeType || "image/png"};base64,${part.inlineData.data}`; break; }
-    }
-    if (!image) throw new Error(problem);
+    const image = await SyntazAI.makePicture(ai, prompt, controller.signal);
     holder.innerHTML = "";
     const img = Object.assign(document.createElement("img"), { className: "made", src: image, alt: `Picture: ${prompt.slice(0, 120)}` });
-    const save = Object.assign(document.createElement("a"), { className: "made-save", href: image, download: `syntaz-picture.${image.slice(11, image.indexOf(";")).replace("jpeg", "jpg")}`, textContent: "⬇ Download" });
+    const save = Object.assign(document.createElement("a"), { className: "made-save", href: image, download: `syntaz-picture.${image.startsWith("data:") ? image.slice(11, image.indexOf(";")).replace("jpeg", "jpg") : "png"}`, textContent: "⬇ Download" });
     holder.append(img, save);
     chat.messages.push({ role: "model", text: `🖼 (Made a picture of: ${prompt.slice(0, 200)})` });
     saveChat();
@@ -677,7 +1079,7 @@ async function makePicture(prompt) {
     holder.innerHTML = "";
     const e = document.createElement("div");
     e.className = "err";
-    e.textContent = err.name === "AbortError" ? "Stopped." : err.message === "Failed to fetch" ? "Can't reach Google. Check your internet connection." : err.message;
+    e.textContent = err.name === "AbortError" ? "Stopped." : err.message === "Failed to fetch" ? `Can't reach ${providerName()}. Check your internet connection.` : err.message;
     holder.append(e);
   } finally {
     controller = null;
@@ -723,7 +1125,7 @@ async function send() {
       holder.innerHTML = "";
       const e = document.createElement("div");
       e.className = "err";
-      e.textContent = err.message === "Failed to fetch" ? "Can't reach Google. Check your internet connection." : err.message;
+      e.textContent = err.message === "Failed to fetch" ? `Can't reach ${providerName()}. Check your internet connection.` : err.message;
       holder.append(e);
       const retry = document.createElement("button");
       retry.textContent = err.key ? "Add a new key" : "Retry";
@@ -744,11 +1146,11 @@ $("input").addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shif
 function autosize() { const t = $("input"); t.style.height = "auto"; t.style.height = `${Math.min(t.scrollHeight, innerHeight * 0.4)}px`; }
 function updateSend() { $("send").disabled = !$("input").value.trim() && !pending.length; }
 $("input").addEventListener("input", () => { autosize(); updateSend(); });
-$("model").value = store.get("model", "gemini-3.1-flash-lite");
-$("model").onchange = () => store.set("model", $("model").value);
+$("model").onchange = () => { ai.model = $("model").value; saveAi(); };
+try { aiSession = !localStorage.getItem("syntaz-site-chat:ai") && !!sessionStorage.getItem("syntaz-site-chat:ai"); } catch {}
 
 updateSend();
-if (key) showApp(); else showSetup(false);
+if (ai) showApp(); else showSetup(false);
 </script>
 <script data-glass="aside,.box,.cards button,.setup,.topbar">
 // Syntaz liquid glass. Each .lg element gets a lens map drawn at its own size, so its edges bend what's

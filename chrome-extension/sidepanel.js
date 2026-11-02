@@ -452,9 +452,9 @@ async function sendImage(text) {
   try {
     const res = await syntaz("/api/image", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt: text }), signal: controller.signal });
     const data = await res.json();
-    if (!data || typeof data.image !== "string" || !/^data:image\/(png|jpeg|webp|gif);base64,/.test(data.image)) throw new UiError("Syntaz didn't get a picture back.");
+    if (!data || typeof data.image !== "string" || !/^(data:image\/(png|jpeg|webp|gif);base64,|https:\/\/)/.test(data.image)) throw new UiError("Syntaz didn't get a picture back.");
     const img = Object.assign(document.createElement("img"), { className: "made", src: data.image, alt: `Picture: ${text.slice(0, 120)}` });
-    const ext = data.image.slice(11, data.image.indexOf(";")).replace("jpeg", "jpg");
+    const ext = data.image.startsWith("data:") ? data.image.slice(11, data.image.indexOf(";")).replace("jpeg", "jpg") : "png";
     const save = Object.assign(el("a", "chip", "⬇ Download"), { href: data.image, download: `syntaz-picture.${ext}` });
     const row = el("div", "made-row");
     row.append(save);

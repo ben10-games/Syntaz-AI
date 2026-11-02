@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
-"""Builds the downloads for a GitHub release, one per system, from the committed project (git HEAD):
-  dist/Syntaz-for-Mac.zip      Syntaz Setup.app (no Windows files)
-  dist/Syntaz-for-Windows.zip  Syntaz Setup (Windows).bat (no Mac app)
-  dist/Syntaz-for-Linux.zip    for `node setup/syntaz-app.mjs`
-  dist/Syntaz-Lite.html        Syntaz Lite: chat in one file, nothing to install
-Each unzips to a "Syntaz AI" folder. The names never change, so the Syntaz window's Update button and the
-README link (releases/latest/download/...) always find the newest one.
+"""Builds the downloads for a GitHub release from the committed project (git HEAD):
+  dist/Syntaz-Chrome-Extension.zip  the Chrome extension (unzips to a "Syntaz AI" folder: Load unpacked in Chrome)
+  dist/Syntaz-Lite.html             Syntaz Lite: chat in one file, nothing to install
+The names never change, so the website's links (releases/latest/download/...) always find the newest ones.
 Run from the project folder: python3 scripts/make-release.py [--out DIR] [--lts]
   --lts: the same downloads for the LTS channel (into dist/lts), for the GitHub release tagged lts"""
 import io
@@ -19,56 +16,36 @@ import zipfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TOP = "Syntaz AI"
-EVERYWHERE = ("test/", "website/", ".github/")  # not needed to run Syntaz
-ONLY_WINDOWS = ("Syntaz Setup (Windows).bat", "setup/windows/")
-ONLY_MAC = ("Syntaz Setup.app/",)
-ONLY_LINUX = ("Syntaz Setup (Linux).sh",)
-NOT_WINDOWS = ("setup/get-node.sh",)  # Mac and Linux get Node.js with it; Windows has setup/windows/get-node.ps1
-TARGETS = {
-    "Syntaz-for-Mac.zip": EVERYWHERE + ONLY_WINDOWS + ONLY_LINUX,
-    "Syntaz-for-Windows.zip": EVERYWHERE + ONLY_MAC + ONLY_LINUX + NOT_WINDOWS,
-    "Syntaz-for-Linux.zip": EVERYWHERE + ONLY_WINDOWS + ONLY_MAC,
-}
-
-
-def excluded(name, prefixes):
-    return any(name == p or name.startswith(p) for p in prefixes)
 
 
 def main():
-    lts = "--lts" in sys.argv  # LTS downloads: marked with setup/channel.txt, so they only update to LTS releases
+    lts = "--lts" in sys.argv
     out = sys.argv[sys.argv.index("--out") + 1] if "--out" in sys.argv else os.path.join(ROOT, "dist", "lts" if lts else "")
     os.makedirs(out, exist_ok=True)
     dirty = subprocess.run(["git", "status", "--porcelain"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
     if dirty:
         print("Note: only committed changes are included (uncommitted changes exist).")
-    # git archive applies .gitattributes (CRLF for Windows files) and keeps executable bits.
     tar_bytes = subprocess.run(["git", "archive", "--format=tar", "HEAD"], cwd=ROOT, capture_output=True, check=True).stdout
-    members = []
+    members = {}
     with tarfile.open(fileobj=io.BytesIO(tar_bytes)) as tar:
         for m in tar.getmembers():
             if m.isfile():
-                members.append((m.name, m.mode, tar.extractfile(m).read()))
-    version = json.loads(next(d for n, _, d in members if n == "package.json"))["version"]
-    for zip_name, skip in TARGETS.items():
-        path = os.path.join(out, zip_name)
-        with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as z:
-            for name, mode, data in members:
-                if excluded(name, skip):
-                    continue
-                info = zipfile.ZipInfo(f"{TOP}/{name}", date_time=(2026, 1, 1, 0, 0, 0))
-                info.create_system = 3  # Unix: keeps the executable bit (Mac app launcher)
-                info.external_attr = (stat.S_IFREG | (mode & 0o777)) << 16
-                info.compress_type = zipfile.ZIP_DEFLATED
-                z.writestr(info, data)
-            if lts:
-                info = zipfile.ZipInfo(f"{TOP}/setup/channel.txt", date_time=(2026, 1, 1, 0, 0, 0))
-                info.create_system = 3
-                info.external_attr = (stat.S_IFREG | 0o644) << 16
-                z.writestr(info, "lts\n")
-        print(f"{zip_name}: {os.path.getsize(path) // 1024} KB")
-    # Syntaz Lite on its own: one file, nothing to install.
-    lite = next(d for n, _, d in members if n == "lite/Syntaz Lite.html")
+                members[m.name] = tar.extractfile(m).read()
+    version = json.loads(members["chrome-extension/manifest.json"])["version"]
+
+    path = os.path.join(out, "Syntaz-Chrome-Extension.zip")
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as z:
+        for name, data in sorted(members.items()):
+            if not name.startswith("chrome-extension/"):
+                continue
+            info = zipfile.ZipInfo(f"{TOP}/{name[len('chrome-extension/'):]}", date_time=(2026, 1, 1, 0, 0, 0))
+            info.create_system = 3
+            info.external_attr = (stat.S_IFREG | 0o644) << 16
+            info.compress_type = zipfile.ZIP_DEFLATED
+            z.writestr(info, data)
+    print(f"Syntaz-Chrome-Extension.zip: {os.path.getsize(path) // 1024} KB")
+
+    lite = members["lite/Syntaz Lite.html"]
     with open(os.path.join(out, "Syntaz-Lite.html"), "wb") as f:
         f.write(lite)
     print(f"Syntaz-Lite.html: {len(lite) // 1024} KB")

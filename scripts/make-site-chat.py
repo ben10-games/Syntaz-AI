@@ -16,14 +16,14 @@ def rep(s, a, b, count=1):
 
 s = src
 s = rep(s, "<title>Syntaz Lite</title>", f'''<title>Chat with Syntaz AI – free AI chat in your browser</title>
-<meta name="description" content="Chat with Syntaz AI right in your browser: answers, help with homework photos, writing, quizzes and pictures. Free with your own Gemini key, nothing to install.">
+<meta name="description" content="Chat with Syntaz AI right in your browser: answers, help with homework photos, writing, quizzes and pictures. Free with a Google Gemini key (or use OpenAI, Claude, Grok, Groq or Hugging Face), nothing to install.">
 <link rel="canonical" href="{SITE}/chat.html">
 <meta property="og:title" content="Chat with Syntaz AI">
 <meta property="og:description" content="Free AI chat in your browser, with pictures. Nothing to install.">
 <meta property="og:image" content="{SITE}/og.png">
 <meta property="og:url" content="{SITE}/chat.html">''')
 # Its own saved chats and key (separate from Syntaz Lite files on the same computer).
-s = rep(s, "syntaz-lite:", "syntaz-site-chat:", count=5)
+s = rep(s, "syntaz-lite:", "syntaz-site-chat:", count=7)
 s = rep(s, "<h1>Welcome to Syntaz Lite</h1>", "<h1>Chat with Syntaz AI</h1>")
 s = rep(s, "<b>Syntaz Lite</b><button class=\"icon\" id=\"closeChats\"", "<b><a href=\"index.html\" style=\"color:inherit;text-decoration:none\" title=\"Syntaz AI home\">Syntaz AI</a></b><button class=\"icon\" id=\"closeChats\"")
 s = rep(s, "<b>Syntaz Lite</b><button class=\"icon\" id=\"newChatTop\"", "<b><a href=\"index.html\" style=\"color:inherit;text-decoration:none\">Syntaz AI</a></b><button class=\"icon\" id=\"newChatTop\"")

@@ -1,7 +1,4 @@
-# Windows batch files need CRLF; Mac/Linux scripts need LF.
-*.bat text eol=crlf
-*.command text eol=lf
+# Scripts need Unix line endings.
 *.sh text eol=lf
 *.mjs text eol=lf
-*.ps1 text eol=crlf
-Syntaz[[:space:]]Setup.app/Contents/MacOS/* text eol=lf
+*.py text eol=lf
