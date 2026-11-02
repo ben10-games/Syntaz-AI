@@ -16,7 +16,10 @@
      install. Talks only to the AI you chose, directly from this page. The Syntaz Chrome extension can also act on
      websites; this file can't. -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2032%2032%22%3E%3Cdefs%3E%3ClinearGradient%20id=%22b%22%20x1=%220%22%20y1=%220%22%20x2=%220%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%231d2a24%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%23080b0a%22/%3E%3C/linearGradient%3E%3ClinearGradient%20id=%22s%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%23d9fb5b%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%232ee6b0%22/%3E%3C/linearGradient%3E%3ClinearGradient%20id=%22h%22%20x1=%220%22%20y1=%220%22%20x2=%220%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%23fff%22%20stop-opacity=%22.28%22/%3E%3Cstop%20offset=%22.5%22%20stop-color=%22%23fff%22%20stop-opacity=%220%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width=%2232%22%20height=%2232%22%20rx=%228%22%20fill=%22url%28%23b%29%22/%3E%3Crect%20x=%22.5%22%20y=%22.5%22%20width=%2231%22%20height=%2231%22%20rx=%227.5%22%20fill=%22url%28%23h%29%22%20stroke=%22%23fff%22%20stroke-opacity=%22.16%22/%3E%3Cpath%20d=%22M20.6%2011.2c-.9-1.5-2.6-2.4-4.7-2.4-2.8%200-4.8%201.5-4.8%203.6%200%204.6%2010%202.7%2010%207.6%200%202.2-2.1%203.8-5%203.8-2.3%200-4.2-1-5.1-2.6%22%20fill=%22none%22%20stroke=%22url%28%23s%29%22%20stroke-width=%223.2%22%20stroke-linecap=%22round%22/%3E%3Cpath%20fill=%22%23d9fb5b%22%20d=%22M25%204.6l.7%202%202%20.7-2%20.7-.7%202-.7-2-2-.7%202-.7z%22/%3E%3C/svg%3E">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob: https:; connect-src https://generativelanguage.googleapis.com https://api.openai.com https://api.anthropic.com https://api.x.ai https://api.groq.com https://router.huggingface.co http://127.0.0.1:* http://localhost:*; base-uri 'none'; form-action 'none'">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#050807">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; manifest-src 'self'; worker-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src https://generativelanguage.googleapis.com https://api.openai.com https://api.anthropic.com https://api.x.ai https://api.groq.com https://router.huggingface.co http://127.0.0.1:* http://localhost:*; base-uri 'none'; form-action 'none'">
 <style>
   /* Syntaz's look, "Volt liquid glass" (same as the Syntaz app and website): lime and mint on near-black, glass panels
      over soft moving glows. Light when the computer uses light mode, or with the ☀/☾ button. */
@@ -195,8 +198,8 @@
   .msg.ai img.made { display: block; max-width: min(100%, 460px); border-radius: 18px; border: 1px solid var(--edge); box-shadow: var(--rim), var(--shadow); margin-bottom: 8px; }
   .made-save { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; color: var(--accent-text); }
   @media (prefers-reduced-motion: reduce) { body::before, body::after { animation: none; } button { transition: none; } }
-  .side-foot a.site-link { display: flex; align-items: center; gap: 10px; padding: 7px 12px; border-radius: 10px; color: var(--muted); text-decoration: none; }
-  .side-foot a.site-link:hover { background: var(--hover); color: var(--text); }
+  .side-foot .site-link { display: flex; align-items: center; gap: 10px; padding: 7px 12px; border-radius: 10px; color: var(--muted); text-decoration: none; }
+  .side-foot .site-link:hover { background: var(--hover); color: var(--text); }
 </style>
 </head>
 <body>
@@ -234,6 +237,7 @@
     <p id="noChats">Your chats will appear here (saved only in this browser).</p>
     <div class="side-foot">
       <a class="site-link" href="download.html"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Get Syntaz for Chrome</a>
+      <button class="site-link" id="installApp" hidden><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Install the Syntaz app</button>
       <a class="site-link" href="index.html"><svg class="i" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></svg>Syntaz AI home</a>
       <button id="clearChats" hidden><svg class="i" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>Delete all chats</button>
       <button id="settings"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Key &amp; settings</button>
@@ -1150,6 +1154,12 @@ $("model").onchange = () => { ai.model = $("model").value; saveAi(); };
 try { aiSession = !localStorage.getItem("syntaz-site-chat:ai") && !!sessionStorage.getItem("syntaz-site-chat:ai"); } catch {}
 
 updateSend();
+// Desktop app: offer to install this chat as an app (Chrome/Edge), and keep it working offline.
+if ("serviceWorker" in navigator && location.protocol !== "file:") navigator.serviceWorker.register("sw.js").catch(() => {});
+let installOffer = null;
+addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); installOffer = e; $("installApp").hidden = false; });
+addEventListener("appinstalled", () => ($("installApp").hidden = true));
+$("installApp").onclick = () => installOffer && installOffer.prompt();
 if (ai) showApp(); else showSetup(false);
 </script>
 <script data-glass="aside,.box,.cards button,.setup,.topbar">

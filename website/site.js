@@ -8,6 +8,9 @@
   apply();
   matchMedia("(prefers-color-scheme: light)").addEventListener("change", apply);
 
+  // The desktop app works offline too (sw.js).
+  if ("serviceWorker" in navigator && location.protocol !== "file:") navigator.serviceWorker.register("sw.js").catch(() => {});
+
   document.addEventListener("DOMContentLoaded", () => {
     // Copy buttons (e.g. the Linux install command).
     for (const b of document.querySelectorAll("[data-copy]")) {
@@ -27,20 +30,23 @@
       });
     }
 
-    // Download page: Windows / Mac / Syntaz Lite steps; starts on the visitor's own computer.
-    const tabs = [...document.querySelectorAll("[data-tab]")];
-    if (tabs.length) {
-      const pick = (name) => {
-        for (const t of tabs) {
-          const on = t.dataset.tab === name;
-          t.classList.toggle("on", on);
-          t.setAttribute("aria-pressed", String(on));
-        }
-        for (const p of document.querySelectorAll("[data-panel]")) p.hidden = p.dataset.panel !== name;
-      };
-      const ua = navigator.userAgent;
-      pick(/CrOS/i.test(ua) ? "lite" : /Windows/i.test(ua) ? "win" : /Mac/i.test(navigator.platform || ua) ? "mac" : /Linux/i.test(ua) && !/Android/i.test(ua) ? "linux" : "win");
-      for (const t of tabs) t.addEventListener("click", () => pick(t.dataset.tab));
-    }
+    // Desktop app: Chrome/Edge offer to install the site as an app; [data-install] buttons ask for it.
+    const installed = matchMedia("(display-mode: standalone)").matches;
+    const show = (sel, on) => document.querySelectorAll(sel).forEach((e) => (e.hidden = !on));
+    show("[data-installed]", installed);
+    show("[data-install-help]", !installed);
+    let offer = null;
+    addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      offer = e;
+      show("[data-install]", true);
+      show("[data-install-help]", false);
+    });
+    addEventListener("appinstalled", () => {
+      show("[data-install]", false);
+      show("[data-install-help]", false);
+      show("[data-installed]", true);
+    });
+    for (const b of document.querySelectorAll("[data-install]")) b.addEventListener("click", () => offer && offer.prompt());
   });
 })();

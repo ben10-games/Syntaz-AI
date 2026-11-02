@@ -32,7 +32,20 @@ s = rep(s, '''    <div class="side-foot">
       <a class="site-link" href="download.html"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Get Syntaz for Chrome</a>
       <a class="site-link" href="index.html"><svg class="i" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></svg>Syntaz AI home</a>
 ''')
-s = rep(s, "</style>", "  .side-foot a.site-link { display: flex; align-items: center; gap: 10px; padding: 7px 12px; border-radius: 10px; color: var(--muted); text-decoration: none; }\n  .side-foot a.site-link:hover { background: var(--hover); color: var(--text); }\n</style>")
+# The desktop app: the chat is what it opens (manifest.webmanifest), and it works offline (sw.js).
+s = rep(s, "img-src data: blob: https:;", "img-src 'self' data: blob: https:;")
+s = rep(s, '<meta http-equiv="Content-Security-Policy" content="default-src \'none\';', '<link rel="manifest" href="manifest.webmanifest">\n<link rel="apple-touch-icon" href="apple-touch-icon.png">\n<meta name="theme-color" content="#050807">\n<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; manifest-src \'self\'; worker-src \'self\';')
+s = rep(s, '      <a class="site-link" href="index.html">', '''      <button class="site-link" id="installApp" hidden><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Install the Syntaz app</button>
+      <a class="site-link" href="index.html">''')
+s = rep(s, "\nif (ai) showApp(); else showSetup(false);", '''
+// Desktop app: offer to install this chat as an app (Chrome/Edge), and keep it working offline.
+if ("serviceWorker" in navigator && location.protocol !== "file:") navigator.serviceWorker.register("sw.js").catch(() => {});
+let installOffer = null;
+addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); installOffer = e; $("installApp").hidden = false; });
+addEventListener("appinstalled", () => ($("installApp").hidden = true));
+$("installApp").onclick = () => installOffer && installOffer.prompt();
+if (ai) showApp(); else showSetup(false);''')
+s = rep(s, "</style>", "  .side-foot .site-link { display: flex; align-items: center; gap: 10px; padding: 7px 12px; border-radius: 10px; color: var(--muted); text-decoration: none; }\n  .side-foot .site-link:hover { background: var(--hover); color: var(--text); }\n</style>")
 s = rep(s, "<!-- Syntaz Lite: Syntaz in one file.", "<!-- Made from Syntaz Lite by scripts/make-site-chat.py: edit lite/Syntaz Lite.html, then run that script.\n     Syntaz Lite: Syntaz in one file.")
 open(os.path.join(ROOT, "website", "chat.html"), "w", encoding="utf-8").write(s)
 print("wrote website/chat.html")

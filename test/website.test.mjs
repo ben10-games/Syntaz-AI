@@ -23,28 +23,30 @@ const PNG_B64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8D
 
 let tmp, gemini, web, base, browser, page;
 const seen = [];
-let next = []; // scripted answers for streamGenerateContent: { status, body } or { chunks: [...] }
-const sse = (chunks) => chunks.map((t) => `data: ${JSON.stringify({ candidates: [{ content: { role: "model", parts: [{ text: t }] } }] })}\r\n\r\n`).join("");
-const TYPES = { ".html": "text/html; charset=utf-8", ".js": "text/javascript", ".svg": "image/svg+xml", ".css": "text/css" };
+let next = []; // scripted answers: { status, body }, { chunks: [...] } (chat) or { image: true } (a picture)
+const sse = (chunks) => chunks.map((t) => `data: ${JSON.stringify({ choices: [{ index: 0, delta: { content: t } }] })}\n\n`).join("") + "data: [DONE]\n\n";
+const TYPES = { ".html": "text/html; charset=utf-8", ".js": "text/javascript", ".svg": "image/svg+xml", ".css": "text/css", ".png": "image/png", ".webmanifest": "application/manifest+json" };
 
 before(async () => {
   tmp = mkdtempSync(path.join(os.tmpdir(), "syntaz-site-test-"));
   spawnSync("openssl", ["req", "-x509", "-newkey", "rsa:2048", "-nodes", "-keyout", path.join(tmp, "k.pem"), "-out", path.join(tmp, "c.pem"), "-days", "1", "-subj", "/CN=generativelanguage.googleapis.com"], { stdio: "ignore" });
   gemini = https.createServer({ key: readFileSync(path.join(tmp, "k.pem")), cert: readFileSync(path.join(tmp, "c.pem")) }, (req, res) => {
-    const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "content-type,x-goog-api-key", "Access-Control-Allow-Methods": "GET,POST" };
+    const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "content-type,authorization,x-goog-api-key", "Access-Control-Allow-Methods": "GET,POST" };
     if (req.method === "OPTIONS") return res.writeHead(204, cors).end();
     let body = "";
     req.on("data", (d) => (body += d));
     req.on("end", () => {
-      seen.push({ url: req.url, key: req.headers["x-goog-api-key"], body });
-      if (req.headers["x-goog-api-key"] !== GOOD) return res.writeHead(400, { ...cors, "Content-Type": "application/json" }).end(JSON.stringify({ error: { message: "API key not valid. Please pass a valid API key." } }));
-      if (req.method === "GET") return res.writeHead(200, { ...cors, "Content-Type": "application/json" }).end(JSON.stringify({ models: [] }));
+      const key = req.headers.authorization?.replace(/^Bearer /, "") || req.headers["x-goog-api-key"];
+      seen.push({ url: req.url, key, body });
+      const reply = (status, data, type = "application/json") => res.writeHead(status, { ...cors, "Content-Type": type }).end(typeof data === "string" ? data : JSON.stringify(data));
+      if (key !== GOOD) return reply(400, [{ error: { message: "API key not valid. Please pass a valid API key." } }]);
+      if (req.url.endsWith("/models")) return reply(200, { data: [{ id: "models/gemini-3.1-flash-lite" }, { id: "models/gemini-3.6-flash" }] });
+      if (/Reply with: OK/.test(body)) return reply(200, sse(["OK"]), "text/event-stream");
       const n = next.shift() ?? { chunks: ["Hello from the stand-in."] };
-      if (n.status) return res.writeHead(n.status, { ...cors, "Content-Type": "application/json" }).end(n.body);
+      if (n.status) return reply(n.status, n.body);
       // A picture (generateContent asking for an image).
-      if (req.url.includes(":generateContent")) return res.writeHead(200, { ...cors, "Content-Type": "application/json" }).end(JSON.stringify({ candidates: [{ content: { parts: [{ inlineData: { mimeType: "image/png", data: PNG_B64 } }] }, finishReason: "STOP" }] }));
-      res.writeHead(200, { ...cors, "Content-Type": "text/event-stream" });
-      res.end(sse(n.chunks));
+      if (req.url.includes(":generateContent")) return reply(200, { candidates: [{ content: { parts: [{ inlineData: { mimeType: "image/png", data: PNG_B64 } }] }, finishReason: "STOP" }] });
+      reply(200, sse(n.chunks), "text/event-stream");
     });
   });
   await new Promise((r) => gemini.listen(0, "127.0.0.1", r));
@@ -151,35 +153,50 @@ test("the theme button switches, and the choice carries over to other pages", as
   assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), "dark");
 });
 
-test("Download: the steps start on the visitor's computer and the tabs switch them", async () => {
-  await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130.0 Safari/537.36");
+test("Download: the extension, the desktop app and Syntaz Lite (and LTS); no big install any more", async () => {
   await page.goto(`${base}/download.html`);
-  const shown = () => page.$$eval("[data-panel]", (ps) => ps.filter((p) => p.getClientRects().length > 0).map((p) => p.dataset.panel));
-  assert.deepEqual(await shown(), ["win"]);
-  assert.equal(await page.$eval('[data-tab="win"]', (b) => b.getAttribute("aria-pressed")), "true");
-  await page.click('[data-tab="mac"]');
-  assert.deepEqual(await shown(), ["mac"]);
-  assert.match(await page.$eval('[data-panel="mac"]', (p) => p.textContent), /Open Anyway/);
-  await page.click('[data-tab="lite"]');
-  assert.deepEqual(await shown(), ["lite"]);
   const links = await page.$$eval("a[href*='releases/latest/download']", (a) => [...new Set(a.map((x) => x.href.split("/").pop()))].sort());
-  assert.deepEqual(links, ["Syntaz-Lite.html", "Syntaz-for-Linux.zip", "Syntaz-for-Mac.zip", "Syntaz-for-Windows.zip"]);
+  assert.deepEqual(links, ["Syntaz-Chrome-Extension.zip", "Syntaz-Lite.html"]);
   const lts = await page.$$eval("a[href*='releases/download/lts/']", (a) => a.map((x) => x.href.split("/").pop()));
-  assert.deepEqual(lts, ["Syntaz-for-Windows.zip", "Syntaz-for-Mac.zip", "Syntaz-for-Linux.zip"], "LTS downloads");
-  // Linux: its own tab first for Linux visitors, and the one-line install with a Copy button.
-  await page.setUserAgent("Mozilla/5.0 (X11; Linux x86_64) Chrome/130.0 Safari/537.36");
-  await page.goto(`${base}/download.html`);
-  assert.deepEqual(await shown(), ["linux"]);
-  assert.equal(await page.$eval("#linuxCmd", (c) => c.textContent), "curl -fsSL https://ben10-games.github.io/Syntaz-AI/install.sh | bash");
-  assert.ok(existsSync(path.join(site, "install.sh")), "the install script is on the site");
-  await page.setUserAgent(await browser.userAgent());
+  assert.deepEqual(lts, ["Syntaz-Chrome-Extension.zip", "Syntaz-Lite.html"], "LTS downloads");
+  const steps = await page.$eval("#setup + div", (d) => d.textContent);
+  assert.match(steps, /chrome:\/\/extensions[\s\S]*Developer mode[\s\S]*Load unpacked[\s\S]*Save & check/);
+  // The Install button when Chrome offers to install the app; until then, the page says how.
+  await sleep(500);
+  const offered = await visible("[data-install]");
+  assert.equal(await visible("[data-install-help]"), !offered);
+  for (const p of PAGES.filter((p) => p !== "changelog.html")) assert.ok(!/Syntaz-for-|install\.sh|Syntaz window|Syntaz Setup/.test(readFileSync(path.join(site, p), "utf8")), `${p}: nothing about the old install`);
+  assert.ok(!existsSync(path.join(site, "install.sh")));
 });
 
-test("Chat (full screen, like Syntaz Lite): asks for a key, checks it with Google, then chats for real", async () => {
+test("Desktop app: the site can be installed (manifest, icons, offline worker), and it opens the chat", async () => {
+  const manifest = JSON.parse(readFileSync(path.join(site, "manifest.webmanifest"), "utf8"));
+  assert.equal(manifest.display, "standalone");
+  assert.match(manifest.start_url, /^\.\/chat\.html/);
+  for (const icon of manifest.icons) assert.ok(existsSync(path.join(site, icon.src)), icon.src);
+  assert.ok(manifest.icons.some((i) => i.sizes === "512x512" && i.purpose === "maskable"));
+  for (const p of PAGES) assert.match(readFileSync(path.join(site, p), "utf8"), /<link rel="manifest" href="manifest\.webmanifest">/, p);
+  await page.goto(`${base}/chat.html`);
+  await waitFor(() => page.evaluate(async () => !!(await navigator.serviceWorker.getRegistration())?.active));
+  // Chrome's own check: no installability errors.
+  const cdp = await page.createCDPSession();
+  const { installabilityErrors } = await cdp.send("Page.getInstallabilityErrors");
+  assert.deepEqual(installabilityErrors, []);
+  // Offline, the app still opens.
+  await page.setOfflineMode(true);
+  await page.reload();
+  assert.equal(await page.$eval("h1", (e) => e.textContent), "Chat with Syntaz AI");
+  await page.setOfflineMode(false);
+  await page.evaluate(async () => { for (const r of await navigator.serviceWorker.getRegistrations()) await r.unregister(); });
+});
+
+test("Chat (full screen, like Syntaz Lite): choose an AI, the key is checked, then it chats for real", async () => {
   await page.setViewport({ width: 1280, height: 860 });
   await page.goto(`${base}/chat.html`);
   assert.equal(await visible("#setup"), true);
   assert.equal(await page.$eval("h1", (e) => e.textContent), "Chat with Syntaz AI");
+  assert.equal(await page.$eval("#provider", (s) => s.value), "gemini", "free Gemini is chosen to start");
+  assert.equal(await page.$$eval("#provider option", (o) => o.length), 7, "and six more AIs to choose from");
   await page.type("#key", "AQ.WrongKey_000000000000000000000000000");
   await page.click("#saveKey");
   await waitFor(async () => /doesn't work/.test(await page.$eval("#keyMsg", (e) => e.textContent)));
@@ -201,7 +218,8 @@ test("Chat (full screen, like Syntaz Lite): asks for a key, checks it with Googl
   assert.match(html, /<b>Bold<\/b> and <code>code<\/code>/);
   assert.match(html, /&lt;img src=x onerror=/);
   assert.equal(await page.evaluate(() => window.hacked), undefined);
-  assert.match(seen.at(-1).url, /gemini-3\.1-flash-lite:streamGenerateContent/);
+  assert.match(seen.at(-1).url, /\/v1beta\/openai\/chat\/completions$/);
+  assert.equal(JSON.parse(seen.at(-1).body).model, "gemini-3.1-flash-lite");
   await shot("chat-conversation-1280-dark");
 });
 
@@ -234,5 +252,5 @@ test("Chat: chats are saved in this browser and come back after a reload", async
   await waitFor(() => page.$eval("#app", (a) => !a.hidden)); // display: contents, so no box of its own
   const titles = await page.$$eval("#chatList .open", (b) => b.map((x) => x.textContent));
   assert.ok(titles.includes("what is 17 times 23?"), JSON.stringify(titles));
-  assert.ok(seen.every((x) => !x.key || x.key === GOOD || x.key.startsWith("AQ.Wrong")), "the key only ever goes to Google");
+  assert.ok(seen.every((x) => !x.key || x.key === GOOD || x.key.startsWith("AQ.Wrong")), "the key only ever goes to the AI it belongs to");
 });

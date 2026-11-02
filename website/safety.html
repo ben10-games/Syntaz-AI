@@ -14,6 +14,9 @@
 <meta property="og:image" content="https://ben10-games.github.io/Syntaz-AI/og.png">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#050807">
 <script src="site.js"></script>
 <style>
 body{margin:0}
@@ -138,29 +141,29 @@ html,body{background:#0e0e10}
 <div style="display: flex; flex-wrap: wrap; gap: 20px">
 <div class="card" style="flex: 1 1 300px; padding: 24px; display: flex; flex-direction: column; gap: 10px; box-shadow: none">
 <div class="ico"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a5 5 0 1 1 1-9.9A6 6 0 0 1 19.5 10 4 4 0 0 1 18 18z"></path></svg></div>
-<h3 style="font-size: 20px">With Gemini</h3>
-<p class="muted">Your messages and the page you ask about go to Google's AI to get an answer.</p>
+<h3 style="font-size: 20px">With Gemini, OpenAI, Claude, …</h3>
+<p class="muted">Your messages and the page you ask about go straight from your browser to the AI you chose, to get an answer. Nowhere else.</p>
 </div>
 <div class="card" style="flex: 1 1 300px; padding: 24px; display: flex; flex-direction: column; gap: 10px; box-shadow: none">
 <div class="ico"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"></rect><path d="M8 20h8M12 16v4"></path></svg></div>
-<h3 style="font-size: 20px">With LM Studio</h3>
-<p class="muted">The AI runs on your own computer. Nothing leaves it.</p>
+<h3 style="font-size: 20px">With your own AI server</h3>
+<p class="muted">With LM Studio or Ollama the AI runs on your own computer. Nothing leaves it.</p>
 </div>
 <div class="card" style="flex: 1 1 300px; padding: 24px; display: flex; flex-direction: column; gap: 10px; box-shadow: none">
 <div class="ico"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"></circle><path d="M11 12l9-9M16 7l3 3"></path></svg></div>
 <h3 style="font-size: 20px">Your key</h3>
-<p class="muted">Your Gemini key stays on your computer. On this website's chat, it stays in your browser.</p>
+<p class="muted">Your key stays in your browser and only goes to the AI it belongs to.</p>
 </div>
 </div>
 </section>
 
 <section aria-labelledby="ctrl" class="card" style="padding: 28px; display: flex; flex-direction: column; gap: 20px">
-<h2 id="ctrl" style="font-size: 28px">Stop, Pause, Disconnect</h2>
+<h2 id="ctrl" style="font-size: 28px">Stop, Pause, Remove</h2>
 <p class="muted">These always work, any time.</p>
 <div style="display: flex; flex-wrap: wrap; gap: 16px">
 <div style="flex: 1 1 260px; padding: 18px; border-radius: 14px; background: var(--raised); display: flex; flex-direction: column; gap: 6px"><strong style="font-size: 17px">Stop</strong><span class="muted">Ends the task right now. Syntaz stops clicking and typing.</span></div>
 <div style="flex: 1 1 260px; padding: 18px; border-radius: 14px; background: var(--raised); display: flex; flex-direction: column; gap: 6px"><strong style="font-size: 17px">Pause</strong><span class="muted">Freezes the task so you can look. Continue when you're ready.</span></div>
-<div style="flex: 1 1 260px; padding: 18px; border-radius: 14px; background: var(--raised); display: flex; flex-direction: column; gap: 6px"><strong style="font-size: 17px">Disconnect</strong><span class="muted">Turn Syntaz off in the Syntaz window. It can't do anything until you start it again.</span></div>
+<div style="flex: 1 1 260px; padding: 18px; border-radius: 14px; background: var(--raised); display: flex; flex-direction: column; gap: 6px"><strong style="font-size: 17px">Remove</strong><span class="muted">Turn Syntaz off or remove it in <span class="kbd">chrome://extensions</span>. It can't do anything until you turn it on again.</span></div>
 </div>
 </section>
 </main>
@@ -169,7 +172,7 @@ html,body{background:#0e0e10}
 <div style="max-width: 1200px; margin: 0 auto; padding: 32px 24px; display: flex; flex-wrap: wrap; gap: 16px 32px; align-items: center; justify-content: space-between">
 <div style="display: flex; align-items: center; gap: 10px; font-weight: 800">
 <svg aria-hidden="true" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><defs><linearGradient id="bf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d2a24"/><stop offset="1" stop-color="#080b0a"/></linearGradient><linearGradient id="sf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d9fb5b"/><stop offset="1" stop-color="#2ee6b0"/></linearGradient><linearGradient id="hf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".28"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><rect width="32" height="32" rx="8" fill="url(#bf)"/><rect x=".5" y=".5" width="31" height="31" rx="7.5" fill="url(#hf)" stroke="#fff" stroke-opacity=".16"/><path d="M20.6 11.2c-.9-1.5-2.6-2.4-4.7-2.4-2.8 0-4.8 1.5-4.8 3.6 0 4.6 10 2.7 10 7.6 0 2.2-2.1 3.8-5 3.8-2.3 0-4.2-1-5.1-2.6" fill="none" stroke="url(#sf)" stroke-width="3.2" stroke-linecap="round"/><path fill="#d9fb5b" d="M25 4.6l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></svg>
-<span>Syntaz AI</span><span class="muted" style="font-weight: 500; font-size: 14px">v1.7.0</span>
+<span>Syntaz AI</span><span class="muted" style="font-weight: 500; font-size: 14px">v2.0.0</span>
 </div>
 <nav aria-label="Footer" style="display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 14px">
 <a href="changelog.html">What's new</a>
