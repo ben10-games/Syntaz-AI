@@ -265,6 +265,9 @@ label.check input[type="checkbox"]:checked::after { transform: translateX(16px);
    light that follows the pointer. Buttons squish when pressed.
    --------------------------------------------------------------------------------------------------------- */
 body { position: relative; isolation: isolate; }
+/* Faint dots behind everything: the glass edges visibly bend them. */
+body { background-image: radial-gradient(var(--dot, rgba(255, 255, 255, .1)) 1.2px, transparent 1.8px); background-size: 20px 20px; }
+.top, .box, .drawer, .banner { --frost: 4; }
 body::before, body::after { content: ""; position: fixed; z-index: -1; border-radius: 50%; filter: blur(48px); pointer-events: none; animation: drift 20s ease-in-out infinite alternate; }
 body::before { width: 340px; height: 340px; left: -120px; top: -90px; background: radial-gradient(circle, var(--glow-1), transparent 68%); opacity: .55; }
 body::after { width: 380px; height: 380px; right: -150px; bottom: -110px; background: radial-gradient(circle, var(--glow-2), transparent 68%), radial-gradient(circle at 10% 10%, var(--glow-3), transparent 45%); opacity: .5; animation-duration: 26s; }
@@ -273,7 +276,7 @@ body::after { width: 380px; height: 380px; right: -150px; bottom: -110px; backgr
 .top, .box, .approval, .idea, .run, .chip, .stat, .drawer, .slashmenu, .modes, .steps li, .chatlist li button.open, .banner, .msg.user {
   background-image: radial-gradient(220px circle at var(--x, -200px) var(--y, -200px), rgba(255, 255, 255, .12), transparent 60%);
   -webkit-backdrop-filter: blur(16px) saturate(180%);
-  backdrop-filter: var(--lens,) blur(16px) saturate(180%);
+  backdrop-filter: var(--lens, blur(16px)) saturate(170%) brightness(1.04);
   box-shadow: var(--rim), var(--shadow);
   border-color: var(--edge);
 }
@@ -311,3 +314,4 @@ label.check input[type="checkbox"]:checked { box-shadow: inset 0 1px 0 rgba(255,
 .keylink[hidden] { display: none; }
 #aiMsg.ok { color: var(--ok, #2ee6b0); }
 #aiMsg.bad { color: var(--bad, #ff6b6b); }
+@media (prefers-color-scheme: light) { :root { --dot: rgba(13, 19, 15, .09); } }

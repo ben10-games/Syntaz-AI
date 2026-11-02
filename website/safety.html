@@ -53,7 +53,11 @@ html,body{background:#0e0e10}
 :root[data-theme="light"] .when-dark{display:none}:root[data-theme="light"] .when-light{display:contents}
 
 /* Volt liquid glass: soft glows drift behind the page; header, cards and buttons are clear glass with bright rims that
-   bend what's behind their edges (liquid.js draws each lens, used as var(--lens)) and catch the light where the pointer is. */
+   bend what's behind their edges with a rainbow fringe (liquid.js: refraction, dispersion and rim light, used as var(--lens)),
+   swell when pressed, and catch the light where the pointer is. The faint dots behind everything show the bending. */
+.site{background-image:radial-gradient(var(--dot,rgba(255,255,255,.1)) 1.2px,transparent 1.8px);background-size:22px 22px;background-attachment:fixed}
+:root[data-theme="light"] .site{--dot:rgba(13,19,15,.09)}
+.site>header,.mock,.shell,.qa{--frost:4}
 .site{position:relative;isolation:isolate}
 .site::before,.site::after{content:"";position:fixed;z-index:-1;border-radius:50%;filter:blur(80px);pointer-events:none;animation:drift 24s ease-in-out infinite alternate}
 .site::before{width:640px;height:640px;left:-220px;top:-240px;background:radial-gradient(circle,var(--glow-1),transparent 68%);opacity:.42}
@@ -62,7 +66,7 @@ html,body{background:#0e0e10}
 .site>header{position:sticky;top:10px;z-index:20;margin:10px auto 0;max-width:1220px;width:calc(100% - 20px);border:1px solid var(--edge)!important;border-radius:26px}
 .site>header,.card,.mock,.btn-g,.icon-btn,.tab.on,.steps li,.warn,.sugg,.shell,.chip,.pill,.nav.on,.thumb,.field,.sel,.composer,.qa{
   background-color:var(--card);background-image:radial-gradient(300px circle at var(--x,-400px) var(--y,-400px),rgba(255,255,255,.12),transparent 60%);
-  -webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:var(--lens,) blur(20px) saturate(180%);
+  -webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:var(--lens,blur(20px)) saturate(170%) brightness(1.04);
   box-shadow:var(--rim),var(--shadow);border-color:var(--edge)}
 .site>header{background-color:var(--side)}
 .mock,.shell{background-color:var(--side)}
@@ -121,7 +125,7 @@ html,body{background:#0e0e10}
 <ul class="list">
 <li><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg><span>Ask for your OK before every click or keystroke.</span></li>
 <li><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg><span>Always ask before submitting, sending, buying or deleting, even in hands-off mode.</span></li>
-<li><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg><span>Show a violet Syntaz cursor so you can see what it's doing.</span></li>
+<li><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg><span>Show a lime Syntaz cursor so you can see what it's doing.</span></li>
 <li><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg><span>Treat web pages as untrusted, so a page can't boss it around.</span></li>
 </ul>
 </section>
@@ -172,7 +176,7 @@ html,body{background:#0e0e10}
 <div style="max-width: 1200px; margin: 0 auto; padding: 32px 24px; display: flex; flex-wrap: wrap; gap: 16px 32px; align-items: center; justify-content: space-between">
 <div style="display: flex; align-items: center; gap: 10px; font-weight: 800">
 <svg aria-hidden="true" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><defs><linearGradient id="bf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d2a24"/><stop offset="1" stop-color="#080b0a"/></linearGradient><linearGradient id="sf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d9fb5b"/><stop offset="1" stop-color="#2ee6b0"/></linearGradient><linearGradient id="hf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".28"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><rect width="32" height="32" rx="8" fill="url(#bf)"/><rect x=".5" y=".5" width="31" height="31" rx="7.5" fill="url(#hf)" stroke="#fff" stroke-opacity=".16"/><path d="M20.6 11.2c-.9-1.5-2.6-2.4-4.7-2.4-2.8 0-4.8 1.5-4.8 3.6 0 4.6 10 2.7 10 7.6 0 2.2-2.1 3.8-5 3.8-2.3 0-4.2-1-5.1-2.6" fill="none" stroke="url(#sf)" stroke-width="3.2" stroke-linecap="round"/><path fill="#d9fb5b" d="M25 4.6l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></svg>
-<span>Syntaz AI</span><span class="muted" style="font-weight: 500; font-size: 14px">v2.0.0</span>
+<span>Syntaz AI</span><span class="muted" style="font-weight: 500; font-size: 14px">v2.1.0</span>
 </div>
 <nav aria-label="Footer" style="display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 14px">
 <a href="changelog.html">What's new</a>
