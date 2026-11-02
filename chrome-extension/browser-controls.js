@@ -1,8 +1,8 @@
-// Bridge controls (used inside the side panel's Settings drawer). Own scope: sidepanel.js shares this page.
+// Browser controls in the side panel's Settings drawer (pause, site and tab access, action history). Own scope:
+// sidepanel.js shares this page.
 (() => {
 const $ = (id) => document.getElementById(id);
 const send = (msg) => chrome.runtime.sendMessage(msg);
-let localError = ""; // input errors stay visible until the next action
 
 async function currentOrigin() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true }); // activeTab grants this after the Syntaz icon is clicked on this tab
@@ -16,14 +16,7 @@ async function currentOrigin() {
 
 async function refresh() {
   const s = await send({ cmd: "state" });
-  const status = s.status === "connected" && s.paused ? "paused" : s.status;
-  $("dot").className = `dot ${status}`;
-  $("status").textContent = status;
-  $("error").textContent = localError || s.error || "";
-  if (!$("port").value) $("port").value = s.port;
-  $("token").placeholder = s.paired ? "Saved (leave empty to keep)" : "64-character code";
-  $("connect").disabled = s.status !== "disconnected";
-  $("disconnect").disabled = s.status === "disconnected";
+  $("pausedStat").hidden = !s.paused;
   $("pause").textContent = s.paused ? "Resume Syntaz" : "Pause Syntaz";
   $("history").replaceChildren(
     ...s.history.slice(0, 50).map((h) => {
@@ -50,20 +43,13 @@ async function refresh() {
   }
 }
 
-$("connect").onclick = async () => {
-  const res = await send({ cmd: "connect", token: $("token").value, port: Number($("port").value) });
-  $("token").value = "";
-  localError = res && res.error ? res.error : "";
-  setTimeout(refresh, 400);
-};
-$("disconnect").onclick = async () => {
-  localError = "";
-  await send({ cmd: "disconnect" });
-  refresh();
-};
 $("pause").onclick = async () => {
   const s = await send({ cmd: "state" });
   await send({ cmd: "pause", value: !s.paused });
+  refresh();
+};
+$("resumeTop").onclick = async () => {
+  await send({ cmd: "pause", value: false });
   refresh();
 };
 $("allowSite").onclick = async () => {

@@ -1,23 +1,22 @@
-// Syntaz Browser Bridge - service worker.
-// Connects OUT to Syntaz on 127.0.0.1 only after the user presses Connect, authenticates with
-// the pairing code, and runs a fixed set of commands. It never executes code sent to it.
+// Syntaz AI - service worker. Runs a fixed set of browser commands (protocol.json) for Syntaz's side panel, which
+// talks to the user's AI by itself. It never executes code sent to it, and only Syntaz's own pages may ask.
 
 importScripts("protocol-check.js");
 
 const VERSION = chrome.runtime.getManifest().version;
-// The command list both sides agree on (validated on every request; see protocol.json).
+// The command list (validated on every request; see protocol.json).
 const PROTOCOL = fetch(chrome.runtime.getURL("protocol.json")).then((r) => r.json());
-const DEFAULT_PORT = 9895;
 const MAX_HISTORY = 100;
 const COMMAND_TIMEOUT_MS = 60_000;
 
-const state = { ws: null, status: "disconnected", paused: false, error: "", retry: 0, timer: null, mismatch: "" };
+const state = { paused: false };
 const cancelled = new Set();
-/** Requests being worked on: id -> { command, tabId } (Stop/Disconnect cancel all of them). */
+/** Requests being worked on: id -> { command, tabId } (Stop cancels all of them). */
 const inflight = new Map();
-/** Tabs where Syntaz's cursor may be showing (cleared on Stop/Disconnect). */
+/** Tabs where Syntaz's cursor may be showing (cleared on Stop). */
 const cursorTabs = new Set();
 const ACTIONS = new Set(["click", "click_target", "type_text", "fill_field", "select_option", "scroll", "press_key"]);
+let nextRequest = 1;
 
 class BridgeError extends Error {
   constructor(code, message) {
@@ -26,106 +25,9 @@ class BridgeError extends Error {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Connection (only while the user wants it: intent lives in session storage,
-// which Chrome clears on restart, so the bridge starts disconnected)
-// ---------------------------------------------------------------------------
-
-async function settings() {
-  const { token = "", port = DEFAULT_PORT } = await chrome.storage.local.get(["token", "port"]);
-  return { token, port };
-}
-
 function setBadge() {
-  const text = state.status === "connected" ? (state.paused ? "II" : "ON") : "";
-  chrome.action.setBadgeText({ text });
-  chrome.action.setBadgeBackgroundColor({ color: state.paused ? "#b45309" : "#15803d" });
-}
-
-function setStatus(status, error = "") {
-  state.status = status;
-  state.error = error;
-  setBadge();
-}
-
-async function connect() {
-  const { intent } = await chrome.storage.session.get("intent");
-  if (!intent || state.ws) return;
-  const { token, port } = await settings();
-  if (!/^[0-9a-f]{64}$/.test(token)) return setStatus("disconnected", "Enter the pairing code from Syntaz first.");
-  clearTimeout(state.timer);
-  setStatus("connecting");
-  let ws;
-  try {
-    ws = new WebSocket(`ws://127.0.0.1:${Number(port)}`);
-  } catch {
-    return scheduleReconnect("Could not open a connection to Syntaz.");
-  }
-  state.ws = ws;
-  const protocol = await PROTOCOL;
-  // The protocol version and command list let Syntaz tell an outdated extension from a broken one.
-  ws.onopen = () => ws.send(JSON.stringify({ type: "hello", token, version: VERSION, protocol: protocol.version, commands: Object.keys(COMMANDS) }));
-  ws.onmessage = (event) => onMessage(ws, event.data);
-  ws.onclose = (event) => {
-    if (state.ws === ws) state.ws = null;
-    const reason =
-      event.code === 4001
-        ? "Syntaz rejected the pairing code."
-        : event.code === 4003
-          ? "Syntaz rejected this extension."
-          : event.code === 4004
-            ? state.mismatch || "Syntaz and this extension use different protocol versions: restart Syntaz and reload the extension."
-            : "Syntaz is not reachable (is it running?).";
-    if (event.code === 4001 || event.code === 4003 || event.code === 4004) {
-      chrome.storage.session.set({ intent: false });
-      setStatus("disconnected", reason);
-    } else scheduleReconnect(reason);
-  };
-  ws.onerror = () => {};
-}
-
-async function scheduleReconnect(reason) {
-  const { intent } = await chrome.storage.session.get("intent");
-  if (!intent) return setStatus("disconnected", reason);
-  setStatus("connecting", `${reason} Retrying…`);
-  state.retry = Math.min(state.retry + 1, 6);
-  state.timer = setTimeout(connect, Math.min(30_000, 1_000 * 2 ** state.retry));
-}
-
-function disconnect() {
-  stopAll("disconnected");
-  chrome.storage.session.set({ intent: false });
-  clearTimeout(state.timer);
-  if (state.ws) state.ws.close(1000, "user disconnected");
-  state.ws = null;
-  setStatus("disconnected");
-}
-
-function onMessage(ws, data) {
-  let msg;
-  try {
-    msg = JSON.parse(data);
-  } catch {
-    return;
-  }
-  if (msg.type === "incompatible") {
-    PROTOCOL.then((p) => {
-      state.mismatch =
-        typeof msg.protocol === "number" && msg.protocol < p.version
-          ? `Syntaz's browser server is older than this extension (protocol ${msg.protocol} vs ${p.version}): stop Syntaz (Ctrl+C) and start it again.`
-          : `This extension is older than Syntaz (protocol ${p.version} vs ${msg.protocol}): reload it in chrome://extensions (Syntaz AI → ↻).`;
-    });
-  } else if (msg.type === "welcome") {
-    state.retry = 0;
-    state.mismatch = "";
-    setStatus("connected");
-  } else if (msg.type === "request" && typeof msg.id === "string") {
-    handleRequest(ws, msg);
-  } else if (msg.type === "cancel" && typeof msg.id === "string") {
-    cancelled.add(msg.id);
-  } else if (msg.type === "ping") {
-    ws.send(JSON.stringify({ type: "pong" }));
-  }
+  chrome.action.setBadgeText({ text: state.paused ? "II" : "" });
+  chrome.action.setBadgeBackgroundColor({ color: "#b45309" });
 }
 
 async function record(entry) {
@@ -134,17 +36,17 @@ async function record(entry) {
   await chrome.storage.session.set({ history: history.slice(0, MAX_HISTORY) });
 }
 
-async function handleRequest(ws, msg) {
-  const { id, command, params = {} } = msg;
-  const send = (payload) => ws.readyState === WebSocket.OPEN && ws.send(JSON.stringify({ type: "response", id, ...payload }));
+/** Runs one command for the side panel: { ok, result } or { ok: false, error: { code, message } }. */
+async function runCommand(command, params = {}) {
+  const id = `r${nextRequest++}`;
   if (state.paused) {
     await record({ command, target: summarize(command, params), outcome: "refused: paused" });
-    return send({ ok: false, error: { code: "paused", message: "The user paused Syntaz in the browser extension." } });
+    return { ok: false, error: { code: "paused", message: "The user paused Syntaz in the browser extension." } };
   }
   const fn = COMMANDS[command];
-  if (!fn) return send({ ok: false, error: { code: "unknown_command", message: `Unknown command: ${String(command).slice(0, 40)}` } });
+  if (!fn) return { ok: false, error: { code: "unknown_command", message: `Unknown command: ${String(command).slice(0, 40)}` } };
   const invalid = SyntazProtocolCheck.checkRequest(await PROTOCOL, command, params);
-  if (invalid) return send({ ok: false, error: { code: "bad_request", message: `The extension refused a malformed request: ${invalid}.` } });
+  if (invalid) return { ok: false, error: { code: "bad_request", message: `The extension refused a malformed request: ${invalid}.` } };
   inflight.set(id, { command, tabId: null });
   try {
     const result = await Promise.race([
@@ -153,17 +55,17 @@ async function handleRequest(ws, msg) {
     ]);
     if (cancelled.has(id)) {
       await record({ command, target: summarize(command, params), outcome: "cancelled" });
-      return;
+      return { ok: false, error: { code: "cancelled", message: "Stopped." } };
     }
     await record({ command, target: summarize(command, params), outcome: "ok" });
     if (ACTIONS.has(command)) progress(id, command, "done");
-    send({ ok: true, result });
+    return { ok: true, result };
   } catch (err) {
     const code = err instanceof BridgeError ? err.code : "error";
     const message = err instanceof BridgeError ? err.message : `Browser error: ${String(err && err.message ? err.message : err).slice(0, 200)}`;
     await record({ command, target: summarize(command, params), outcome: cancelled.has(id) ? "cancelled" : `failed: ${code}` });
     if (ACTIONS.has(command)) progress(id, command, cancelled.has(id) ? "cancelled" : "failed", { message });
-    if (!cancelled.has(id)) send({ ok: false, error: { code, message } });
+    return { ok: false, error: { code: cancelled.has(id) ? "cancelled" : code, message } };
   } finally {
     cancelled.delete(id);
     inflight.delete(id);
@@ -1191,33 +1093,13 @@ const COMMANDS = {
 // ---------------------------------------------------------------------------
 
 chrome.runtime.onMessage.addListener((msg, sender, reply) => {
-  // Only Syntaz's own pages (side panel) may control the bridge; page watchers are for the panel.
+  // Only Syntaz's own pages (side panel) may run commands; page watchers are for the panel.
   if (sender.id !== chrome.runtime.id || sender.tab || !msg || typeof msg.cmd !== "string") return false;
   (async () => {
+    if (msg.cmd === "run") return runCommand(String(msg.command || ""), msg.params && typeof msg.params === "object" ? msg.params : {});
     if (msg.cmd === "state") {
       const { history = [] } = await chrome.storage.session.get("history");
-      const { port } = await settings();
-      const { userOff = false } = await chrome.storage.session.get("userOff");
-      return { status: state.status, error: state.error, paused: state.paused, history, port, paired: /^[0-9a-f]{64}$/.test((await settings()).token), userOff };
-    }
-    if (msg.cmd === "connect") {
-      const token = String(msg.token || "").trim().toLowerCase();
-      const port = Number(msg.port) || DEFAULT_PORT;
-      if (token && !/^[0-9a-f]{64}$/.test(token)) return { error: "That pairing code is not valid (64 hex characters)." };
-      if (port < 1024 || port > 65535) return { error: "Port must be between 1024 and 65535." };
-      if (token) await chrome.storage.local.set({ token });
-      await chrome.storage.local.set({ port });
-      if (msg.saveOnly === true) return { ok: true };
-      await chrome.storage.session.set({ intent: true, userOff: false });
-      state.retry = 0;
-      connect();
-      return { ok: true };
-    }
-    if (msg.cmd === "disconnect") {
-      // Remembered until Chrome closes, so opening the panel doesn't reconnect behind the user's back.
-      await chrome.storage.session.set({ userOff: true });
-      disconnect();
-      return { ok: true };
+      return { paused: state.paused, history, version: VERSION };
     }
     if (msg.cmd === "stop_actions") {
       stopAll("stopped by user");
@@ -1266,6 +1148,4 @@ function askFromMenu(info, tab) {
 // Clicking the toolbar icon opens Syntaz's side panel (it stays open while switching tabs).
 chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(() => {});
 
-// On service-worker start: reconnect only if the user connected during this browser session.
-connect();
 setBadge();

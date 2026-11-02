@@ -11,11 +11,11 @@
     <div class="brand"><img class="logo" src="icons/syntaz-32.png" alt="" aria-hidden="true"><span>Syntaz</span></div>
     <div class="stats" role="status">
       <span class="stat" id="syntazStat"><span id="syntazDot" class="dot"></span><span id="syntazStatus">Checking…</span></span>
-      <span class="stat"><span id="bridgeDot" class="dot"></span><span id="bridgeStatus">Browser…</span><button id="bridgeConnect" class="link" hidden>Connect</button><button id="bridgePause" class="link" hidden title="Pause or resume Syntaz's actions in the browser">Pause</button><button id="bridgeDisconnect" class="link" hidden title="Stop everything and disconnect the browser bridge">Disconnect</button></span>
+      <span class="stat" id="pausedStat" hidden><span class="dot warn"></span><span>Paused</span><button id="resumeTop" class="link" title="Let Syntaz act in the browser again">Resume</button></span>
     </div>
     <button id="historyBtn" class="icon" title="Saved chats" aria-label="Saved chats" aria-expanded="false" aria-controls="historyDrawer">🕘</button>
     <button id="newChat" class="icon" title="New chat" aria-label="New chat">＋</button>
-    <button id="toggleSettings" class="icon" title="Settings and browser bridge" aria-label="Settings" aria-expanded="false" aria-controls="settings">⚙</button>
+    <button id="toggleSettings" class="icon" title="Settings: your AI, the browser and chats" aria-label="Settings" aria-expanded="false" aria-controls="settings">⚙</button>
   </header>
 
   <div id="banner" class="banner" role="alert" hidden><span id="bannerText"></span><button id="bannerAction" class="link"></button></div>
@@ -33,11 +33,22 @@
 
     <section id="settings" class="drawer" hidden aria-label="Settings">
       <div class="drawer-head"><strong>Settings</strong><button id="closeSettings" class="icon" aria-label="Close settings">✕</button></div>
-      <label for="syntazUrl">Syntaz address (this computer only)</label>
-      <div class="row"><input id="syntazUrl" type="url" placeholder="http://127.0.0.1:3000" /><button id="saveSyntazUrl">Save</button></div>
-      <p id="syntazUrlError" class="error small"></p>
-      <label for="modelSelect">Model (from LM Studio)</label>
-      <select id="modelSelect"><option value="">Syntaz's choice (the loaded model)</option></select>
+      <h2>Your AI</h2>
+      <label for="aiProvider">AI</label>
+      <select id="aiProvider"></select>
+      <div id="aiKeyRow">
+        <label for="aiKey">API key <a id="aiKeyLink" class="keylink" target="_blank" rel="noopener">Get a key ↗</a></label>
+        <div class="row"><input id="aiKey" type="password" autocomplete="off" spellcheck="false" placeholder="Paste your key here" /><button id="aiShow" title="Show or hide the key">Show</button></div>
+      </div>
+      <div id="aiBaseRow" hidden>
+        <label for="aiBase">Address of your AI server</label>
+        <input id="aiBase" type="url" spellcheck="false" placeholder="http://127.0.0.1:1234/v1" />
+      </div>
+      <div class="row"><button id="aiSave" class="primary">Save &amp; check</button></div>
+      <p id="aiMsg" class="muted small" role="status"></p>
+      <p class="muted small">Your key stays in this browser and only goes to the AI you chose. Paid AIs bill your own account.</p>
+      <label for="modelSelect">Model</label>
+      <select id="modelSelect"><option value="">Best for my key</option></select>
       <p class="muted small">In use: <span id="model">—</span></p>
 
       <h2>Page awareness</h2>
@@ -71,13 +82,7 @@
       <ul id="autoSites" class="history"></ul>
       <p id="autoSitesEmpty" class="muted small">None. Use “Always allow on …” on an approval card.</p>
 
-      <h2>Browser bridge</h2>
-      <div class="row small"><span id="dot" class="dot"></span><span id="status" class="muted">…</span></div>
-      <label for="token">Pairing code (from <code>npm run browser:token</code>)</label>
-      <input id="token" type="password" autocomplete="off" spellcheck="false" placeholder="64-character code" />
-      <div class="row"><input id="port" type="number" min="1024" max="65535" title="Bridge port" class="port" />
-        <button id="connect" class="primary">Connect</button><button id="disconnect" class="danger">Stop &amp; disconnect</button></div>
-      <div id="error" class="error small"></div>
+      <h2>Browser</h2>
       <div class="row"><button id="pause">Pause Syntaz</button></div>
       <div class="row"><button id="allowSite">Allow on this site</button><button id="allowTabs">Allow tab access</button></div>
       <p class="muted small" id="siteNote"></p>
@@ -125,7 +130,11 @@
     </div>
   </footer>
 
-  <script src="bridge-controls.js"></script>
+  <script src="ai.js"></script>
+  <script src="tools.js"></script>
+  <script src="agent.js"></script>
+  <script src="local-api.js"></script>
+  <script src="browser-controls.js"></script>
   <script src="markdown.js"></script>
   <script src="sidepanel.js"></script>
   <script src="liquid.js" data-glass=".top,.box,.approval,.idea,.run,.drawer,.slashmenu,.msg.user"></script>

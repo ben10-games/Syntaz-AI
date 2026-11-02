@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Syntaz AI",
-  "version": "1.7.0",
-  "description": "Syntaz AI in Chrome's side panel: chat with your local Syntaz and let it inspect and (with your approval) operate tabs. Connects only to Syntaz on 127.0.0.1.",
+  "version": "2.0.0",
+  "description": "Syntaz AI in Chrome's side panel: chat with your own AI (Gemini, OpenAI, Claude, Grok, Groq, Hugging Face) and let it do tasks in your tabs with your approval. No other app needed.",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1oiRTU3LAK2Lu/EuNbAWmHXGt7m7N4ltKKZyZJF7fwSY7oXiIHRkMwWbPqRcpt1UGzJzOg0bJPFo36sPWde/B30MimYx7WFz2UCpwl+MBtsi8oBtzIgQuZoaqJzHwbIJF0YBlDxkfWSvOjhc8b5O9/98Wj5GSqfAXheuT+4bNKE1wpfNhd+d5AR0qMU/PyveTLP4iMOtlTMQQN0DRRWQ3IXMEuYZjJV5IYcy7+4SOA6hc1udLv7kf7ozGC43jNIXy1n2CfqHURB8+ZqNiXfveHYXnbtrmY3aANJabFyVw+hT44If5HzxTM8w20cKSymSnd6gPPS9fhpbYF+1ZcplVQIDAQAB",
   "minimum_chrome_version": "116",
   "permissions": [
@@ -14,6 +14,16 @@
   ],
   "optional_permissions": [
     "tabs"
+  ],
+  "host_permissions": [
+    "https://generativelanguage.googleapis.com/*",
+    "https://api.openai.com/*",
+    "https://api.anthropic.com/*",
+    "https://api.x.ai/*",
+    "https://api.groq.com/*",
+    "https://router.huggingface.co/*",
+    "http://127.0.0.1/*",
+    "http://localhost/*"
   ],
   "optional_host_permissions": [
     "http://*/*",
@@ -46,5 +56,8 @@
     "32": "icons/syntaz-32.png",
     "48": "icons/syntaz-48.png",
     "128": "icons/syntaz-128.png"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
   }
 }

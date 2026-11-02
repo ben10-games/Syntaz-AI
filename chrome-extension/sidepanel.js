@@ -1,12 +1,11 @@
-// Syntaz side panel: chat with the local Syntaz server through its existing API
-// (/api/chat, /api/agent, /api/agent/approve, /api/status), authenticated with the
-// pairing code. Model output is rendered as text/DOM only; nothing from the model runs here.
+// Syntaz side panel: chat with the user's own AI and do tasks in Chrome, all inside the extension. The panel asks
+// local-api.js (/api/chat, /api/agent, /api/agent/approve, /api/status, /api/image), which calls the AI directly.
+// Model output is rendered as text/DOM only; nothing from the model runs here.
 //
 // Page awareness: while the panel is open it keeps a LOCAL snapshot of the active tab
 // (only on sites Syntaz may read). The snapshot is sent to Syntaz only with a message the
 // user sends, marked as untrusted, and only the newest page text stays in the history.
 
-const DEFAULT_SYNTAZ_URL = "http://127.0.0.1:3000";
 const $ = (id) => document.getElementById(id);
 
 const ui = {
@@ -42,64 +41,18 @@ class UiError extends Error {}
 // Settings + Syntaz API
 // ---------------------------------------------------------------------------
 
-function loopbackUrl(raw) {
-  const u = new URL(raw);
-  if (u.protocol !== "http:" || !["127.0.0.1", "localhost"].includes(u.hostname) || u.username || u.password) {
-    throw new UiError("Syntaz must run on this computer: use http://127.0.0.1:<port> or http://localhost:<port>.");
-  }
-  return u.origin;
-}
-
-async function settings() {
-  const { token = "", syntazUrl = DEFAULT_SYNTAZ_URL } = await chrome.storage.local.get(["token", "syntazUrl"]);
-  return { token, syntazUrl };
-}
-
-/**
- * Automatic setup: Syntaz on this computer gives its pairing code to this extension (and nothing else),
- * then the browser bridge connects. No code to copy. Returns true when a code is saved.
- */
-async function autoPair({ force = false } = {}) {
-  const { token, syntazUrl } = await settings();
-  if (!force && /^[0-9a-f]{64}$/.test(token)) return true;
-  try {
-    const res = await fetch(`${loopbackUrl(syntazUrl)}/api/pair`);
-    if (!res.ok) return false;
-    const data = await res.json();
-    if (!data || typeof data.token !== "string" || !/^[0-9a-f]{64}$/.test(data.token)) return false;
-    const s = await chrome.runtime.sendMessage({ cmd: "state" });
-    // After a Disconnect (this Chrome session) the code is only saved; the bridge stays off.
-    await chrome.runtime.sendMessage({ cmd: "connect", token: data.token, port: s && s.port, saveOnly: !!(s && s.userOff) });
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-/** fetch() to Syntaz with the pairing code. The code is never shown or logged. */
-async function syntaz(path, init = {}, retried = false) {
-  if (!(await autoPair())) {
-    throw new UiError("Syntaz isn't running on this computer. Start it (npm run dev), then press Retry.");
-  }
-  const { token, syntazUrl } = await settings();
-  let res;
-  try {
-    res = await fetch(`${loopbackUrl(syntazUrl)}${path}`, { ...init, headers: { ...(init.headers || {}), Authorization: `Bearer ${token}` } });
-  } catch (err) {
-    if (init.signal && init.signal.aborted) throw err;
-    throw new UiError(`Syntaz isn't running at ${syntazUrl}. Start it (npm run dev), then press Retry.`);
-  }
-  // An old code (e.g. Syntaz's was renewed): fetch the current one once and try again.
-  if (res.status === 401 && !retried && (await autoPair({ force: true }))) return syntaz(path, init, true);
+/** A request to Syntaz's AI connector (local-api.js), with its error turned into a message for the user. */
+async function syntaz(path, init = {}) {
+  const res = await SyntazLocal.handle(path, init);
   if (!res.ok) {
-    let message = `Syntaz returned HTTP ${res.status}.`;
+    let message = "Syntaz couldn't do that.";
     try {
       const data = await res.json();
       if (data && data.error) message = data.error;
     } catch {
       /* keep default */
     }
-    throw new UiError(res.status === 401 ? `${message} Paste the current code from \`npm run browser:token\` in Settings (⚙).` : message);
+    throw new UiError(message);
   }
   return res;
 }
@@ -949,54 +902,37 @@ async function refreshSyntaz() {
     const res = await syntaz("/api/status");
     const s = await res.json();
     $("syntazDot").className = `dot ${s.model ? "ok" : "warn"}`;
-    $("syntazStatus").textContent = s.model ? "Syntaz ready" : "No model";
-    $("syntazStat").title = s.model ? `Model: ${s.model}` : s.warning || "No model is loaded.";
-    if (s.model && !ui.controller) $("model").textContent = ui.model || s.model;
+    $("syntazStatus").textContent = s.model ? s.providerName : "No AI yet";
+    $("syntazStat").title = s.model ? `${s.providerName}: ${s.model}` : s.warning || "Add your AI key in Settings (⚙).";
+    if (s.model && !ui.controller) $("model").textContent = s.model;
     if (s.contextLength) ui.ctxChars = Math.max(2000, Math.min(24000, Math.round(s.contextLength * 3 * 0.3)));
     ui.searchOrigin = s.browser && s.browser.searchOrigin ? s.browser.searchOrigin : null;
     ui.images = s.images && typeof s.images === "object" ? s.images : { available: false, reason: "" };
     fillModels(s);
-    banner(s.model ? "" : s.warning || "Syntaz is running but no model is loaded in LM Studio.", "Retry", refreshSyntaz);
+    banner(s.model ? "" : s.warning || "Add your AI key in Settings (⚙).", "Open settings", () => openSettings(true));
   } catch (err) {
-    const msg = err instanceof UiError ? err.message : "Syntaz is unreachable.";
+    const msg = err instanceof UiError ? err.message : "Your AI didn't answer.";
     $("syntazDot").className = "dot bad";
-    $("syntazStatus").textContent = /Not paired|not paired/.test(msg) ? "Not paired" : "Syntaz offline";
+    $("syntazStatus").textContent = "AI offline";
     $("syntazStat").title = msg;
-    if (/Not paired|not paired|browser:token/.test(msg)) banner(msg, "Open settings", () => openSettings(true));
-    else banner(msg, "Retry", refreshSyntaz);
+    banner(msg, "Retry", refreshSyntaz);
   }
 }
 
-/** The model picker lists what Syntaz's provider (LM Studio) offers; nothing is hardcoded. */
+/** The model picker lists what the user's key offers; nothing is hardcoded. */
 function fillModels(s) {
   const sel = $("modelSelect");
   const ids = (s.models || []).map((m) => m.id);
-  if (ui.model && !ids.includes(ui.model)) ui.model = ""; // no longer available: back to Syntaz's choice
+  if (ui.model && ids.length && !ids.includes(ui.model)) ui.model = ""; // not offered for this key: back to the best one
   const want = ["", ...ids].join("|");
   if (sel.dataset.ids !== want) {
-    sel.replaceChildren(el("option", "", s.modelLocked ? `${s.model} (set by Syntaz's configuration)` : "Syntaz's choice (the loaded model)"));
+    sel.replaceChildren(el("option", "", ids.length ? `Best for my key (${ids[0]})` : "Best for my key"));
     sel.firstChild.value = "";
     if (!s.modelLocked) for (const id of ids) sel.append(Object.assign(el("option", "", id), { value: id }));
     sel.dataset.ids = want;
   }
   sel.disabled = !!s.modelLocked;
   sel.value = ui.model;
-}
-
-async function refreshBridge() {
-  const s = await chrome.runtime.sendMessage({ cmd: "state" }).catch(() => null);
-  const status = !s ? "disconnected" : s.status === "connected" && s.paused ? "paused" : s.status;
-  $("bridgeDot").className = `dot ${status}`;
-  $("bridgeStatus").textContent = { connected: "Browser on", paused: "Browser paused", connecting: "Connecting…", disconnected: "Browser off" }[status] || status;
-  $("bridgeStatus").parentElement.title = s && s.error ? s.error : "The browser bridge lets Syntaz act in Chrome (with your approval).";
-  $("bridgeConnect").hidden = !s || s.status !== "disconnected" || !s.paired;
-  $("bridgeConnect").textContent = s && s.error ? "Reconnect" : "Connect";
-  const on = !!s && s.status === "connected";
-  $("bridgePause").hidden = !on;
-  $("bridgePause").textContent = s && s.paused ? "Resume" : "Pause";
-  $("bridgeDisconnect").hidden = !s || s.status === "disconnected";
-  // A version mismatch between this extension and Syntaz needs the user's attention (reload / restart).
-  if (s && /protocol|older than|out of date/i.test(s.error || "")) banner(s.error, "Open settings", () => openSettings(true));
 }
 
 // ---------------------------------------------------------------------------
@@ -1030,7 +966,7 @@ async function send(retryText) {
     }
     addUserBubble(text);
     const { body } = addAssistantBubble("🎨 Pictures");
-    body.replaceChildren(el("div", "note", `${ui.images.reason || "Your AI can't make pictures."} To make pictures, choose OpenAI, Google Gemini, xAI (Grok) or Hugging Face with Change AI in the Syntaz window.`));
+    body.replaceChildren(el("div", "note", `${ui.images.reason || "Your AI can't make pictures."} To make pictures, choose OpenAI, Google Gemini, xAI (Grok) or Hugging Face in Settings (⚙).`));
     return;
   }
   const route = ui.mode === "auto" ? (looksLikeTask(text) ? "actions" : "chat") : ui.mode;
@@ -1069,7 +1005,7 @@ function openSettings(open) {
   if (open && !$("historyDrawer").hidden) openHistory(false);
   $("settings").hidden = !open;
   $("toggleSettings").setAttribute("aria-expanded", String(open));
-  if (open) $("syntazUrl").focus();
+  if (open) $(ui.images.reason && /key/i.test(ui.images.reason) ? "aiKey" : "aiProvider").focus();
   else $("input").focus();
 }
 
@@ -1122,19 +1058,6 @@ $("newChat").onclick = () => {
 $("toggleSettings").onclick = () => openSettings($("settings").hidden);
 $("closeSettings").onclick = () => openSettings(false);
 document.addEventListener("keydown", (e) => e.key === "Escape" && !$("settings").hidden && openSettings(false));
-$("bridgeConnect").onclick = async () => {
-  await chrome.runtime.sendMessage({ cmd: "connect", token: "", port: Number($("port").value) || undefined });
-  setTimeout(refreshBridge, 500);
-};
-$("bridgePause").onclick = async () => {
-  const s = await chrome.runtime.sendMessage({ cmd: "state" });
-  await chrome.runtime.sendMessage({ cmd: "pause", value: !s.paused });
-  refreshBridge();
-};
-$("bridgeDisconnect").onclick = async () => {
-  await chrome.runtime.sendMessage({ cmd: "disconnect" });
-  refreshBridge();
-};
 $("actFreely").onchange = () => setActFreely($("actFreely").checked);
 $("actBadge").onclick = () => setActFreely(false);
 $("handsBtn").onclick = () => setActFreely(!ui.actFreely);
@@ -1327,20 +1250,79 @@ $("seeToggle").onchange = async () => {
 $("cursorToggle").onchange = () => chrome.storage.local.set({ cursor: $("cursorToggle").checked });
 $("modelSelect").onchange = async () => {
   ui.model = $("modelSelect").value;
-  await chrome.storage.local.set({ model: ui.model });
+  await SyntazLocal.setAi({ model: ui.model });
   refreshSyntaz();
 };
-$("saveSyntazUrl").onclick = async () => {
-  $("syntazUrlError").textContent = "";
+
+// Your AI: provider, key (never shown again unless you press Show) and, for your own AI server, its address.
+function showProvider(id) {
+  const p = SyntazAI.PROVIDERS[id];
+  $("aiKeyLink").hidden = !p.keyPage;
+  if (p.keyPage) $("aiKeyLink").href = p.keyPage;
+  $("aiKey").placeholder = p.custom ? "Usually not needed" : `Paste your key here (${p.keyHint})`;
+  $("aiBaseRow").hidden = !p.custom;
+  $("aiBase").placeholder = p.base;
+}
+async function loadAiSettings() {
+  const sel = $("aiProvider");
+  if (!sel.options.length) for (const [id, p] of Object.entries(SyntazAI.PROVIDERS)) sel.append(Object.assign(el("option", "", `${p.name}${p.free ? " — free" : ""}`), { value: id }));
+  const cfg = await SyntazLocal.getAi();
+  sel.value = cfg.provider;
+  $("aiKey").value = "";
+  $("aiKey").dataset.saved = cfg.key && cfg.provider === sel.value ? "1" : "";
+  $("aiBase").value = cfg.base;
+  showProvider(cfg.provider);
+  if (cfg.key) $("aiKey").placeholder = "Saved (paste a new key to change it)";
+  ui.model = cfg.model;
+}
+$("aiProvider").onchange = () => {
+  showProvider($("aiProvider").value);
+  $("aiMsg").textContent = "";
+};
+$("aiShow").onclick = async () => {
+  const k = $("aiKey");
+  if (k.type === "password" && !k.value && k.dataset.saved) {
+    const cfg = await SyntazLocal.getAi();
+    if (cfg.provider === $("aiProvider").value) k.value = cfg.key;
+  }
+  k.type = k.type === "password" ? "text" : "password";
+  $("aiShow").textContent = k.type === "password" ? "Show" : "Hide";
+};
+$("aiSave").onclick = async () => {
+  const msg = $("aiMsg");
+  const provider = $("aiProvider").value;
+  const old = await SyntazLocal.getAi();
+  const key = $("aiKey").value.trim() || (old.provider === provider ? old.key : "");
+  const base = $("aiBase").value.trim();
+  if (!key && !SyntazAI.PROVIDERS[provider].custom) {
+    msg.className = "small bad";
+    msg.textContent = "Paste your key first (Get a key ↗ opens the page where you make one).";
+    return;
+  }
+  if (base && !/^https?:\/\/[^\s/]+/i.test(base)) {
+    msg.className = "small bad";
+    msg.textContent = "The address should look like http://127.0.0.1:1234/v1";
+    return;
+  }
+  msg.className = "muted small";
+  msg.textContent = "Checking your key…";
+  $("aiSave").disabled = true;
   try {
-    const origin = loopbackUrl($("syntazUrl").value.trim());
-    await chrome.storage.local.set({ syntazUrl: origin });
-    $("syntazUrl").value = origin;
-    refreshSyntaz();
+    const cfg = { provider, key, base, model: provider === old.provider ? old.model : "" };
+    const r = await SyntazAI.checkKey(cfg);
+    await SyntazLocal.setAi({ ...cfg, model: r.models.includes(cfg.model) ? cfg.model : "" });
+    msg.className = "small ok";
+    msg.textContent = `✓ Works! ${SyntazAI.PROVIDERS[provider].name} is ready (${r.model}).`;
+    await loadAiSettings();
+    await refreshSyntaz();
   } catch (err) {
-    $("syntazUrlError").textContent = err instanceof UiError ? err.message : "That is not a valid address.";
+    msg.className = "small bad";
+    msg.textContent = err.message || "That didn't work.";
+  } finally {
+    $("aiSave").disabled = false;
   }
 };
+$("aiKey").addEventListener("keydown", (e) => e.key === "Enter" && $("aiSave").click());
 
 // The active tab changed, navigated, or (via page-watch.js) its content changed.
 chrome.tabs.onActivated.addListener((info) => (!ui.windowId || info.windowId === ui.windowId) && scheduleContext(0));
@@ -1403,29 +1385,21 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
   $("actBadge").hidden = !ui.actFreely;
   $("handsBtn").setAttribute("aria-pressed", String(ui.actFreely));
   ui.autoSites = new Set(autoSites.filter((o) => typeof o === "string" && originOf(o) === o));
-  const stored = await chrome.storage.local.get(["autoContext", "model", "cursor", "saveChats", "shortcuts"]);
+  const stored = await chrome.storage.local.get(["autoContext", "cursor", "saveChats", "shortcuts"]);
   ui.saveChats = stored.saveChats === true;
   $("saveChats").checked = ui.saveChats;
   ui.shortcuts = Array.isArray(stored.shortcuts) ? stored.shortcuts.filter((s) => s && /^[a-z0-9-]{1,20}$/.test(s.name) && typeof s.prompt === "string") : [];
   renderShortcuts();
   $("cursorToggle").checked = stored.cursor !== false;
   $("seeToggle").checked = await chrome.permissions.contains({ origins: ["<all_urls>"] }).catch(() => false);
-  ui.model = typeof stored.model === "string" ? stored.model : "";
   ui.auto = stored.autoContext !== false;
   $("autoContext").checked = ui.auto;
-  $("syntazUrl").value = (await settings()).syntazUrl;
+  await loadAiSettings();
   setMode("auto");
   setCtx({ state: "loading", text: "Looking at this tab…" });
   await refreshSyntaz();
-  // Opening the panel connects the browser bridge (unless you pressed Disconnect in this Chrome session).
-  const bridge = await chrome.runtime.sendMessage({ cmd: "state" }).catch(() => null);
-  if (bridge && bridge.status === "disconnected" && !bridge.userOff && (await autoPair())) {
-    await chrome.runtime.sendMessage({ cmd: "connect", token: "", port: bridge.port });
-  }
   refreshContext();
-  refreshBridge();
   setInterval(refreshSyntaz, 15_000);
-  setInterval(refreshBridge, 2_000);
   takePendingAsk();
   $("input").focus();
 })();
