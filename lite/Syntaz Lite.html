@@ -166,9 +166,9 @@
   /* Liquid glass: glows drift behind; panels are clear glass with bright rims, bending what's behind their edges
      (the lens is drawn by the script at the end, used as var(--lens)) and lit where the pointer is. */
   body { position: relative; isolation: isolate; }
-  body::before, body::after { content: ""; position: fixed; z-index: -1; border-radius: 50%; filter: blur(60px); pointer-events: none; animation: drift 22s ease-in-out infinite alternate; }
+  body::before, body::after { content: ""; position: fixed; z-index: -1; border-radius: 50%; filter: blur(60px); pointer-events: none; }
   body::before { width: 520px; height: 520px; left: -160px; top: -180px; background: radial-gradient(circle, var(--glow-1), transparent 68%); opacity: .5; }
-  body::after { width: 620px; height: 620px; right: -200px; bottom: -220px; background: radial-gradient(circle, var(--glow-2), transparent 68%), radial-gradient(circle at 15% 15%, var(--glow-3), transparent 45%); opacity: .45; animation-duration: 28s; }
+  body::after { width: 620px; height: 620px; right: -200px; bottom: -220px; background: radial-gradient(circle, var(--glow-2), transparent 68%), radial-gradient(circle at 15% 15%, var(--glow-3), transparent 45%); opacity: .45; }
   @keyframes drift { to { transform: translate(60px, 40px) scale(1.1); } }
   aside, .box, .cards button, .setup, .topbar, .thumb span, #model {
     background-image: radial-gradient(260px circle at var(--x, -300px) var(--y, -300px), rgba(255,255,255,.12), transparent 60%);
@@ -1146,13 +1146,14 @@ updateSend();
 if (ai) showApp(); else showSetup(false);
 </script>
 <script data-glass="aside,.box,.cards button,.setup,.topbar">
-// Syntaz liquid glass. Each glass element gets its own SVG filter, used by the CSS as var(--lens):
-//  1. a little frost (blur) — real glass is mostly clear,
-//  2. refraction: the edge is a rounded bevel, and light bends through it by Snell's law (glass, n≈1.5), so what's
-//     behind the rim is pulled inward and magnified while the middle stays flat and sharp,
-//  3. dispersion: red, green and blue bend by slightly different amounts, so the rim shows a faint rainbow fringe,
-//  4. specular light: a bright glint along the rim facing the light (top left) and a softer one on the opposite side.
-// Pressing glass makes it bulge (the bend grows, then springs back); the light on it follows the pointer.
+// Syntaz liquid glass. Each glass element gets its own SVG filter, used by the CSS as var(--lens): the edge is a
+// rounded bevel, and light bends through it by Snell's law (glass, n≈1.5), so what's behind the rim is pulled inward
+// and magnified while the middle stays flat and sharp. The frost after it is Chrome's own (fast) blur, and the bright
+// rims come from the CSS. Pressing glass makes it bulge (the bend grows, then springs back); the light on it follows
+// the pointer.
+// Built to stay light: one displacement per element (measured: 3 colour layers and SVG blur made pages run at about
+// 25 fps), lenses only while an element is on screen, and if the computer still can't keep up (frames slower than
+// ~30 fps), the glass switches to plain frosted glass for this visit.
 // Chrome only: other browsers, and "reduce transparency", keep the plain frosted glass (the CSS fallback).
 // The same file is in website/liquid.js and chrome-extension/liquid.js; scripts/sync-ai.py copies it into Syntaz Lite.
 (() => {
@@ -1160,7 +1161,7 @@ if (ai) showApp(); else showSetup(false);
   const GLASS = document.currentScript?.dataset.glass || ".lg";
   const NS = "http://www.w3.org/2000/svg";
   const N_GLASS = 1.5;
-  const LIGHT = [-0.6, -0.8]; // where the light comes from: top left
+  const MAX_LENSES = 24; // more glass than this on screen at once: the rest stays plain frosted glass
   const defs = document.createElementNS(NS, "svg");
   defs.setAttribute("width", "0"); defs.setAttribute("height", "0"); defs.setAttribute("aria-hidden", "true");
   defs.style.position = "absolute";
@@ -1176,83 +1177,84 @@ if (ai) showApp(); else showSetup(false);
       const t = i / n, dt = 1 / n;
       const slope = (h(t + dt / 2) - h(t - dt / 2)) / dt; // surface slope
       const inc = Math.atan(slope); // angle between the view ray and the surface normal
-      const out_ = Math.asin(Math.sin(inc) / N_GLASS); // the bent ray inside the glass
-      out[i] = Math.tan(inc - out_); // sideways shift per unit of thickness
+      const bent = Math.asin(Math.sin(inc) / N_GLASS); // the ray inside the glass
+      out[i] = Math.tan(inc - bent); // sideways shift per unit of thickness
       max = Math.max(max, out[i]);
     }
     for (let i = 0; i <= n; i++) out[i] /= max || 1;
     return (t) => out[Math.round(Math.min(Math.max(t, 0), 1) * n)];
   })();
 
-  /** The displacement map (R = x, G = y; 128 = no shift) and the light map for a w×h rounded rectangle. */
+  /** The displacement map (R = x, G = y; 128 = no shift) for a w×h rounded rectangle (cached by size). */
   const maps = new Map();
-  function drawMaps(w, h, r, edge) {
+  function drawMap(w, h, r, edge) {
     const key = `${w}x${h}r${Math.round(r)}e${Math.round(edge)}`;
     if (maps.has(key)) return maps.get(key);
-    const make = () => { const c = document.createElement("canvas"); c.width = w; c.height = h; return c; };
-    const cd = make(), cs = make();
-    const xd = cd.getContext("2d"), xs = cs.getContext("2d");
-    const id = xd.createImageData(w, h), is = xs.createImageData(w, h);
-    const d = id.data, s = is.data;
-    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-      // Signed distance to the rounded rectangle, and the outward direction of its nearest edge.
-      const px = x + 0.5 - w / 2, py = y + 0.5 - h / 2;
-      const qx = Math.abs(px) - (w / 2 - r), qy = Math.abs(py) - (h / 2 - r);
-      const ox = Math.max(qx, 0), oy = Math.max(qy, 0);
-      const dist = r - (Math.hypot(ox, oy) + Math.min(Math.max(qx, qy), 0)); // how far inside the edge
-      let nx, ny;
-      if (ox > 0 || oy > 0) { const l = Math.hypot(ox, oy) || 1; nx = ox / l; ny = oy / l; } else if (qx > qy) { nx = 1; ny = 0; } else { nx = 0; ny = 1; }
-      nx *= Math.sign(px) || 1; ny *= Math.sign(py) || 1;
-      const t = dist / edge;
-      const k = t < 1 ? PROFILE(t) : 0;
-      const i = (y * w + x) * 4;
-      // Pull inward (sample further inside): that magnifies what's behind the rim, like a real lens edge.
-      d[i] = 128 - nx * k * 127; d[i + 1] = 128 - ny * k * 127; d[i + 2] = 128; d[i + 3] = 255;
-      // Light: a thin bright line right at the rim, strongest where the edge faces the light.
-      const facing = nx * LIGHT[0] + ny * LIGHT[1];
-      const rim = Math.exp(-Math.max(dist, 0) / 1.6) + 0.35 * Math.exp(-Math.max(dist, 0) / 6);
-      const glint = rim * (Math.pow(Math.max(facing, 0), 2) * 0.9 + Math.pow(Math.max(-facing, 0), 3) * 0.45 + 0.08);
-      const v = Math.min(255, Math.round(glint * 255));
-      s[i] = s[i + 1] = s[i + 2] = v; s[i + 3] = 255;
+    const c = document.createElement("canvas"); c.width = w; c.height = h;
+    const ctx = c.getContext("2d"); const img = ctx.createImageData(w, h); const d = img.data;
+    d.fill(128);
+    for (let i = 3; i < d.length; i += 4) d[i] = 255;
+    // Only the bevel needs work: the flat middle stays 128 (no shift).
+    const band = Math.ceil(edge + r * 0.3) + 1; // a rounded corner's bevel reaches a bit further in
+    for (let y = 0; y < h; y++) {
+      const inside = y >= band && y < h - band;
+      for (let x = 0; x < w; x++) {
+        if (inside && x === band) x = Math.max(band, w - band); // skip the middle of this row
+        // Signed distance to the rounded rectangle, and the outward direction of its nearest edge.
+        const px = x + 0.5 - w / 2, py = y + 0.5 - h / 2;
+        const qx = Math.abs(px) - (w / 2 - r), qy = Math.abs(py) - (h / 2 - r);
+        const ox = Math.max(qx, 0), oy = Math.max(qy, 0);
+        const dist = r - (Math.hypot(ox, oy) + Math.min(Math.max(qx, qy), 0)); // how far inside the edge
+        const t = dist / edge;
+        if (t >= 1) continue;
+        let nx, ny;
+        if (ox > 0 || oy > 0) { const l = Math.hypot(ox, oy) || 1; nx = ox / l; ny = oy / l; } else if (qx > qy) { nx = 1; ny = 0; } else { nx = 0; ny = 1; }
+        nx *= Math.sign(px) || 1; ny *= Math.sign(py) || 1;
+        const k = PROFILE(t), i = (y * w + x) * 4;
+        // Pull inward (sample further inside): that magnifies what's behind the rim, like a real lens edge.
+        d[i] = 128 - nx * k * 127; d[i + 1] = 128 - ny * k * 127;
+      }
     }
-    xd.putImageData(id, 0, 0); xs.putImageData(is, 0, 0);
-    const out = { disp: cd.toDataURL(), spec: cs.toDataURL() };
-    maps.set(key, out);
-    if (maps.size > 60) maps.delete(maps.keys().next().value);
-    return out;
+    ctx.putImageData(img, 0, 0);
+    const url = c.toDataURL();
+    maps.set(key, url);
+    if (maps.size > 40) maps.delete(maps.keys().next().value);
+    return url;
   }
 
-  const ONLY = (c) => ["1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0", "0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0", "0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0"][c];
-  const DISPERSION = [1, 1.045, 1.09]; // red bends least, blue most
   let next = 0;
-  const glass = new WeakMap(); // element → { filter, displacers, scale, bulge }
+  const glass = new WeakMap(); // element → { filter, displacer, scale, bulge, frost }
+  const visible = new Set();
+  let plain = false;
+  try { plain = sessionStorage.getItem("syntaz-glass") === "plain"; } catch {}
 
   function build(el) {
+    if (plain || !visible.has(el)) return;
     const b = el.getBoundingClientRect(); const w = Math.round(b.width), h = Math.round(b.height);
-    if (w < 8 || h < 8 || w * h > 1_500_000) return; // tiny, or too big to draw quickly
+    if (w < 8 || h < 8 || w * h > 1_200_000) return off(el); // tiny, or too big to bend cheaply
     const css = getComputedStyle(el);
     const r = Math.min(parseFloat(css.borderTopLeftRadius) || 0, w / 2, h / 2);
     const edge = Math.min(36, Math.max(10, Math.min(w, h) * 0.36));
-    const frost = parseFloat(css.getPropertyValue("--frost")) || 1.5;
-    const { disp, spec } = drawMaps(w, h, r, edge);
     let g = glass.get(el);
     if (!g) {
       const f = document.createElementNS(NS, "filter");
       f.id = `lg${++next}`;
       defs.append(f);
-      g = { filter: f, displacers: [], scale: 0, bulge: 1 };
+      g = { filter: f, displacer: null, scale: 0, bulge: 1 };
       glass.set(el, g);
     }
     g.scale = edge * 1.25;
+    g.frost = parseFloat(css.getPropertyValue("--frost")) || 2;
     for (const [k, v] of Object.entries({ x: 0, y: 0, width: w, height: h, filterUnits: "userSpaceOnUse", "color-interpolation-filters": "sRGB" })) g.filter.setAttribute(k, v);
-    g.filter.innerHTML = `<feGaussianBlur in="SourceGraphic" stdDeviation="${frost}" edgeMode="duplicate" result="frost"/>
-      <feImage href="${disp}" x="0" y="0" width="${w}" height="${h}" result="map"/>
-      ${[0, 1, 2].map((c) => `<feDisplacementMap in="frost" in2="map" scale="${(g.scale * g.bulge * DISPERSION[c]).toFixed(1)}" xChannelSelector="R" yChannelSelector="G" result="d${c}"/><feColorMatrix in="d${c}" type="matrix" values="${ONLY(c)}" result="c${c}"/>`).join("")}
-      <feBlend in="c0" in2="c1" mode="screen" result="rg"/><feBlend in="rg" in2="c2" mode="screen" result="rgb"/>
-      <feImage href="${spec}" x="0" y="0" width="${w}" height="${h}" result="light"/>
-      <feBlend in="light" in2="rgb" mode="screen"/>`;
-    g.displacers = [...g.filter.querySelectorAll("feDisplacementMap")];
-    el.style.setProperty("--lens", `url(#${g.filter.id})`);
+    g.filter.innerHTML = `<feImage href="${drawMap(w, h, r, edge)}" x="0" y="0" width="${w}" height="${h}" result="map"/><feDisplacementMap in="SourceGraphic" in2="map" scale="${(g.scale * g.bulge).toFixed(1)}" xChannelSelector="R" yChannelSelector="G"/>`;
+    g.displacer = g.filter.firstElementChild.nextElementSibling;
+    el.style.setProperty("--lens", `url(#${g.filter.id}) blur(${g.frost}px)`);
+  }
+  /** Back to plain frosted glass (off screen, too many, or a slow computer). */
+  function off(el) {
+    el.style.removeProperty("--lens");
+    const g = glass.get(el);
+    if (g) { g.filter.remove(); glass.delete(el); }
   }
 
   // Pressing glass: the bend swells like a drop of liquid, then springs back (a damped spring).
@@ -1265,34 +1267,77 @@ if (ai) showApp(); else showSetup(false);
     const step = () => {
       v = (v + (g.target - g.bulge) * 0.18) * 0.72;
       g.bulge += v;
-      g.displacers.forEach((n, c) => n.setAttribute("scale", (g.scale * g.bulge * DISPERSION[c]).toFixed(1)));
+      g.displacer.setAttribute("scale", (g.scale * g.bulge).toFixed(1));
       if (Math.abs(v) < 0.002 && Math.abs(g.target - g.bulge) < 0.002) { g.anim = 0; return; }
       g.anim = requestAnimationFrame(step);
     };
     g.anim = requestAnimationFrame(step);
   }
 
+  // Too slow? Measure 40 frames now and then (after loading, and while scrolling); a median slower than ~30 fps
+  // means this computer can't bend the glass smoothly, so it gets plain frosted glass (until the browser closes).
+  let measuring = false, lastCheck = 0;
+  function check() {
+    if (plain || measuring || document.hidden || Date.now() - lastCheck < 4000) return;
+    measuring = true;
+    const times = [];
+    let last = 0;
+    const tick = (t) => {
+      if (last) times.push(t - last);
+      last = t;
+      if (times.length < 40) return requestAnimationFrame(tick);
+      measuring = false;
+      lastCheck = Date.now();
+      times.sort((a, b) => a - b);
+      if (times[20] > 34) goPlain();
+    };
+    requestAnimationFrame(tick);
+  }
+  function goPlain() {
+    plain = true;
+    try { sessionStorage.setItem("syntaz-glass", "plain"); } catch {}
+    document.querySelectorAll("[data-lg]").forEach(off);
+  }
+
   const chrome = CSS.supports("backdrop-filter", "url(#x)") && /Chrome\//.test(navigator.userAgent) && !matchMedia("(prefers-reduced-transparency: reduce)").matches;
   const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
-  const ro = new ResizeObserver((items) => items.forEach((i) => build(i.target)));
-  const watch = (root) => root.querySelectorAll?.(GLASS).forEach((el) => { if (!el.dataset.lg) { el.dataset.lg = "1"; ro.observe(el); build(el); } });
-  if (chrome) {
+  if (chrome && !plain) {
+    // Lenses only for glass on screen (and at most MAX_LENSES of them).
+    const io = new IntersectionObserver((items) => {
+      for (const i of items) {
+        if (i.isIntersecting && visible.size < MAX_LENSES) { visible.add(i.target); build(i.target); }
+        else if (!i.isIntersecting && visible.delete(i.target)) off(i.target);
+      }
+    }, { rootMargin: "120px" });
+    const ro = new ResizeObserver((items) => items.forEach((i) => build(i.target)));
+    const watch = (root) => root.querySelectorAll?.(GLASS).forEach((el) => { if (!el.dataset.lg) { el.dataset.lg = "1"; io.observe(el); ro.observe(el); } });
     watch(document);
-    new MutationObserver((ms) => ms.forEach((m) => m.addedNodes.forEach((n) => n.nodeType === 1 && (n.matches?.(GLASS) ? watch(n.parentNode) : watch(n))))).observe(document.body, { childList: true, subtree: true });
+    new MutationObserver((ms) => ms.forEach((m) => {
+      m.addedNodes.forEach((n) => n.nodeType === 1 && (n.matches?.(GLASS) ? watch(n.parentNode) : watch(n)));
+      m.removedNodes.forEach((n) => { if (n.nodeType === 1 && n.dataset?.lg) { visible.delete(n); off(n); } });
+    })).observe(document.body, { childList: true, subtree: true });
     let pressed = null;
     document.addEventListener("pointerdown", (e) => { pressed = e.target.closest?.(GLASS); if (pressed) bulge(pressed, 1.7); });
     const release = () => { if (pressed) bulge(pressed, 1); pressed = null; };
     document.addEventListener("pointerup", release);
     document.addEventListener("pointercancel", release);
+    setTimeout(check, 800);
+    addEventListener("scroll", check, { passive: true, capture: true });
   }
-  // The light on the glass follows the pointer.
+  // The light on the glass follows the pointer (at most once per frame).
+  let moved = null;
   document.addEventListener("pointermove", (e) => {
-    const el = e.target.closest?.(`${GLASS},.btn`);
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    el.style.setProperty("--x", `${e.clientX - r.left}px`);
-    el.style.setProperty("--y", `${e.clientY - r.top}px`);
-  });
+    if (!moved) requestAnimationFrame(() => {
+      const el = moved.target.closest?.(`${GLASS},.btn`);
+      if (el) {
+        const r = el.getBoundingClientRect();
+        el.style.setProperty("--x", `${moved.clientX - r.left}px`);
+        el.style.setProperty("--y", `${moved.clientY - r.top}px`);
+      }
+      moved = null;
+    });
+    moved = e;
+  }, { passive: true });
 })();
 </script>
 </body>

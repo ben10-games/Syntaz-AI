@@ -1,7 +1,7 @@
 // Syntaz desktop app (the website installed as an app): keeps the chat and its icons on this computer, so the app
 // opens even when the internet is slow or off. Pages always come fresh when online; the AI calls never go through here.
 "use strict";
-const CACHE = "syntaz-app-2.1.0";
+const CACHE = "syntaz-app-2.1.1";
 const SHELL = ["chat.html", "icon.svg", "icon-192.png", "icon-512.png", "manifest.webmanifest"];
 
 self.addEventListener("install", (e) => e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting())));

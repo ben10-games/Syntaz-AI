@@ -268,9 +268,9 @@ body { position: relative; isolation: isolate; }
 /* Faint dots behind everything: the glass edges visibly bend them. */
 body { background-image: radial-gradient(var(--dot, rgba(255, 255, 255, .1)) 1.2px, transparent 1.8px); background-size: 20px 20px; }
 .top, .box, .drawer, .banner { --frost: 4; }
-body::before, body::after { content: ""; position: fixed; z-index: -1; border-radius: 50%; filter: blur(48px); pointer-events: none; animation: drift 20s ease-in-out infinite alternate; }
+body::before, body::after { content: ""; position: fixed; z-index: -1; border-radius: 50%; filter: blur(48px); pointer-events: none; }
 body::before { width: 340px; height: 340px; left: -120px; top: -90px; background: radial-gradient(circle, var(--glow-1), transparent 68%); opacity: .55; }
-body::after { width: 380px; height: 380px; right: -150px; bottom: -110px; background: radial-gradient(circle, var(--glow-2), transparent 68%), radial-gradient(circle at 10% 10%, var(--glow-3), transparent 45%); opacity: .5; animation-duration: 26s; }
+body::after { width: 380px; height: 380px; right: -150px; bottom: -110px; background: radial-gradient(circle, var(--glow-2), transparent 68%), radial-gradient(circle at 10% 10%, var(--glow-3), transparent 45%); opacity: .5; }
 @keyframes drift { to { transform: translate(40px, 30px) scale(1.1); } }
 
 .top, .box, .approval, .idea, .run, .chip, .stat, .drawer, .slashmenu, .modes, .steps li, .chatlist li button.open, .banner, .msg.user {
